@@ -50,23 +50,74 @@ namespace PayarcSDK.Sample {
 			// Initialize the service
 			var customerService = new CustomerService(client);
 			var cardData = new List<JObject>();
+			var bankData = new List<JObject>();
 			var customerId = "";
+
+			// Add a card to a customer
+			cardData.Add(new JObject {
+				["card_source"] = "INTERNET",
+				["card_number"] = "4012000098765439",
+				["exp_month"] = "12",
+				["exp_year"] = "2025",
+				["cvv"] = "999",
+				["card_holder_name"] = "John Doe",
+				["address_line1"] = "411 West Putnam Avenue",
+				["city"] = "Greenwich",
+				["state"] = "CT",
+				["zip"] = "06840",
+				["country"] = "US"
+			});
+
+			// Add a card to a customer
+			cardData.Add(new JObject {
+				["card_source"] = "INTERNET",
+				["card_number"] = "4111111111111111",
+				["exp_month"] = "02",
+				["exp_year"] = "2027",
+				["cvv"] = "999",
+				["card_holder_name"] = "John Doe",
+				["address_line1"] = "411 West Putnam Avenue",
+				["city"] = "New York",
+				["state"] = "NY",
+				["zip"] = "06830",
+				["country"] = "US"
+
+			});
+
+			// Add a bank info to a customer
+			bankData.Add(new JObject {
+				["account_number"] = 1234567890,
+				["routing_number"] = 123456789,
+				["first_name"] = "Test",
+				["last_name"] = "Account",
+				["account_type"] = "Personal Checking",
+				["sec_code"] = "TEL"
+			});
+
+			// Add a bank info to a customer
+			bankData.Add(new JObject {
+				["account_number"] = 1234567890,
+				["routing_number"] = 123456789,
+				["first_name"] = "Test2",
+				["last_name"] = "Account2",
+				["account_type"] = "Personal Checking",
+				["sec_code"] = "TEL"
+			});
 
 			if (false) {
 				// Create a new customer
 				var newCustomerData = new JObject {
-					["name"] = "Shah Test3",
-					["email"] = "shah@test3.com",
+					["name"] = "Shah Test8",
+					["email"] = "shah@test8.com",
 					["phone"] = "1234567890"
 				};
-
-				var createdCustomer = await customerService.CreateCustomerAsync(newCustomerData, cardData);
+				newCustomerData.Add("cards", JToken.FromObject(cardData));
+				newCustomerData.Add("bank_accounts", JToken.FromObject(bankData));
+				var createdCustomer = await customerService.create(newCustomerData);
 				Console.WriteLine($"Created Customer: {createdCustomer}");
-
 				// Retrieve a customer
-				//var customerId = "cus_12345";
 				customerId = (string)createdCustomer.SelectToken("customer_id");
-				var customer = await customerService.RetrieveCustomerAsync(customerId);
+				var customer = await customerService.retrieve(customerId);
 				Console.WriteLine($"Retrieved Customer: {customer}");
 			} else {
 
@@ -76,45 +127,28 @@ namespace PayarcSDK.Sample {
 					["page"] = "1"
 				};
 
-				var customers = await customerService.ListCustomersAsync(queryParams);
+				var customers = await customerService.list(queryParams);
 				Console.WriteLine($"List of Customers: {customers}");
 
 				customerId = customers["data"]
 					.Children<JObject>()
-					.Where(p => (string)p.SelectToken("name") == "Shah Update2")
+					.Where(p => (string)p.SelectToken("name") == "Shah Test5")
 					.Select(p => (string)p.SelectToken("customer_id")).FirstOrDefault();
+
+
+				// Update a customer
+				var customerData = new JObject {
+					["description"] = "Example customer add card",
+					["email"] = "shahupdate2@sdk.com",
+					["phone"] = "2222222222"
+				};
+
+				customerData.Add("cards", JToken.FromObject(cardData));
+				customerData.Add("bank_accounts", JToken.FromObject(bankData));
+
+				var updatedCustomer = await customerService.update(customerId, customerData);
+				Console.WriteLine($"Updated Customer: {updatedCustomer}");
 			}
-
-			// Update a customer
-			var updateData = new JObject {
-				["description"] = "Example customer add card",
-				["email"] = "shahtest@sdk.com",
-				["phone"] = "1231231234"
-			};
-
-			var updatedCustomer = await customerService.UpdateCustomerAsync(customerId, updateData);
-			Console.WriteLine($"Updated Customer: {updatedCustomer}");
-
-			// Add a card to a customer
-			cardData.Add(
-				new JObject {
-					["card_source"] = "INTERNET",
-					["card_number"] = "4012000098765439",
-					["exp_month"] = "12",
-					["exp_year"] = "2025",
-					["cvv"] = "999",
-					["card_holder_name"] = "John Doe",
-					["address_line1"] = "411 West Putnam Avenue",
-					["city"] = "Greenwich",
-					["state"] = "CT",
-					["zip"] = "06840",
-					["country"] = "US"
-				}
-
-				);
-			//update logic for this cardData into List of JObject.
-			//var updatedWithCard = await customerService.AddCardToCustomerAsync(customerId, cardData);
-			//Console.WriteLine($"Customer with Added Card: {updatedWithCard}");
 		}
 	}
 }
