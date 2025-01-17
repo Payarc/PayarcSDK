@@ -52,49 +52,6 @@ namespace PayarcSDK.Sample {
 			var cardData = new List<JObject>();
 			var customerId = "";
 
-			if (false) {
-				// Create a new customer
-				var newCustomerData = new JObject {
-					["name"] = "Shah Test3",
-					["email"] = "shah@test3.com",
-					["phone"] = "1234567890"
-				};
-
-				var createdCustomer = await customerService.CreateCustomerAsync(newCustomerData, cardData);
-				Console.WriteLine($"Created Customer: {createdCustomer}");
-
-				// Retrieve a customer
-				//var customerId = "cus_12345";
-				customerId = (string)createdCustomer.SelectToken("customer_id");
-				var customer = await customerService.RetrieveCustomerAsync(customerId);
-				Console.WriteLine($"Retrieved Customer: {customer}");
-			} else {
-
-				// List customers
-				var queryParams = new Dictionary<string, string> {
-					["limit"] = "10",
-					["page"] = "1"
-				};
-
-				var customers = await customerService.ListCustomersAsync(queryParams);
-				Console.WriteLine($"List of Customers: {customers}");
-
-				customerId = customers["data"]
-					.Children<JObject>()
-					.Where(p => (string)p.SelectToken("name") == "Shah Update2")
-					.Select(p => (string)p.SelectToken("customer_id")).FirstOrDefault();
-			}
-
-			// Update a customer
-			var updateData = new JObject {
-				["description"] = "Example customer add card",
-				["email"] = "shahtest@sdk.com",
-				["phone"] = "1231231234"
-			};
-
-			var updatedCustomer = await customerService.UpdateCustomerAsync(customerId, updateData);
-			Console.WriteLine($"Updated Customer: {updatedCustomer}");
-
 			// Add a card to a customer
 			cardData.Add(
 				new JObject {
@@ -112,9 +69,72 @@ namespace PayarcSDK.Sample {
 				}
 
 				);
-			//update logic for this cardData into List of JObject.
-			//var updatedWithCard = await customerService.AddCardToCustomerAsync(customerId, cardData);
-			//Console.WriteLine($"Customer with Added Card: {updatedWithCard}");
+
+			// Add a card to a customer
+			cardData.Add(
+				new JObject {
+					["card_source"] = "INTERNET",
+					["card_number"] = "4111111111111111",
+					["exp_month"] = "02",
+					["exp_year"] = "2027",
+					["cvv"] = "999",
+					["card_holder_name"] = "John Doe",
+					["address_line1"] = "411 West Putnam Avenue",
+					["city"] = "New York",
+					["state"] = "NY",
+					["zip"] = "06830",
+					["country"] = "US"
+				}
+
+				);
+
+			if (true) {
+				// Create a new customer
+				var newCustomerData = new JObject {
+					["name"] = "Shah Test6",
+					["email"] = "shah@test6.com",
+					["phone"] = "1234567890"
+				};
+
+				newCustomerData.Add("cards", JToken.FromObject(cardData));
+
+				var createdCustomer = await customerService.create(newCustomerData);
+				Console.WriteLine($"Created Customer: {createdCustomer}");
+
+				// Retrieve a customer
+				//var customerId = "cus_12345";
+				customerId = (string)createdCustomer.SelectToken("customer_id");
+				var customer = await customerService.retrieve(customerId);
+				Console.WriteLine($"Retrieved Customer: {customer}");
+			} else {
+
+				// List customers
+				var queryParams = new Dictionary<string, string> {
+					["limit"] = "10",
+					["page"] = "1"
+				};
+
+				var customers = await customerService.list(queryParams);
+				Console.WriteLine($"List of Customers: {customers}");
+
+				customerId = customers["data"]
+					.Children<JObject>()
+					.Where(p => (string)p.SelectToken("name") == "Shah Test3")
+					.Select(p => (string)p.SelectToken("customer_id")).FirstOrDefault();
+
+
+				// Update a customer
+				var customerData = new JObject {
+					["description"] = "Example customer add card",
+					["email"] = "shahupdate2@sdk.com",
+					["phone"] = "2222222222"
+				};
+
+				customerData.Add("cards", JToken.FromObject(cardData));
+
+				var updatedCustomer = await customerService.update(customerId, customerData);
+				Console.WriteLine($"Updated Customer: {updatedCustomer}");
+			}
 		}
 	}
 }

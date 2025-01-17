@@ -11,39 +11,64 @@ namespace PayarcSDK.Services {
 			_apiClient = apiClient;
 		}
 
-		public async Task<JObject> CreateCustomerAsync(JObject customerData, List<JObject> cardDataList) {
-			if (cardDataList != null) {
-				// Check count of cardDataList if creater then 0 then do code below.
-				foreach (JObject cardData in cardDataList) {
-					var cardToken = await _apiClient.PostAsync("tokens", cardData);
-					var tokenId = cardToken["data"]["id"]?.ToString();
-					customerData["token_id"] = tokenId;
-				}
-			}
-			return await _apiClient.PostAsync("customers", customerData);
+		public async Task<JObject> create(JObject customerData) { 
+			return await CreateCustomerAsync(customerData);
+		}
+		public async Task<JObject> retrieve(string customerId) {
+			return await RetrieveCustomerAsync(customerId);
+		}
+		public async Task<JObject> list(Dictionary<string, string> queryParams = null) {
+			return await ListCustomersAsync(queryParams);
+		}
+		public async Task<JObject> update(string customerId, JObject customerData) {
+			return await UpdateCustomerAsync(customerId, customerData);
 		}
 
-		public async Task<JObject> RetrieveCustomerAsync(string customerId) {
+		private async Task<JObject> CreateCustomerAsync(JObject customerData) {
+			JObject createdCustomer = new JObject();
+			if (customerData["cards"] != null) {
+				createdCustomer = await _apiClient.PostAsync("customers", customerData);
+				var customerId = createdCustomer["data"]["customer_id"]?.ToString();
+				foreach (JObject cardData in customerData["cards"]) {
+					await AddCardToCustomerAsync(customerId, cardData);
+				}
+				createdCustomer = await RetrieveCustomerAsync(customerId);
+			} else { 
+				createdCustomer = await _apiClient.PostAsync("customers", customerData);
+			}
+			return createdCustomer;
+		}
+
+		private async Task<JObject> RetrieveCustomerAsync(string customerId) {
 			return await _apiClient.GetAsync($"customers/{customerId}");
 		}
 
-		public async Task<JObject> UpdateCustomerAsync(string customerId, JObject customerData) {
-			return await _apiClient.PatchAsync($"customers/{customerId}", customerData);
+		private async Task<JObject> UpdateCustomerAsync(string customerId, JObject customerData) {
+			JObject updatedCustomer = new JObject();
+			if (customerData["cards"] != null) {
+				foreach (JObject cardData in customerData["cards"]) {
+					await AddCardToCustomerAsync(customerId, cardData);
+				}
+				updatedCustomer = await _apiClient.PatchAsync($"customers/{customerId}", customerData);
+			} else {
+				updatedCustomer = await _apiClient.PatchAsync($"customers/{customerId}", customerData);
+			}
+			return updatedCustomer;
 		}
 
-		public async Task<JObject> AddCardToCustomerAsync(string customerId, JObject cardData) {
+		private async Task<JObject> AddCardToCustomerAsync(string customerId, JObject cardData) {
 			var cardToken = await _apiClient.PostAsync("tokens", cardData);
 			var tokenId = cardToken["data"]["id"]?.ToString();
 			var updateData = new JObject { ["token_id"] = tokenId };
 			return await _apiClient.PatchAsync($"customers/{customerId}", updateData);
 		}
 
-		public async Task<JObject> AddBankAccountToCustomerAsync(string customerId, JObject bankData) {
+		private async Task<JObject> AddBankAccountToCustomerAsync(string customerId, JObject bankData) {
 			bankData["customer_id"] = customerId;
 			return await _apiClient.PostAsync("bankaccounts", bankData);
 		}
 
-		public async Task<JObject> ListCustomersAsync(Dictionary<string, string> queryParams = null) {
+		private async Task<JObject> ListCustomersAsync(Dictionary<string, string> queryParams = null) {
 			return await _apiClient.GetAsync("customers", queryParams);
 		}
 	}
