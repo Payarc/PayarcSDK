@@ -26,16 +26,19 @@ namespace PayarcSDK.Services {
 
 		private async Task<JObject> CreateCustomerAsync(JObject customerData) {
 			JObject createdCustomer = new JObject();
+			createdCustomer = await _apiClient.PostAsync("customers", customerData);
+			var customerId = createdCustomer["data"]["customer_id"]?.ToString();
 			if (customerData["cards"] != null) {
-				createdCustomer = await _apiClient.PostAsync("customers", customerData);
-				var customerId = createdCustomer["data"]["customer_id"]?.ToString();
 				foreach (JObject cardData in customerData["cards"]) {
 					await AddCardToCustomerAsync(customerId, cardData);
 				}
-				createdCustomer = await RetrieveCustomerAsync(customerId);
-			} else { 
-				createdCustomer = await _apiClient.PostAsync("customers", customerData);
 			}
+			if (customerData["bank_accounts"] != null) {
+				foreach (JObject bankData in customerData["bank_accounts"]) {
+					await AddBankAccountToCustomerAsync(customerId, bankData);
+				}
+			}
+			createdCustomer = await RetrieveCustomerAsync(customerId);
 			return createdCustomer;
 		}
 
@@ -49,10 +52,13 @@ namespace PayarcSDK.Services {
 				foreach (JObject cardData in customerData["cards"]) {
 					await AddCardToCustomerAsync(customerId, cardData);
 				}
-				updatedCustomer = await _apiClient.PatchAsync($"customers/{customerId}", customerData);
-			} else {
-				updatedCustomer = await _apiClient.PatchAsync($"customers/{customerId}", customerData);
 			}
+			if (customerData["bank_accounts"] != null) {
+				foreach (JObject bankData in customerData["bank_accounts"]) {
+					await AddBankAccountToCustomerAsync(customerId, bankData);
+				}
+			}
+			updatedCustomer = await _apiClient.PatchAsync($"customers/{customerId}", customerData);
 			return updatedCustomer;
 		}
 
