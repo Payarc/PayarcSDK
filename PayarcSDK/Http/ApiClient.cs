@@ -45,9 +45,26 @@ namespace PayarcSDK.Http {
 		}
 
 		private async Task<JObject> ProcessResponse(HttpResponseMessage response) {
-			response.EnsureSuccessStatusCode();
-			var responseBody = await response.Content.ReadAsStringAsync();
-			return string.IsNullOrWhiteSpace(responseBody) ? null : JObject.Parse(responseBody);
+			string content = await response.Content.ReadAsStringAsync();
+
+			var responseDetails = new JObject {
+				["IsSuccess"] = response.IsSuccessStatusCode,
+				["StatusCode"] = (int)response.StatusCode,
+				["ReasonPhrase"] = response.ReasonPhrase,
+				["Content"] = content
+			};
+
+			if (!response.IsSuccessStatusCode) {
+				return responseDetails; // Return the structured error response.
+			}
+
+			try {
+				var jsonContent = JObject.Parse(content);
+				responseDetails["Data"] = jsonContent;
+				return responseDetails;
+			} catch (Exception ex) {
+				throw new Exception("Failed to parse response content to JSON.", ex);
+			}
 		}
 	}
 }
