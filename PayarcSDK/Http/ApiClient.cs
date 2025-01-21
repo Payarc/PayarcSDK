@@ -39,6 +39,11 @@ namespace PayarcSDK.Http {
 			return await ProcessResponse(response);
 		}
 
+		public async Task DeleteAsync(string endpoint) {
+			var response = await _httpClient.DeleteAsync(endpoint);
+			await ProcessResponse(response);
+		}
+
 		private async Task<JObject> ProcessResponse(HttpResponseMessage response) {
 			response.EnsureSuccessStatusCode();
 			var responseBody = await response.Content.ReadAsStringAsync();

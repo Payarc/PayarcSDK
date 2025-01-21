@@ -104,50 +104,58 @@ namespace PayarcSDK.Sample {
 				["sec_code"] = "TEL"
 			});
 
-			if (false) {
-				// Create a new customer
-				var newCustomerData = new JObject {
-					["name"] = "Shah Test8",
-					["email"] = "shah@test8.com",
-					["phone"] = "1234567890"
-				};
-				newCustomerData.Add("cards", JToken.FromObject(cardData));
-				newCustomerData.Add("bank_accounts", JToken.FromObject(bankData));
-				var createdCustomer = await customerService.create(newCustomerData);
-				Console.WriteLine($"Created Customer: {createdCustomer}");
-				// Retrieve a customer
-				customerId = (string)createdCustomer.SelectToken("customer_id");
-				var customer = await customerService.retrieve(customerId);
-				Console.WriteLine($"Retrieved Customer: {customer}");
-			} else {
+			// List customers
+			var queryParams = new Dictionary<string, string> {
+				["limit"] = "10",
+				["page"] = "1"
+			};
 
-				// List customers
-				var queryParams = new Dictionary<string, string> {
-					["limit"] = "10",
-					["page"] = "1"
-				};
+			var customers = await customerService.list(queryParams);
+			Console.WriteLine($"List of Customers: {customers}");
 
-				var customers = await customerService.list(queryParams);
-				Console.WriteLine($"List of Customers: {customers}");
+			customerId = customers["data"]
+				.Children<JObject>()
+				.Where(p => (string)p.SelectToken("name") == "Shah Test5")
+				.Select(p => (string)p.SelectToken("customer_id")).FirstOrDefault();
 
-				customerId = customers["data"]
-					.Children<JObject>()
-					.Where(p => (string)p.SelectToken("name") == "Shah Test5")
-					.Select(p => (string)p.SelectToken("customer_id")).FirstOrDefault();
-
-
-				// Update a customer
-				var customerData = new JObject {
-					["description"] = "Example customer add card",
-					["email"] = "shahupdate2@sdk.com",
-					["phone"] = "2222222222"
-				};
-
-				customerData.Add("cards", JToken.FromObject(cardData));
-				customerData.Add("bank_accounts", JToken.FromObject(bankData));
-
-				var updatedCustomer = await customerService.update(customerId, customerData);
-				Console.WriteLine($"Updated Customer: {updatedCustomer}");
+			var testPurpose = "deleteCustomer";
+			switch (testPurpose) {
+				case "createCustomer":
+					// Create a new customer
+					var newCustomerData = new JObject {
+						["name"] = "Shah Test8",
+						["email"] = "shah@test8.com",
+						["phone"] = "1234567890"
+					};
+					newCustomerData.Add("cards", JToken.FromObject(cardData));
+					newCustomerData.Add("bank_accounts", JToken.FromObject(bankData));
+					var createdCustomer = await customerService.create(newCustomerData);
+					Console.WriteLine($"Created Customer: {createdCustomer}");
+					// Retrieve a customer
+					customerId = (string)createdCustomer.SelectToken("customer_id");
+					var customer = await customerService.retrieve(customerId);
+					Console.WriteLine($"Retrieved Customer: {customer}");
+					break;
+				case "updateCustomer":
+					// Update a customer
+					var customerData = new JObject {
+						["description"] = "Example customer add card",
+						["email"] = "shahupdate2@sdk.com",
+						["phone"] = "2222222222"
+					};
+					customerData.Add("cards", JToken.FromObject(cardData));
+					customerData.Add("bank_accounts", JToken.FromObject(bankData));
+					var updatedCustomer = await customerService.update(customerId, customerData);
+					Console.WriteLine($"Updated Customer: {updatedCustomer}");
+					break;
+				case "deleteCustomer":
+					// Delete a customer
+					var deleted = await customerService.delete(customerId);
+					Console.WriteLine($"Deleted Customer: {deleted}");
+					break;
+				default:
+					Console.WriteLine("Nothing to test.");
+					break;
 			}
 		}
 	}
