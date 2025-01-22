@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -29,6 +30,15 @@ namespace PayarcSDK.Http {
 			return await ProcessResponse(response);
 		}
 
+		public async Task<JObject> PostRawAsync(string endpoint, HttpContent content) {
+			var requestMessage = new HttpRequestMessage(HttpMethod.Post, endpoint) {
+				Content = content
+			};
+
+			var response = await _httpClient.SendAsync(requestMessage);
+			return await ProcessResponse(response);
+		}
+
 		public async Task<JObject> PatchAsync(string endpoint, JObject request) {
 			var content = new StringContent(request.ToString(), Encoding.UTF8, "application/json");
 			var requestMessage = new HttpRequestMessage(new HttpMethod("PATCH"), endpoint) {
@@ -46,7 +56,7 @@ namespace PayarcSDK.Http {
 
 		private async Task<JObject> ProcessResponse(HttpResponseMessage response) {
 			string content = await response.Content.ReadAsStringAsync();
-
+			// Initialize the response details
 			var responseDetails = new JObject {
 				["IsSuccess"] = response.IsSuccessStatusCode,
 				["StatusCode"] = (int)response.StatusCode,
@@ -55,15 +65,26 @@ namespace PayarcSDK.Http {
 			};
 
 			if (!response.IsSuccessStatusCode) {
-				return responseDetails; // Return the structured error response.
+				return responseDetails;
+			}
+
+			if (string.IsNullOrWhiteSpace(content)) {
+				responseDetails["Data"] = null;
+				return responseDetails;
 			}
 
 			try {
-				var jsonContent = JObject.Parse(content);
-				responseDetails["Data"] = jsonContent;
+				var jsonContent = JToken.Parse(content);
+
+				if (jsonContent.Type == JTokenType.Object) {
+					responseDetails["Data"] = (JObject)jsonContent;
+				} else {
+					responseDetails["Data"] = new JArray(jsonContent);
+				}
+
 				return responseDetails;
-			} catch (Exception ex) {
-				throw new Exception("Failed to parse response content to JSON.", ex);
+			} catch (JsonReaderException ex) {
+				throw new Exception("Failed to parse response content to JSON. Raw content: " + content, ex);
 			}
 		}
 	}
