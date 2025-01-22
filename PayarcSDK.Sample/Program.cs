@@ -39,115 +39,246 @@ namespace PayarcSDK.Sample {
 				throw new InvalidOperationException("Access token is missing in the response.");
 			}
 
-			var client = new SdkBuilder()
+			var apiClient = new SdkBuilder()
 				.Configure(config => {
 					config.Environment = "sandbox";     // Use sandbox environment
 					config.ApiVersion = "v1";           // Use version 2 of the API
 					config.BearerToken = accessToken;   // Set the Bearer Token
 				})
 				.Build();
+			var testService = "customerService";
 
-			// Initialize the service
-			var customerService = new CustomerService(client);
-			var cardData = new List<JObject>();
-			var bankData = new List<JObject>();
-			var customerId = "";
+			switch (testService) {
+				case "customerService":
+					// Initialize the service
+					var customerService = new CustomerService(apiClient);
+					var cardData = new List<JObject>();
+					var bankData = new List<JObject>();
+					var customerId = "";
 
-			// Add a card to a customer
-			cardData.Add(new JObject {
-				["card_source"] = "INTERNET",
-				["card_number"] = "4012000098765439",
-				["exp_month"] = "12",
-				["exp_year"] = "2025",
-				["cvv"] = "999",
-				["card_holder_name"] = "John Doe",
-				["address_line1"] = "411 West Putnam Avenue",
-				["city"] = "Greenwich",
-				["state"] = "CT",
-				["zip"] = "06840",
-				["country"] = "US"
-			});
+					// Add a card to a customer
+					cardData.Add(new JObject {
+						["card_source"] = "INTERNET",
+						["card_number"] = "4012000098765439",
+						["exp_month"] = "12",
+						["exp_year"] = "2025",
+						["cvv"] = "999",
+						["card_holder_name"] = "John Doe",
+						["address_line1"] = "411 West Putnam Avenue",
+						["city"] = "Greenwich",
+						["state"] = "CT",
+						["zip"] = "06840",
+						["country"] = "US"
+					});
 
-			// Add a card to a customer
-			cardData.Add(new JObject {
-				["card_source"] = "INTERNET",
-				["card_number"] = "4111111111111111",
-				["exp_month"] = "02",
-				["exp_year"] = "2027",
-				["cvv"] = "999",
-				["card_holder_name"] = "John Doe",
-				["address_line1"] = "411 West Putnam Avenue",
-				["city"] = "New York",
-				["state"] = "NY",
-				["zip"] = "06830",
-				["country"] = "US"
+					// Add a card to a customer
+					cardData.Add(new JObject {
+						["card_source"] = "INTERNET",
+						["card_number"] = "4111111111111111",
+						["exp_month"] = "02",
+						["exp_year"] = "2027",
+						["cvv"] = "999",
+						["card_holder_name"] = "John Doe",
+						["address_line1"] = "411 West Putnam Avenue",
+						["city"] = "New York",
+						["state"] = "NY",
+						["zip"] = "06830",
+						["country"] = "US"
 
-			});
+					});
 
-			// Add a bank info to a customer
-			bankData.Add(new JObject {
-				["account_number"] = 1234567890,
-				["routing_number"] = 123456789,
-				["first_name"] = "Test",
-				["last_name"] = "Account",
-				["account_type"] = "Personal Checking",
-				["sec_code"] = "TEL"
-			});
+					// Add a bank info to a customer
+					bankData.Add(new JObject {
+						["account_number"] = 1234567890,
+						["routing_number"] = 123456789,
+						["first_name"] = "Test",
+						["last_name"] = "Account",
+						["account_type"] = "Personal Checking",
+						["sec_code"] = "TEL"
+					});
 
-			// Add a bank info to a customer
-			bankData.Add(new JObject {
-				["account_number"] = 1234567890,
-				["routing_number"] = 123456789,
-				["first_name"] = "Test2",
-				["last_name"] = "Account2",
-				["account_type"] = "Personal Checking",
-				["sec_code"] = "TEL"
-			});
+					// Add a bank info to a customer
+					bankData.Add(new JObject {
+						["account_number"] = 1234567890,
+						["routing_number"] = 123456789,
+						["first_name"] = "Test2",
+						["last_name"] = "Account2",
+						["account_type"] = "Personal Checking",
+						["sec_code"] = "TEL"
+					});
 
-			if (false) {
-				// Create a new customer
-				var newCustomerData = new JObject {
-					["name"] = "Shah Test8",
-					["email"] = "shah@test8.com",
-					["phone"] = "1234567890"
-				};
-				newCustomerData.Add("cards", JToken.FromObject(cardData));
-				newCustomerData.Add("bank_accounts", JToken.FromObject(bankData));
-				var createdCustomer = await customerService.create(newCustomerData);
-				Console.WriteLine($"Created Customer: {createdCustomer}");
-				// Retrieve a customer
-				customerId = (string)createdCustomer.SelectToken("customer_id");
-				var customer = await customerService.retrieve(customerId);
-				Console.WriteLine($"Retrieved Customer: {customer}");
-			} else {
+					// List customers
+					var queryParams = new Dictionary<string, string> {
+						["limit"] = "10",
+						["page"] = "1"
+					};
 
-				// List customers
-				var queryParams = new Dictionary<string, string> {
-					["limit"] = "10",
-					["page"] = "1"
-				};
+					var customers = await customerService.list(queryParams);
+					Console.WriteLine($"List of Customers: {customers["Data"]}");
 
-				var customers = await customerService.list(queryParams);
-				Console.WriteLine($"List of Customers: {customers}");
+					customerId = customers["Data"]["data"]
+						.Children<JObject>()
+						.Where(p => (string)p.SelectToken("name") == "Shah Test7")
+						.Select(p => (string)p.SelectToken("customer_id")).FirstOrDefault();
 
-				customerId = customers["data"]
-					.Children<JObject>()
-					.Where(p => (string)p.SelectToken("name") == "Shah Test5")
-					.Select(p => (string)p.SelectToken("customer_id")).FirstOrDefault();
+					var testAction = "deleteCustomer";
+
+					switch (testAction) {
+						case "createCustomer":
+							// Create a new customer
+							var newCustomerData = new JObject {
+								["name"] = "Shah Test8",
+								["email"] = "shah@test8.com",
+								["phone"] = "1234567890"
+							};
+							newCustomerData.Add("cards", JToken.FromObject(cardData));
+							newCustomerData.Add("bank_accounts", JToken.FromObject(bankData));
+							var createdCustomer = await customerService.create(newCustomerData);
+							Console.WriteLine($"Created Customer: {createdCustomer}");
+							// Retrieve a customer
+							customerId = (string)createdCustomer.SelectToken("customer_id");
+							var customer = await customerService.retrieve(customerId);
+							Console.WriteLine($"Retrieved Customer: {customer}");
+							break;
+						case "updateCustomer":
+							// Update a customer
+							var customerData = new JObject {
+								["description"] = "Example customer add card",
+								["email"] = "shahupdate2@sdk.com",
+								["phone"] = "2222222222"
+							};
+							customerData.Add("cards", JToken.FromObject(cardData));
+							customerData.Add("bank_accounts", JToken.FromObject(bankData));
+							var updatedCustomer = await customerService.update(customerId, customerData);
+							Console.WriteLine($"Updated Customer: {updatedCustomer}");
+							break;
+						case "deleteCustomer":
+							// Delete a customer
+							var deleted = await customerService.delete(customerId);
+							Console.WriteLine($"Deleted Customer: {deleted}");
+							break;
+						default:
+							Console.WriteLine("Nothing to test.");
+							break;
+					}
+					break;
+				case "applicationService":
+					var applicationService = new ApplicationService(apiClient);
+
+					// Add a lead
+					var merccandidate = new JObject {
+						["Lead"] = new JObject {
+							["Industry"] = "cbd",
+							["MerchantName"] = "My applications company",
+							["LegalName"] = "Best Co in w",
+							["ContactFirstName"] = "Joan",
+							["ContactLastName"] = "Dhow",
+							["ContactEmail"] = "contact+23@mail.com",
+							["DiscountRateProgram"] = "interchange"
+						},
+						["Owners"] = new JArray
+						{
+							new JObject
+							{
+								["FirstName"] = "First",
+								["LastName"] = "Last",
+								["Title"] = "President",
+								["OwnershipPct"] = 100,
+								["Address"] = "Somewhere",
+								["City"] = "City Of Test",
+								["SSN"] = "4546-0034",
+								["State"] = "WY",
+								["ZipCode"] = "10102",
+								["BirthDate"] = "1993-06-24",
+								["Email"] = "nikoj@negointeresuva.com",
+								["PhoneNo"] = "2346456784"
+							}
+						}
+					};
+
+					try {
+						var addedLead = await applicationService.AddLeadAsync(merccandidate);
+						Console.WriteLine($"Added Lead: {addedLead}");
+					} catch (HttpRequestException ex) {
+						Console.WriteLine($"Request failed: {ex.Message}");
+					} catch (Exception ex) {
+						Console.WriteLine($"Unexpected error: {ex.Message}");
+					}
+
+					// Retrieve applications
+					var applications = await applicationService.GetApplyAppsAsync();
+					Console.WriteLine($"Applications: {applications}");
 
 
-				// Update a customer
-				var customerData = new JObject {
-					["description"] = "Example customer add card",
-					["email"] = "shahupdate2@sdk.com",
-					["phone"] = "2222222222"
-				};
 
-				customerData.Add("cards", JToken.FromObject(cardData));
-				customerData.Add("bank_accounts", JToken.FromObject(bankData));
+					// Submit for signature
+					var applicantId = "appl_12345";
+					var submitted = await applicationService.SubmitApplicantForSignatureAsync(applicantId);
+					Console.WriteLine($"Submitted Applicant: {submitted}");
 
-				var updatedCustomer = await customerService.update(customerId, customerData);
-				Console.WriteLine($"Updated Customer: {updatedCustomer}");
+					break;
+				case "disputeService":
+					var disputeService = new DisputeService(apiClient);
+					// List cases
+					var cases = await disputeService.ListCasesAsync();
+					Console.WriteLine($"List Cases: {cases}");
+
+					var caseId = "dis_123456";
+					// Get a specific case
+					var specificCase = await disputeService.GetCaseAsync(caseId);
+					Console.WriteLine($"Case Id with {caseId}: {specificCase}");
+
+					// Add a document to a case
+					var documentParams = new JObject
+					{
+						{ "DocumentDataBase64", "iVBORw0KGgoAAAANSUhEUgAAAIUAAABsCAYAAABEkXF2AAAABHNCSVQICAgIfAhkiAAAAupJREFUeJzt3cFuEkEcx/E/001qUQ+E4NF48GB4BRM9+i59AE16ANlE4wv4Mp5MjI8gZ+ONEMJBAzaWwZsVf2VnstPZpfb7STh06ewu5JuFnSzQ8d5vDfiLa3sHcHiIAoIoIIgCgiggitwbWM/f2vniTe7NoIZ7Dz9Y0X0qy7NHYfbLtn6dfzOoYXPlUl4+IIgCooGXj10ngzM77p81vVmY2Y9vL+xi9Tn4f41HYVZYx3Wb3yws9oWBlw8IooAgCgiigCAKCKKAIAoIooAgCoikGU3nqpvy3qesPvv6+/2+LZfLpHUcsrrPD0cKCKKAIAoIooAgCgiigCAKCOecs7q3iJXbZDLZWVaWZfR4733lLbfZbBbchzZvvV4vy+PmSAFBFBBEAUEUEEQBQRQQRAFR5DzfD81FxMxVpMg9l3HT938fjhQQRAFBFBBEAUEUEEQBQRQQRe5z7SptnYejGkcKCKKAIAoIooAgCgiigCAKiKQoYj6bMB6Pd8aMRqPoz22kfCalzfmXm45nDoIoIIgCgiggiAKCKCCIAiJrFKnfTxHS9vdX5P7+ibZwpIAgCgiigCAKCKKAIAoIooDomNl2352hc+WY3+NYzyf2c345V3EyGNmdwevo8anbr3Lbfu/j+9fndrH69Ofv+48+WtF9JuM4UkAQBQRRQBAFBFFAEAUEUUBUfo9m6jUPzjl7eWr26vRyWVmW9u59GT2+Suo1B4vFImn8/4ojBQRRQBAFBFFAEAUEUUAQBUTHe7/3eorUeYrQ9RSprmP/UtZ/6OP/xfUUqI0oIIgCgiggiqY36Ddz25x/uZZ1PXmcNj60H6H1H/p4sV1F/VvjZx84HJx9IFrl733wexy3U/b3FO7ogR0dD7OsezqdVt4/HFZvNzQ+t9T9C40P6ty9erElfEKsbblnDHNrekYzFu8pIIgCgiggiAKCKCAqzz5Ccr+7T3133fb1DG0//ro4UkAQBQRRQBAFBFFAEAXEb3wL3JblytFeAAAAAElFTkSuQmCC" },
+						{ "mimeType", "application/pdf" },
+						{ "text", "Additional evidence for the dispute." },
+						{ "message", "Submitting dispute case with evidence." }
+					};
+					var result = await disputeService.AddDocumentCaseAsync(caseId, documentParams);
+					Console.WriteLine($"Add Document Result: {result}");
+					break;
+				case "splitCampaignService":
+					var campaignService = new SplitCampaignService(apiClient);
+
+					// Example: Create a new campaign
+					var newCampaign = new JObject {
+						["name"] = "Mega bonus",
+						["description"] = "Compliment for my favorite customers",
+						["note"] = "Only for VIPs",
+						["base_charge"] = 33.33,
+						["perc_charge"] = 7.77,
+						["is_default"] = "0",
+						["accounts"] = new JArray()
+					};
+
+					var createdCampaign = await campaignService.CreateCampaignAsync(newCampaign);
+					Console.WriteLine($"Campaign Created: {createdCampaign}");
+
+					// Example: Get all campaigns
+					var allCampaigns = await campaignService.GetAllCampaignsAsync();
+					Console.WriteLine($"All Campaigns: {allCampaigns}");
+
+					// Example: Get campaign details
+					var campaignDetails = await campaignService.GetCampaignDetailsAsync("cmp_12345");
+					Console.WriteLine($"Campaign Details: {campaignDetails}");
+
+					// Example: Update a campaign
+					var updatedData = new JObject {
+						["budget"] = 6000
+					};
+
+					var updatedCampaign = await campaignService.UpdateCampaignAsync("cmp_12345", updatedData);
+					Console.WriteLine($"Updated Campaign: {updatedCampaign}");
+
+					// Example: Get all accounts
+					var allAccounts = await campaignService.GetAllAccountsAsync();
+					Console.WriteLine($"All Accounts: {allAccounts}");
+					break;
+				default:
+					Console.WriteLine("Nothing to test.");
+					break;
 			}
 		}
 	}

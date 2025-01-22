@@ -14,14 +14,20 @@ namespace PayarcSDK.Services {
 		public async Task<JObject> create(JObject customerData) { 
 			return await CreateCustomerAsync(customerData);
 		}
+
 		public async Task<JObject> retrieve(string customerId) {
 			return await RetrieveCustomerAsync(customerId);
 		}
+
 		public async Task<JObject> list(Dictionary<string, string> queryParams = null) {
 			return await ListCustomersAsync(queryParams);
 		}
+
 		public async Task<JObject> update(string customerId, JObject customerData) {
 			return await UpdateCustomerAsync(customerId, customerData);
+		}
+		public async Task<bool> delete(string customerId) {
+			return await DeleteCustomerAsync(customerId);
 		}
 
 		private async Task<JObject> CreateCustomerAsync(JObject customerData) {
@@ -76,6 +82,11 @@ namespace PayarcSDK.Services {
 
 		private async Task<JObject> ListCustomersAsync(Dictionary<string, string> queryParams = null) {
 			return await _apiClient.GetAsync("customers", queryParams);
+		}
+
+		private async Task<bool> DeleteCustomerAsync(string customerId) {
+			await _apiClient.DeleteAsync($"customers/{customerId}");
+			return true; // Return true if the request succeeds without exceptions
 		}
 	}
 }
