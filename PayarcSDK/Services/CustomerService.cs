@@ -84,7 +84,7 @@ namespace PayarcSDK.Services {
 			return await _apiClient.GetAsync("customers", queryParams);
 		}
 
-		public async Task<bool> DeleteCustomerAsync(string customerId) {
+		private async Task<bool> DeleteCustomerAsync(string customerId) {
 			await _apiClient.DeleteAsync($"customers/{customerId}");
 			return true; // Return true if the request succeeds without exceptions
 		}
