@@ -39,19 +39,19 @@ namespace PayarcSDK.Sample {
 				throw new InvalidOperationException("Access token is missing in the response.");
 			}
 
-			var client = new SdkBuilder()
+			var apiClient = new SdkBuilder()
 				.Configure(config => {
 					config.Environment = "sandbox";     // Use sandbox environment
 					config.ApiVersion = "v1";           // Use version 2 of the API
 					config.BearerToken = accessToken;   // Set the Bearer Token
 				})
 				.Build();
-			var testService = "applicationService";
+			var testService = "customerService";
 
 			switch (testService) {
 				case "customerService":
 					// Initialize the service
-					var customerService = new CustomerService(client);
+					var customerService = new CustomerService(apiClient);
 					var cardData = new List<JObject>();
 					var bankData = new List<JObject>();
 					var customerId = "";
@@ -114,11 +114,11 @@ namespace PayarcSDK.Sample {
 					};
 
 					var customers = await customerService.list(queryParams);
-					Console.WriteLine($"List of Customers: {customers}");
+					Console.WriteLine($"List of Customers: {customers["Data"]}");
 
-					customerId = customers["data"]
+					customerId = customers["Data"]["data"]
 						.Children<JObject>()
-						.Where(p => (string)p.SelectToken("name") == "Shah Test5")
+						.Where(p => (string)p.SelectToken("name") == "Shah Test7")
 						.Select(p => (string)p.SelectToken("customer_id")).FirstOrDefault();
 
 					var testAction = "deleteCustomer";
@@ -163,10 +163,9 @@ namespace PayarcSDK.Sample {
 					}
 					break;
 				case "applicationService":
-					var applicationService = new ApplicationService(client);
+					var applicationService = new ApplicationService(apiClient);
 
 					// Add a lead
-
 					var merccandidate = new JObject {
 						["Lead"] = new JObject {
 							["Industry"] = "cbd",
@@ -217,6 +216,65 @@ namespace PayarcSDK.Sample {
 					var submitted = await applicationService.SubmitApplicantForSignatureAsync(applicantId);
 					Console.WriteLine($"Submitted Applicant: {submitted}");
 
+					break;
+				case "disputeService":
+					var disputeService = new DisputeService(apiClient);
+					// List cases
+					var cases = await disputeService.ListCasesAsync();
+					Console.WriteLine($"List Cases: {cases}");
+
+					var caseId = "dis_123456";
+					// Get a specific case
+					var specificCase = await disputeService.GetCaseAsync(caseId);
+					Console.WriteLine($"Case Id with {caseId}: {specificCase}");
+
+					// Add a document to a case
+					var documentParams = new JObject
+					{
+						{ "DocumentDataBase64", "iVBORw0KGgoAAAANSUhEUgAAAIUAAABsCAYAAABEkXF2AAAABHNCSVQICAgIfAhkiAAAAupJREFUeJzt3cFuEkEcx/E/001qUQ+E4NF48GB4BRM9+i59AE16ANlE4wv4Mp5MjI8gZ+ONEMJBAzaWwZsVf2VnstPZpfb7STh06ewu5JuFnSzQ8d5vDfiLa3sHcHiIAoIoIIgCgiggitwbWM/f2vniTe7NoIZ7Dz9Y0X0qy7NHYfbLtn6dfzOoYXPlUl4+IIgCooGXj10ngzM77p81vVmY2Y9vL+xi9Tn4f41HYVZYx3Wb3yws9oWBlw8IooAgCgiigCAKCKKAIAoIooAgCoikGU3nqpvy3qesPvv6+/2+LZfLpHUcsrrPD0cKCKKAIAoIooAgCgiigCAKCOecs7q3iJXbZDLZWVaWZfR4733lLbfZbBbchzZvvV4vy+PmSAFBFBBEAUEUEEQBQRQQRAFR5DzfD81FxMxVpMg9l3HT938fjhQQRAFBFBBEAUEUEEQBQRQQRe5z7SptnYejGkcKCKKAIAoIooAgCgiigCAKiKQoYj6bMB6Pd8aMRqPoz22kfCalzfmXm45nDoIoIIgCgiggiAKCKCCIAiJrFKnfTxHS9vdX5P7+ibZwpIAgCgiigCAKCKKAIAoIooDomNl2352hc+WY3+NYzyf2c345V3EyGNmdwevo8anbr3Lbfu/j+9fndrH69Ofv+48+WtF9JuM4UkAQBQRRQBAFBFFAEAUEUUBUfo9m6jUPzjl7eWr26vRyWVmW9u59GT2+Suo1B4vFImn8/4ojBQRRQBAFBFFAEAUEUUAQBUTHe7/3eorUeYrQ9RSprmP/UtZ/6OP/xfUUqI0oIIgCgiggiqY36Ddz25x/uZZ1PXmcNj60H6H1H/p4sV1F/VvjZx84HJx9IFrl733wexy3U/b3FO7ogR0dD7OsezqdVt4/HFZvNzQ+t9T9C40P6ty9erElfEKsbblnDHNrekYzFu8pIIgCgiggiAKCKCAqzz5Ccr+7T3133fb1DG0//ro4UkAQBQRRQBAFBFFAEAXEb3wL3JblytFeAAAAAElFTkSuQmCC" },
+						{ "mimeType", "application/pdf" },
+						{ "text", "Additional evidence for the dispute." },
+						{ "message", "Submitting dispute case with evidence." }
+					};
+					var result = await disputeService.AddDocumentCaseAsync(caseId, documentParams);
+					Console.WriteLine($"Add Document Result: {result}");
+					break;
+				case "splitCampaignService":
+					var campaignService = new SplitCampaignService(apiClient);
+
+					// Example: Create a new campaign
+					var newCampaign = new JObject {
+						["name"] = "Mega bonus",
+						["description"] = "Compliment for my favorite customers",
+						["note"] = "Only for VIPs",
+						["base_charge"] = 33.33,
+						["perc_charge"] = 7.77,
+						["is_default"] = "0",
+						["accounts"] = new JArray()
+					};
+
+					var createdCampaign = await campaignService.CreateCampaignAsync(newCampaign);
+					Console.WriteLine($"Campaign Created: {createdCampaign}");
+
+					// Example: Get all campaigns
+					var allCampaigns = await campaignService.GetAllCampaignsAsync();
+					Console.WriteLine($"All Campaigns: {allCampaigns}");
+
+					// Example: Get campaign details
+					var campaignDetails = await campaignService.GetCampaignDetailsAsync("cmp_12345");
+					Console.WriteLine($"Campaign Details: {campaignDetails}");
+
+					// Example: Update a campaign
+					var updatedData = new JObject {
+						["budget"] = 6000
+					};
+
+					var updatedCampaign = await campaignService.UpdateCampaignAsync("cmp_12345", updatedData);
+					Console.WriteLine($"Updated Campaign: {updatedCampaign}");
+
+					// Example: Get all accounts
+					var allAccounts = await campaignService.GetAllAccountsAsync();
+					Console.WriteLine($"All Accounts: {allAccounts}");
 					break;
 				default:
 					Console.WriteLine("Nothing to test.");
