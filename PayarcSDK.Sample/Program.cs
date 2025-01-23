@@ -46,7 +46,21 @@ namespace PayarcSDK.Sample {
 					config.BearerToken = accessToken;   // Set the Bearer Token
 				})
 				.Build();
-			var testService = "customerService";
+
+
+
+			//Temprorary Agent Access Token taken from portal
+			var agentAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiMjg3Y2QxMDc3NmY2NTgxNDJiOWExMjQ1NzRlZGFmYjAxZmMyYWFhZDY1YjM1YTExMDMyMWIyYzE0YmFmZTc0MTY5MmNlNTIyNTc3MGM0NTQiLCJpYXQiOjE3MzI1NTk0MjEsIm5iZiI6MTczMjU1OTQyMSwiZXhwIjoxODkwMjM5NDIxLCJzdWIiOiI4NTI2MzA3Iiwic2NvcGVzIjpbIioiXX0.y6cBWKIHzx7ElgBxMlLFaE0lyE3pgoluQkRIUJ2XWh5A5qiII3SJt7Spu5_tcXX36zpsiCozXjbrsQ3LN1VXrbeITKUxFVewrbmG6CqawqnVgsxHaUpwVT_0rYQz4b1_N-Enf4cr5I1DgcxUWH9U9Z9koTiurrGTV0TrX1kt-8WcrKzD1RTTZokjSLSfPL3zz4za2f1fVmyWaa8-HAEAmXZz2p0p8cs_FjTkuMdwTD-cf4jJ8_RI7CXSoZhvAktrHJOXnebfKq_PFfbOmSqLhQvzGO9KKAcFn8BsDE9JQ4FW70lsxghVIpeqqDOfrCi5wGy7aVicBvssFx5gnyEBE_UHZ78kUcotQQGS7p5-_VhRdE9UYWOO0hbWrrYeGwBHzNAGomyrhwtFtsaWHWG7KNhhSBWeoalsdavh6BA9gWWbP8y-IGxbTG_XWM8bnwxYh-P1x6vOs_dF4X27_p4hP6iSO_uTFLnNR7AthVRINk96fnV_KafjPYT7_yjVwARKm9zzL79RZB5t9SoHO1NEpupaXgwGH0ROF4_zi_YwwTiTXWCIidHzV7BnlZ3_uT0eBFA0gbSySunBYCYGyLZJ-qCUsptH0O4e7WDsBYfltvu-3SAcfIo7Z-uuD1JjZeLhOoEFVff7aAZ4YpvmhazRB2hCgCzLSGt_HmYbdHQgnzY";
+
+			var agentApiClient = new SdkBuilder()
+				.Configure(config => {
+					config.Environment = "sandbox";     // Use sandbox environment
+					config.ApiVersion = "v1";           // Use version 2 of the API
+					config.BearerToken = agentAccessToken;   // Set the Bearer Token
+				})
+				.Build();
+
+			var testService = "applicationService";
 
 			switch (testService) {
 				case "customerService":
@@ -163,7 +177,7 @@ namespace PayarcSDK.Sample {
 					}
 					break;
 				case "applicationService":
-					var applicationService = new ApplicationService(apiClient);
+					var applicationService = new ApplicationService(agentApiClient);
 
 					// Add a lead
 					var merccandidate = new JObject {
@@ -212,7 +226,7 @@ namespace PayarcSDK.Sample {
 
 
 					// Submit for signature
-					var applicantId = "appl_12345";
+					var applicantId = "9d6woe3qlz73jz0q";
 					var submitted = await applicationService.SubmitApplicantForSignatureAsync(applicantId);
 					Console.WriteLine($"Submitted Applicant: {submitted}");
 
@@ -240,11 +254,11 @@ namespace PayarcSDK.Sample {
 					Console.WriteLine($"Add Document Result: {result}");
 					break;
 				case "splitCampaignService":
-					var campaignService = new SplitCampaignService(apiClient);
+					var campaignService = new SplitCampaignService(agentApiClient);
 
 					// Example: Create a new campaign
 					var newCampaign = new JObject {
-						["name"] = "Mega bonus",
+						["name"] = "Mega bonus Shah1",
 						["description"] = "Compliment for my favorite customers",
 						["note"] = "Only for VIPs",
 						["base_charge"] = 33.33,
@@ -256,12 +270,14 @@ namespace PayarcSDK.Sample {
 					var createdCampaign = await campaignService.CreateCampaignAsync(newCampaign);
 					Console.WriteLine($"Campaign Created: {createdCampaign}");
 
+					var createdCampaignId = (string)createdCampaign["Data"]["data"].SelectToken("id");
+
 					// Example: Get all campaigns
 					var allCampaigns = await campaignService.GetAllCampaignsAsync();
 					Console.WriteLine($"All Campaigns: {allCampaigns}");
 
 					// Example: Get campaign details
-					var campaignDetails = await campaignService.GetCampaignDetailsAsync("cmp_12345");
+					var campaignDetails = await campaignService.GetCampaignDetailsAsync(createdCampaignId);
 					Console.WriteLine($"Campaign Details: {campaignDetails}");
 
 					// Example: Update a campaign
@@ -269,7 +285,7 @@ namespace PayarcSDK.Sample {
 						["budget"] = 6000
 					};
 
-					var updatedCampaign = await campaignService.UpdateCampaignAsync("cmp_12345", updatedData);
+					var updatedCampaign = await campaignService.UpdateCampaignAsync(createdCampaignId, updatedData);
 					Console.WriteLine($"Updated Campaign: {updatedCampaign}");
 
 					// Example: Get all accounts
