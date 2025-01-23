@@ -9,7 +9,42 @@ namespace PayarcSDK.Services {
 			_apiClient = apiClient;
 		}
 
-		public async Task<JObject> AddLeadAsync(JObject applicant) {
+		public async Task<JObject> create(JObject applicant) {
+			return await AddLeadAsync(applicant);
+		}
+
+		public async Task<JObject> list(Dictionary<string, string> queryParams = null) {
+			return await GetApplyAppsAsync(queryParams);
+		}
+
+		public async Task<JObject> retrieve(string applicantId) {
+			return await RetrieveApplicantAsync(applicantId);
+		}
+
+		public async Task<JObject> update(string applicantId, JObject newData) {
+			return await UpdateApplicantAsync(applicantId, newData);
+		}
+		public async Task<JObject> delete(string applicantId) {
+			return await DeleteApplicantAsync(applicantId);
+		}
+
+		public async Task<JObject> addDocument(string applicantId, JObject document) {
+			return await AddApplicantDocumentAsync(applicantId, document);
+		}
+
+		public async Task<JObject> submit(string applicantId) {
+			return await SubmitApplicantForSignatureAsync(applicantId);
+		}
+
+		public async Task<JObject> deleteDocument(string documentId) {
+			return await DeleteApplicantDocumentAsync(documentId);
+		}
+
+		public async Task<JObject> listSubAgents() {
+			return await GetSubAgentsAsync();
+		}
+
+		private async Task<JObject> AddLeadAsync(JObject applicant) {
 			if (applicant["agentId"] != null && applicant["agentId"].ToString().StartsWith("usr_")) {
 				applicant["agentId"] = applicant["agentId"].ToString().Substring(4);
 			}
@@ -17,15 +52,15 @@ namespace PayarcSDK.Services {
 			return await _apiClient.PostAsync("agent-hub/apply/add-lead", applicant);
 		}
 
-		public async Task<JObject> GetApplyAppsAsync() {
-			var queryParams = new Dictionary<string, string> {
-				{ "limit", "0" },
-				{ "is_archived", "0" }
-			};
+		private async Task<JObject> GetApplyAppsAsync(Dictionary<string, string> queryParams = null) {
+			//var queryParams = new Dictionary<string, string> {
+			//	{ "limit", "0" },
+			//	{ "is_archived", "0" }
+			//};
 			return await _apiClient.GetAsync("agent-hub/apply-apps", queryParams);
 		}
 
-		public async Task<JObject> RetrieveApplicantAsync(string applicantId) {
+		private async Task<JObject> RetrieveApplicantAsync(string applicantId) {
 			if (applicantId.StartsWith("appl_")) {
 				applicantId = applicantId.Substring(5);
 			}
@@ -38,7 +73,7 @@ namespace PayarcSDK.Services {
 			return applicantResponse;
 		}
 
-		public async Task<JObject> UpdateApplicantAsync(string applicantId, JObject newData) {
+		private async Task<JObject> UpdateApplicantAsync(string applicantId, JObject newData) {
 			if (applicantId.StartsWith("appl_")) {
 				applicantId = applicantId.Substring(5);
 			}
@@ -58,7 +93,7 @@ namespace PayarcSDK.Services {
 			return response;
 		}
 
-		public async Task<JObject> DeleteApplicantAsync(string applicantId) {
+		private async Task<JObject> DeleteApplicantAsync(string applicantId) {
 			if (applicantId.StartsWith("appl_")) {
 				applicantId = applicantId.Substring(5);
 			}
@@ -67,7 +102,7 @@ namespace PayarcSDK.Services {
 			return await _apiClient.PostAsync("agent-hub/apply/delete-lead", data);
 		}
 
-		public async Task<JObject> AddApplicantDocumentAsync(string applicantId, JObject document) {
+		private async Task<JObject> AddApplicantDocumentAsync(string applicantId, JObject document) {
 			if (applicantId.StartsWith("appl_")) {
 				applicantId = applicantId.Substring(5);
 			}
@@ -80,11 +115,11 @@ namespace PayarcSDK.Services {
 			return await _apiClient.PostAsync("agent-hub/apply/add-documents", requestBody);
 		}
 
-		public async Task<JObject> GetSubAgentsAsync() {
+		private async Task<JObject> GetSubAgentsAsync() {
 			return await _apiClient.GetAsync("agent-hub/sub-agents");
 		}
 
-		public async Task<JObject> DeleteApplicantDocumentAsync(string documentId) {
+		private async Task<JObject> DeleteApplicantDocumentAsync(string documentId) {
 			if (documentId.StartsWith("doc_")) {
 				documentId = documentId.Substring(4);
 			}
@@ -96,7 +131,7 @@ namespace PayarcSDK.Services {
 			return await _apiClient.PostAsync("agent-hub/apply/delete-documents", requestBody);
 		}
 
-		public async Task<JObject> SubmitApplicantForSignatureAsync(string applicantId) {
+		private async Task<JObject> SubmitApplicantForSignatureAsync(string applicantId) {
 			if (applicantId.StartsWith("appl_")) {
 				applicantId = applicantId.Substring(5);
 			}

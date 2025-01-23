@@ -9,8 +9,20 @@ namespace PayarcSDK.Services {
 			_apiClient = apiClient;
 		}
 
+		public async Task<JObject> list(Dictionary<string, string> queryParams = null) {
+			return await ListCasesAsync(queryParams);
+		}
+
+		public async Task<JObject> retrieve(string disputeId) {
+			return await GetCaseAsync(disputeId);
+		}
+
+		public async Task<JObject> addDocument(string disputeId, JObject documentParams) {
+			return await AddDocumentCaseAsync(disputeId, documentParams);
+		}
+
 		// List disputes with optional filters
-		public async Task<JObject> ListCasesAsync(Dictionary<string, string> queryParams = null) {
+		private async Task<JObject> ListCasesAsync(Dictionary<string, string> queryParams = null) {
 			if (queryParams == null) {
 				var currentDate = DateTime.UtcNow;
 				var tomorrowDate = currentDate.AddDays(1).ToString("yyyy-MM-dd");
@@ -27,7 +39,7 @@ namespace PayarcSDK.Services {
 		}
 
 		// Retrieve a specific dispute case
-		public async Task<JObject> GetCaseAsync(string disputeId) {
+		private async Task<JObject> GetCaseAsync(string disputeId) {
 			if (disputeId.StartsWith("dis_")) {
 				disputeId = disputeId.Substring(4);
 			}
@@ -36,7 +48,7 @@ namespace PayarcSDK.Services {
 		}
 
 		// Add a document to a dispute case
-		public async Task<JObject> AddDocumentCaseAsync(string disputeId, JObject documentParams) {
+		private async Task<JObject> AddDocumentCaseAsync(string disputeId, JObject documentParams) {
 			if (disputeId.StartsWith("dis_")) {
 				disputeId = disputeId.Substring(4);
 			}

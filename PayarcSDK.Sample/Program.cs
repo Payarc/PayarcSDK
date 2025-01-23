@@ -68,7 +68,7 @@ namespace PayarcSDK.Sample {
 				Console.WriteLine($"Error: {ex.Message}");
 			}
 
-			var testService = "splitCampaignService";
+			var testService = "applicationService";
 
 			switch (testService) {
 				case "customerService":
@@ -215,7 +215,7 @@ namespace PayarcSDK.Sample {
 					};
 
 					try {
-						var addedLead = await payarcAgent.ApplicationService.AddLeadAsync(merccandidate);
+						var addedLead = await payarcAgent.ApplicationService.create(merccandidate);
 						Console.WriteLine($"Added Lead: {addedLead}");
 					} catch (HttpRequestException ex) {
 						Console.WriteLine($"Request failed: {ex.Message}");
@@ -223,24 +223,30 @@ namespace PayarcSDK.Sample {
 						Console.WriteLine($"Unexpected error: {ex.Message}");
 					}
 
+					// List Applications
+					var queryParamsApplications = new Dictionary<string, string> {
+						["limit"] = "10",
+						["page"] = "1"
+					};
+
 					// Retrieve applications
-					var applications = await payarcAgent.ApplicationService.GetApplyAppsAsync();
+					var applications = await payarcAgent.ApplicationService.list(queryParamsApplications);
 					Console.WriteLine($"Applications: {applications}");
 
 					// Submit for signature
 					var applicantId = "9d6woe3qlz73jz0q";
-					var submitted = await payarcAgent.ApplicationService.SubmitApplicantForSignatureAsync(applicantId);
+					var submitted = await payarcAgent.ApplicationService.submit(applicantId);
 					Console.WriteLine($"Submitted Applicant: {submitted}");
 
 					break;
 				case "disputeService":
 					// List cases
-					var cases = await payarc.DisputeService.ListCasesAsync();
+					var cases = await payarc.DisputeService.list();
 					Console.WriteLine($"List Cases: {cases}");
 
 					var caseId = "dis_123456";
 					// Get a specific case
-					var specificCase = await payarc.DisputeService.GetCaseAsync(caseId);
+					var specificCase = await payarc.DisputeService.retrieve(caseId);
 					Console.WriteLine($"Case Id with {caseId}: {specificCase}");
 
 					// Add a document to a case
@@ -251,7 +257,7 @@ namespace PayarcSDK.Sample {
 						{ "text", "Additional evidence for the dispute." },
 						{ "message", "Submitting dispute case with evidence." }
 					};
-					var result = await payarc.DisputeService.AddDocumentCaseAsync(caseId, documentParams);
+					var result = await payarc.DisputeService.addDocument(caseId, documentParams);
 					Console.WriteLine($"Add Document Result: {result}");
 					break;
 				case "splitCampaignService":
@@ -266,7 +272,7 @@ namespace PayarcSDK.Sample {
 						["accounts"] = new JArray()
 					};
 
-					var createdCampaign = await payarcAgent.SplitCampaignService.CreateCampaignAsync(newCampaign);
+					var createdCampaign = await payarcAgent.SplitCampaignService.create(newCampaign);
 					Console.WriteLine($"Campaign Created: {createdCampaign}");
 
 					var createdCampaignId = "";
@@ -275,11 +281,11 @@ namespace PayarcSDK.Sample {
 					}
 
 					// Example: Get all campaigns
-					var allCampaigns = await payarc.SplitCampaignService.GetAllCampaignsAsync();
+					var allCampaigns = await payarc.SplitCampaignService.list();
 					Console.WriteLine($"All Campaigns: {allCampaigns}");
 
 					// Example: Get campaign details
-					var campaignDetails = await payarc.SplitCampaignService.GetCampaignDetailsAsync(createdCampaignId);
+					var campaignDetails = await payarc.SplitCampaignService.retrieve(createdCampaignId);
 					Console.WriteLine($"Campaign Details: {campaignDetails}");
 
 					// Example: Update a campaign
@@ -287,11 +293,11 @@ namespace PayarcSDK.Sample {
 						["budget"] = 6000
 					};
 
-					var updatedCampaign = await payarc.SplitCampaignService.UpdateCampaignAsync(createdCampaignId, updatedData);
+					var updatedCampaign = await payarc.SplitCampaignService.update(createdCampaignId, updatedData);
 					Console.WriteLine($"Updated Campaign: {updatedCampaign}");
 
 					// Example: Get all accounts
-					var allAccounts = await payarc.SplitCampaignService.GetAllAccountsAsync();
+					var allAccounts = await payarc.SplitCampaignService.listAccounts();
 					Console.WriteLine($"All Accounts: {allAccounts}");
 					break;
 				default:
