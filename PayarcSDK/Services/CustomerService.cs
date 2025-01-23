@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
 using PayarcSDK.Http;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace PayarcSDK.Services {
 	public class CustomerService {

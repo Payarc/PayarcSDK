@@ -1,12 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using PayarcSDK;
-using PayarcSDK.Configuration;
-using PayarcSDK.Http;
-using PayarcSDK.Models;
-using PayarcSDK.Models.Responses;
-using PayarcSDK.Services;
-using System.Net.Http;
 using System.Text;
 
 namespace PayarcSDK.Sample {
@@ -39,7 +32,11 @@ namespace PayarcSDK.Sample {
 				throw new InvalidOperationException("Access token is missing in the response.");
 			}
 
-			var apiClient = new SdkBuilder()
+			Payarc payarc = null;
+			Payarc payarcAgent = null;
+
+			try {
+				payarc = new SdkBuilder()
 				.Configure(config => {
 					config.Environment = "sandbox";     // Use sandbox environment
 					config.ApiVersion = "v1";           // Use version 2 of the API
@@ -47,25 +44,34 @@ namespace PayarcSDK.Sample {
 				})
 				.Build();
 
-
+				// Use Payarc services
+				Console.WriteLine("SDK initialized successfully.");
+			} catch (Exception ex) {
+				Console.WriteLine($"Error: {ex.Message}");
+			}
 
 			//Temprorary Agent Access Token taken from portal
 			var agentAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiMjg3Y2QxMDc3NmY2NTgxNDJiOWExMjQ1NzRlZGFmYjAxZmMyYWFhZDY1YjM1YTExMDMyMWIyYzE0YmFmZTc0MTY5MmNlNTIyNTc3MGM0NTQiLCJpYXQiOjE3MzI1NTk0MjEsIm5iZiI6MTczMjU1OTQyMSwiZXhwIjoxODkwMjM5NDIxLCJzdWIiOiI4NTI2MzA3Iiwic2NvcGVzIjpbIioiXX0.y6cBWKIHzx7ElgBxMlLFaE0lyE3pgoluQkRIUJ2XWh5A5qiII3SJt7Spu5_tcXX36zpsiCozXjbrsQ3LN1VXrbeITKUxFVewrbmG6CqawqnVgsxHaUpwVT_0rYQz4b1_N-Enf4cr5I1DgcxUWH9U9Z9koTiurrGTV0TrX1kt-8WcrKzD1RTTZokjSLSfPL3zz4za2f1fVmyWaa8-HAEAmXZz2p0p8cs_FjTkuMdwTD-cf4jJ8_RI7CXSoZhvAktrHJOXnebfKq_PFfbOmSqLhQvzGO9KKAcFn8BsDE9JQ4FW70lsxghVIpeqqDOfrCi5wGy7aVicBvssFx5gnyEBE_UHZ78kUcotQQGS7p5-_VhRdE9UYWOO0hbWrrYeGwBHzNAGomyrhwtFtsaWHWG7KNhhSBWeoalsdavh6BA9gWWbP8y-IGxbTG_XWM8bnwxYh-P1x6vOs_dF4X27_p4hP6iSO_uTFLnNR7AthVRINk96fnV_KafjPYT7_yjVwARKm9zzL79RZB5t9SoHO1NEpupaXgwGH0ROF4_zi_YwwTiTXWCIidHzV7BnlZ3_uT0eBFA0gbSySunBYCYGyLZJ-qCUsptH0O4e7WDsBYfltvu-3SAcfIo7Z-uuD1JjZeLhOoEFVff7aAZ4YpvmhazRB2hCgCzLSGt_HmYbdHQgnzY";
 
-			var agentApiClient = new SdkBuilder()
+			try {
+				payarcAgent = new SdkBuilder()
 				.Configure(config => {
-					config.Environment = "sandbox";     // Use sandbox environment
-					config.ApiVersion = "v1";           // Use version 2 of the API
-					config.BearerToken = agentAccessToken;   // Set the Bearer Token
+					config.Environment = "sandbox";			// Use sandbox environment
+					config.ApiVersion = "v1";				// Use version 2 of the API
+					config.BearerToken = agentAccessToken;	// Set the Bearer Token
 				})
 				.Build();
 
-			var testService = "applicationService";
+				// Use Payarc services
+				Console.WriteLine("SDK initialized successfully.");
+			} catch (Exception ex) {
+				Console.WriteLine($"Error: {ex.Message}");
+			}
+
+			var testService = "splitCampaignService";
 
 			switch (testService) {
 				case "customerService":
-					// Initialize the service
-					var customerService = new CustomerService(apiClient);
 					var cardData = new List<JObject>();
 					var bankData = new List<JObject>();
 					var customerId = "";
@@ -127,7 +133,7 @@ namespace PayarcSDK.Sample {
 						["page"] = "1"
 					};
 
-					var customers = await customerService.list(queryParams);
+					var customers = await payarc.CustomerService.list(queryParams);
 					Console.WriteLine($"List of Customers: {customers["Data"]}");
 
 					customerId = customers["Data"]["data"]
@@ -147,11 +153,11 @@ namespace PayarcSDK.Sample {
 							};
 							newCustomerData.Add("cards", JToken.FromObject(cardData));
 							newCustomerData.Add("bank_accounts", JToken.FromObject(bankData));
-							var createdCustomer = await customerService.create(newCustomerData);
+							var createdCustomer = await payarc.CustomerService.create(newCustomerData);
 							Console.WriteLine($"Created Customer: {createdCustomer}");
 							// Retrieve a customer
 							customerId = (string)createdCustomer.SelectToken("customer_id");
-							var customer = await customerService.retrieve(customerId);
+							var customer = await payarc.CustomerService.retrieve(customerId);
 							Console.WriteLine($"Retrieved Customer: {customer}");
 							break;
 						case "updateCustomer":
@@ -163,12 +169,12 @@ namespace PayarcSDK.Sample {
 							};
 							customerData.Add("cards", JToken.FromObject(cardData));
 							customerData.Add("bank_accounts", JToken.FromObject(bankData));
-							var updatedCustomer = await customerService.update(customerId, customerData);
+							var updatedCustomer = await payarc.CustomerService.update(customerId, customerData);
 							Console.WriteLine($"Updated Customer: {updatedCustomer}");
 							break;
 						case "deleteCustomer":
 							// Delete a customer
-							var deleted = await customerService.delete(customerId);
+							var deleted = await payarc.CustomerService.delete(customerId);
 							Console.WriteLine($"Deleted Customer: {deleted}");
 							break;
 						default:
@@ -177,8 +183,6 @@ namespace PayarcSDK.Sample {
 					}
 					break;
 				case "applicationService":
-					var applicationService = new ApplicationService(agentApiClient);
-
 					// Add a lead
 					var merccandidate = new JObject {
 						["Lead"] = new JObject {
@@ -211,7 +215,7 @@ namespace PayarcSDK.Sample {
 					};
 
 					try {
-						var addedLead = await applicationService.AddLeadAsync(merccandidate);
+						var addedLead = await payarcAgent.ApplicationService.AddLeadAsync(merccandidate);
 						Console.WriteLine($"Added Lead: {addedLead}");
 					} catch (HttpRequestException ex) {
 						Console.WriteLine($"Request failed: {ex.Message}");
@@ -220,26 +224,23 @@ namespace PayarcSDK.Sample {
 					}
 
 					// Retrieve applications
-					var applications = await applicationService.GetApplyAppsAsync();
+					var applications = await payarcAgent.ApplicationService.GetApplyAppsAsync();
 					Console.WriteLine($"Applications: {applications}");
-
-
 
 					// Submit for signature
 					var applicantId = "9d6woe3qlz73jz0q";
-					var submitted = await applicationService.SubmitApplicantForSignatureAsync(applicantId);
+					var submitted = await payarcAgent.ApplicationService.SubmitApplicantForSignatureAsync(applicantId);
 					Console.WriteLine($"Submitted Applicant: {submitted}");
 
 					break;
 				case "disputeService":
-					var disputeService = new DisputeService(apiClient);
 					// List cases
-					var cases = await disputeService.ListCasesAsync();
+					var cases = await payarc.DisputeService.ListCasesAsync();
 					Console.WriteLine($"List Cases: {cases}");
 
 					var caseId = "dis_123456";
 					// Get a specific case
-					var specificCase = await disputeService.GetCaseAsync(caseId);
+					var specificCase = await payarc.DisputeService.GetCaseAsync(caseId);
 					Console.WriteLine($"Case Id with {caseId}: {specificCase}");
 
 					// Add a document to a case
@@ -250,15 +251,13 @@ namespace PayarcSDK.Sample {
 						{ "text", "Additional evidence for the dispute." },
 						{ "message", "Submitting dispute case with evidence." }
 					};
-					var result = await disputeService.AddDocumentCaseAsync(caseId, documentParams);
+					var result = await payarc.DisputeService.AddDocumentCaseAsync(caseId, documentParams);
 					Console.WriteLine($"Add Document Result: {result}");
 					break;
 				case "splitCampaignService":
-					var campaignService = new SplitCampaignService(agentApiClient);
-
 					// Example: Create a new campaign
 					var newCampaign = new JObject {
-						["name"] = "Mega bonus Shah1",
+						["name"] = "Mega bonus Shah2",
 						["description"] = "Compliment for my favorite customers",
 						["note"] = "Only for VIPs",
 						["base_charge"] = 33.33,
@@ -267,17 +266,20 @@ namespace PayarcSDK.Sample {
 						["accounts"] = new JArray()
 					};
 
-					var createdCampaign = await campaignService.CreateCampaignAsync(newCampaign);
+					var createdCampaign = await payarcAgent.SplitCampaignService.CreateCampaignAsync(newCampaign);
 					Console.WriteLine($"Campaign Created: {createdCampaign}");
 
-					var createdCampaignId = (string)createdCampaign["Data"]["data"].SelectToken("id");
+					var createdCampaignId = "";
+					if ((bool)createdCampaign.SelectToken("IsSuccess")) {
+						createdCampaignId = (string)createdCampaign["Data"]["data"].SelectToken("id");
+					}
 
 					// Example: Get all campaigns
-					var allCampaigns = await campaignService.GetAllCampaignsAsync();
+					var allCampaigns = await payarc.SplitCampaignService.GetAllCampaignsAsync();
 					Console.WriteLine($"All Campaigns: {allCampaigns}");
 
 					// Example: Get campaign details
-					var campaignDetails = await campaignService.GetCampaignDetailsAsync(createdCampaignId);
+					var campaignDetails = await payarc.SplitCampaignService.GetCampaignDetailsAsync(createdCampaignId);
 					Console.WriteLine($"Campaign Details: {campaignDetails}");
 
 					// Example: Update a campaign
@@ -285,11 +287,11 @@ namespace PayarcSDK.Sample {
 						["budget"] = 6000
 					};
 
-					var updatedCampaign = await campaignService.UpdateCampaignAsync(createdCampaignId, updatedData);
+					var updatedCampaign = await payarc.SplitCampaignService.UpdateCampaignAsync(createdCampaignId, updatedData);
 					Console.WriteLine($"Updated Campaign: {updatedCampaign}");
 
 					// Example: Get all accounts
-					var allAccounts = await campaignService.GetAllAccountsAsync();
+					var allAccounts = await payarc.SplitCampaignService.GetAllAccountsAsync();
 					Console.WriteLine($"All Accounts: {allAccounts}");
 					break;
 				default:
