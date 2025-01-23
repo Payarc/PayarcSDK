@@ -9,8 +9,28 @@ namespace PayarcSDK.Services {
 			_apiClient = apiClient;
 		}
 
+		public async Task<JObject> create(JObject campaignData) {
+			return await CreateCampaignAsync(campaignData);
+		}
+
+		public async Task<JObject> list(Dictionary<string, string> queryParams = null) {
+			return await GetAllCampaignsAsync(queryParams);
+		}
+
+		public async Task<JObject> retrieve(string campaignId) {
+			return await GetCampaignDetailsAsync(campaignId);
+		}
+
+		public async Task<JObject> update(string campaignId, JObject updatedData) {
+			return await UpdateCampaignAsync(campaignId, updatedData);
+		}
+
+		public async Task<JObject> listAccounts() {
+			return await GetAllAccountsAsync();
+		}
+
 		/// Create a new campaign.
-		public async Task<JObject> CreateCampaignAsync(JObject campaignData) {
+		private async Task<JObject> CreateCampaignAsync(JObject campaignData) {
 			try {
 				return await _apiClient.PostAsync("agent-hub/campaigns", campaignData);
 			} catch (Exception ex) {
@@ -19,13 +39,8 @@ namespace PayarcSDK.Services {
 		}
 
 		/// Retrieve all campaigns.
-		public async Task<JObject> GetAllCampaignsAsync() {
+		private async Task<JObject> GetAllCampaignsAsync(Dictionary<string, string> queryParams = null) {
 			try {
-				var queryParams = new Dictionary<string, string>
-				{
-					{ "limit", "0" }
-				};
-
 				return await _apiClient.GetAsync("agent-hub/campaigns", queryParams);
 			} catch (Exception ex) {
 				throw new Exception("Error retrieving campaigns.", ex);
@@ -33,7 +48,7 @@ namespace PayarcSDK.Services {
 		}
 
 		/// Retrieve details of a specific campaign by ID.
-		public async Task<JObject> GetCampaignDetailsAsync(string campaignId) {
+		private async Task<JObject> GetCampaignDetailsAsync(string campaignId) {
 			try {
 				if (campaignId.StartsWith("cmp_")) {
 					campaignId = campaignId.Substring(4);
@@ -51,7 +66,7 @@ namespace PayarcSDK.Services {
 		}
 
 		/// Update an existing campaign.
-		public async Task<JObject> UpdateCampaignAsync(string campaignId, JObject updatedData) {
+		private async Task<JObject> UpdateCampaignAsync(string campaignId, JObject updatedData) {
 			try {
 				if (campaignId.StartsWith("cmp_")) {
 					campaignId = campaignId.Substring(4);
@@ -64,7 +79,7 @@ namespace PayarcSDK.Services {
 		}
 
 		/// Retrieve all accounts.
-		public async Task<JObject> GetAllAccountsAsync() {
+		private async Task<JObject> GetAllAccountsAsync() {
 			try {
 				return await _apiClient.GetAsync("account/my-accounts");
 			} catch (Exception ex) {
