@@ -1,10 +1,4 @@
 ﻿using PayarcSDK.Configuration;
-using PayarcSDK.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PayarcSDK {
 	public class SdkBuilder {
@@ -40,7 +34,7 @@ namespace PayarcSDK {
 			return this;
 		}
 
-		public ApiClient Build() {
+		public Payarc Build() {
 			// Ensure the BaseUrl is resolved
 			if (string.IsNullOrEmpty(_config.BaseUrl)) {
 				throw new InvalidOperationException("BaseUrl must be configured.");
@@ -48,7 +42,7 @@ namespace PayarcSDK {
 
 			// Ensure BearerToken is provided
 			if (string.IsNullOrWhiteSpace(_config.BearerToken)) {
-				throw new InvalidOperationException("BearerToken must be configured.");
+				throw new InvalidOperationException("BearerToken is missing. Please provide a valid BearerToken.");
 			}
 
 			// Use the provided HttpClient or create a new one
@@ -57,8 +51,8 @@ namespace PayarcSDK {
 			// Add the Authorization header with Bearer token
 			httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _config.BearerToken);
 
-			// Return the final ApiClient
-			return new ApiClient(httpClient);
+			// Return the Payarc instance (facade for all services)
+			return new Payarc(httpClient);
 		}
 	}
 }
