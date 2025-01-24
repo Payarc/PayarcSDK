@@ -10,7 +10,7 @@ namespace PayarcSDK
 		public DisputeService DisputeService { get; }
 		public SplitCampaignService SplitCampaignService { get; }
 		public CustomerService CustomerService { get; }
-		public ChargeService ChargeService { get; }
+		public ChargeService Charges { get; }
 
 		/// <summary>
 		/// Initializes the Payarc client with the given base URL and API key.
@@ -25,7 +25,7 @@ namespace PayarcSDK
 			DisputeService = new DisputeService(_apiClient);
 			SplitCampaignService = new SplitCampaignService(_apiClient);
 			CustomerService = new CustomerService(_apiClient);
-			ChargeService = new ChargeService(_apiClient);
+			Charges = new ChargeService(httpClient);
 		}
 
 		/// <summary>
