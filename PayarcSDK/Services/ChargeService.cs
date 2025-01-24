@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using AnyOfTypes;
 using Newtonsoft.Json;
 using PayarcSDK.Entities;
@@ -19,6 +20,74 @@ namespace PayarcSDK.Services
             _apiClient = apiClient.IsFirst ? apiClient.First : new ApiClient(apiClient.Second);
             _httpClient = apiClient.IsSecond ? apiClient.Second : new HttpClient();
         }
+
+         public async Task<BaseResponse?> Create(ChargeCreateOptions obj, ChargeCreateOptions? chargeData = null)
+
+    {
+        try
+        {
+            chargeData = chargeData ?? obj;
+            var chargePayload = new ChargeRequestPayload();
+            chargePayload.Amount = chargeData.Amount;
+            chargePayload.Currency = chargeData.Currency;
+            if (chargeData.Source != null)
+            {
+                var source = chargeData.Source;
+                if (source.Value.IsSecond)
+                {
+                    var second = chargeData.Source.Value.Second;
+                    JsonConvert.PopulateObject(JsonConvert.SerializeObject(second), chargePayload);
+                }
+            }
+
+            if (chargeData.ObjectId != null)
+            {
+                var objectId = chargeData.ObjectId;
+                chargePayload.ObjectId = objectId.StartsWith("cus_") ? objectId.Substring("cus_".Length) : objectId;
+            }
+
+            if (chargeData.Source is { IsFirst: true })
+            {
+                var source = chargeData.Source.Value.First;
+                switch (true)
+                {
+                    case true when source.StartsWith("tok_"):
+                        chargePayload.TokenId = source.Substring(4);
+                        break;
+                    case true when source.StartsWith("cus_"):
+                        chargePayload.CustomerId = source.Substring(4);
+                        break;
+                    case true when source.StartsWith("card_"):
+                        chargePayload.CardId = source.Substring(5);
+                        break;
+                    case true when (source.StartsWith("bnk_") || chargeData.SecCode != null):
+                        chargePayload.BankAccountId = source.StartsWith("bnk_")
+                            ? source.Substring(4)
+                            : chargeData.BankAccountId;
+                        chargePayload.Type = "debit";
+                        //handle achcharge
+                        break;
+                    case true when Regex.IsMatch(source, @"^\d"):
+                        chargePayload.CardNumber = source;
+                        break;
+                }
+            }
+
+            var idPrefixes = new Dictionary<string, int>
+            {
+                { "TokenId", 3 },
+                { "CustomerId", 3 },
+                { "CardId", 4 }
+            };
+            NormalizeIDs(chargePayload, idPrefixes);
+            return await HandleChargeAsync(HttpMethod.Post, "charges", chargePayload);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+    }
 
 
         public async Task<BaseResponse?> Retrieve(string chargeId)
