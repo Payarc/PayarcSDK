@@ -10,10 +10,10 @@ namespace PayarcSDK.Entities
     {
         
         [JsonProperty("object")]
-        public new string? Object { get; set; }
+        public override string? Object { get; set; }
 
         [JsonProperty("object_id")]
-        public string? ObjectId { get; set; }
+        public override string? ObjectId { get; set; }
 
         [JsonIgnore]
         public Func< Dictionary<string, object>?, Task<BaseResponse?>> CreateRefund { get; set; }
