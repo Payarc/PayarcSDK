@@ -11,6 +11,7 @@ namespace PayarcSDK
 		public SplitCampaignService SplitCampaignService { get; }
 		public CustomerService CustomerService { get; }
 		public ChargeService Charges { get; }
+		public BillingService Billing { get; }
 
 		/// <summary>
 		/// Initializes the Payarc client with the given base URL and API key.
@@ -26,6 +27,7 @@ namespace PayarcSDK
 			SplitCampaignService = new SplitCampaignService(_apiClient);
 			CustomerService = new CustomerService(_apiClient);
 			Charges = new ChargeService(httpClient);
+			Billing = new BillingService(httpClient);
 		}
 
 		/// <summary>
