@@ -25,8 +25,8 @@ namespace PayarcSDK {
                 throw new InvalidOperationException("BaseUrl must be configured. Please specify a valid environment or provide a custom BaseUrl.");
             }
 
-            // Append API version to the BaseUrl
-            _config.BaseUrl = $"{_config.BaseUrl}/{_config.ApiVersion}/";
+            // Append API version to the BaseUrl            
+            _config.BaseUrl = _config.Environment is not ("payarcConnect" or "payarcConnectDev") ? $"{_config.BaseUrl}/{_config.ApiVersion}/" : _config.BaseUrl;
 
             return this;
         }

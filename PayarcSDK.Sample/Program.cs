@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PayarcSDK.Entities.PayarcConnectService;
 using System.Text;
 
 namespace PayarcSDK.Sample {
@@ -34,6 +35,7 @@ namespace PayarcSDK.Sample {
 
             Payarc payarc = null;
             Payarc payarcAgent = null;
+            Payarc payarcConnect = null;
 
             try {
                 payarc = new SdkBuilder()
@@ -68,7 +70,26 @@ namespace PayarcSDK.Sample {
                 Console.WriteLine($"Error: {ex.Message}");
             }
 
-            var testService = "applicationService";
+
+            // Payarc Connect 
+            string payarcConnectAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0Mzg4IiwianRpIjoiOTI0ODMyZjJiM2Q1MDZiZjU1M2Q0NWQzMWJkNTg0MWQ0ZWRjMjdmMjI4ODg4NWU4NWQzMDdmNjk3MWJmYjMxMTJhZjYyYzhmN2MyZTlhZTciLCJpYXQiOjE2MTExNzUxNjgsIm5iZiI6MTYxMTE3NTE2OCwiZXhwIjoxNzY4ODU1MTY4LCJzdWIiOiIxNTY1MyIsInNjb3BlcyI6IioifQ.bYo6ZQ4Jg3wjT_KibvLGpmTpWgapBfyJOXxH-1boMbVyzmj9oO_o8NpLu4aR8vGt4ZcCwmqWkuAJkYdDij0DeDuqI_7IJcBK7hRHBR4tjRbo2plmc44xnxFp5G-NbXC3lj620L2lfgBheyMRAhpkaLfwaVBQvOsq829kNmSlPhom_OhTmyBEDZi5oTFg44vKi4LfI9gORlV0wBFELrcjWoodTsMJHDk_Tiuxwkdf81XvaM6uIiJUTgnnPZM4LDINHbi9YQZ7HYORSIFn2gOyfdGSwTiY5gi13vC-ISDZxBxQWN61JMEwIheaFTubmNgUTvn7gSsp8rnSLo1Hm7p_Mh5lg6Jf2Z89509KRgO5X3iQMWMWmvAX3leSYUi0ngAXQBGdEHlyUNNy0S3dh-fJzkyFpQxkftUDX3ZKbJxCd4H4Vfe5WpgmEdjhD2wb6RI1GnPBkG6SwGy6kcHGjNKxK4hFBKZPCSwWJD7VgJP-eXQMU2J-i9tcc-zp4Acb4qjWe02FYBMKxY6FmDpFpLSvRZGXdH5Xegw6kfDIZWJF-mOB5g0ISFC_tjfxza544iEIOXlYkKzkCNXO0XbJUH6XFFv0Obd74VBrfPaHR-zxbgDmqHFRH_6bWIGAbwiwK3S8GG5RwDpk5uvEaC2F6V0M_o7ePEint8u6BCCK8WYPm7g";
+
+            try {
+                payarcConnect = new SdkBuilder()
+                .Configure(config => {
+                    config.Environment = "payarcConnect";                 // Use sandbox environment
+                    config.ApiVersion = "v1";                             // Use version 2 of the API
+                    config.BearerToken = payarcConnectAccessToken;        // Set the Bearer Token
+                })
+                .Build();
+
+                // Use Payarc services
+                Console.WriteLine("SDK initialized successfully.");
+            } catch (Exception ex) {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+
+            var testService = "payarcConnect";
 
             switch (testService) {
                 case "customerService":
@@ -300,10 +321,19 @@ namespace PayarcSDK.Sample {
                     var allAccounts = await payarc.SplitCampaignService.listAccounts();
                     Console.WriteLine($"All Accounts: {allAccounts}");
                     break;
+                case "payarcConnect":
+                    string deviceSerialNo = "1851085026";
+
+                    LoginResponse loginResponse = await payarcConnect.PayarcConnect.Login();
+                    SaleResponse saleResponse = await payarcConnect.PayarcConnect.Sale("CREDIT", "REF99", 69, deviceSerialNo);
+
+                    break;
                 default:
                     Console.WriteLine("Nothing to test.");
                     break;
             }
         }
+
+
     }
 }
