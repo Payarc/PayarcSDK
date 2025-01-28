@@ -1,12 +1,7 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
-namespace PayarcSDK.Models.Responses {
+namespace PayarcSDK.Sample {
 	public class AddSuccessResponse {
 		public ResponseContent response_content { get; set; }
 		public List<Permission> permissions { get; set; }
