@@ -172,7 +172,7 @@ namespace PayarcSDK.Services
                 {
                     for (int i = 0; i < jsonCharges.Count; i++)
                     {
-                        var ch = AddObjectId(jsonCharges[i], JsonSerializer.Serialize(jsonCharges[i]));
+                        var ch = TransformJsonRawObject(jsonCharges[i], JsonSerializer.Serialize(jsonCharges[i]));
                         charges?.Add(ch);
                     }
                 }
@@ -309,7 +309,7 @@ namespace PayarcSDK.Services
                     var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
                     if (dataDict != null)
                     {
-                        return AddObjectId(dataDict, dataElement.GetRawText());
+                        return TransformJsonRawObject(dataDict, dataElement.GetRawText());
                     }
                 }
 
@@ -433,7 +433,7 @@ namespace PayarcSDK.Services
                     var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
                     if (dataDict != null)
                     {
-                        return AddObjectId(dataDict, dataElement.GetRawText());
+                        return TransformJsonRawObject(dataDict, dataElement.GetRawText());
                     }
                 }
 
@@ -499,7 +499,7 @@ namespace PayarcSDK.Services
             }
         }
 
-        private BaseResponse? AddObjectId(Dictionary<string, object> obj, string? rawObj)
+        private BaseResponse? TransformJsonRawObject(Dictionary<string, object> obj, string? rawObj)
         {
             BaseResponse? response = null;
             if ((obj["object"]?.ToString() == "Charge" || obj["object"]?.ToString() == "ACHCharge") && rawObj != null)

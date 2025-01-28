@@ -3,20 +3,14 @@ using PayarcSDK.Http;
 
 namespace PayarcSDK.Services;
 
-
-public class BillingService
+public class SubscriptionService
 {
     private readonly ApiClient _apiClient;
     private readonly HttpClient _httpClient;
 
-    public BillingService(AnyOf<ApiClient, HttpClient> apiClient)
+    public SubscriptionService(AnyOf<ApiClient, HttpClient> apiClient)
     {
         _apiClient = apiClient.IsFirst ? apiClient.First : new ApiClient(apiClient.Second);
         _httpClient = apiClient.IsSecond ? apiClient.Second : new HttpClient();
-        Plan = new PlanService(apiClient);
-        SubscriptionService = new SubscriptionService(apiClient);
     }
-    
-    public PlanService Plan { get; set; }
-    public SubscriptionService SubscriptionService { get; set; }
 }
