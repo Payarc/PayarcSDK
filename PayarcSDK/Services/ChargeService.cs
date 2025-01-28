@@ -28,8 +28,7 @@ namespace PayarcSDK.Services
             {
                 chargeData = chargeData ?? obj;
                 var chargePayload = new ChargeRequestPayload();
-                chargePayload.Amount = chargeData.Amount;
-                chargePayload.Currency = chargeData.Currency;
+                JsonConvert.PopulateObject(JsonConvert.SerializeObject(chargeData), chargePayload);
                 if (chargeData.Source != null)
                 {
                     var source = chargeData.Source;
@@ -46,28 +45,28 @@ namespace PayarcSDK.Services
                     chargePayload.ObjectId = objectId.StartsWith("cus_") ? objectId.Substring("cus_".Length) : objectId;
                 }
 
-                if (chargeData.Source is { IsFirst: true })
+                if (chargeData.Source != null)
                 {
-                    var source = chargeData.Source.Value.First;
+                    var source = chargeData.Source.Value;
+                    var isStr = chargeData.Source.Value.IsFirst;
                     switch (true)
                     {
-                        case true when source.StartsWith("tok_"):
-                            chargePayload.TokenId = source.Substring(4);
+                        case true when isStr && source.First.StartsWith("tok_"):
+                            chargePayload.TokenId = source.First.Substring(4);
                             break;
-                        case true when source.StartsWith("cus_"):
-                            chargePayload.CustomerId = source.Substring(4);
+                        case true when isStr && source.First.StartsWith("cus_"):
+                            chargePayload.CustomerId = source.First.Substring(4);
                             break;
-                        case true when source.StartsWith("card_"):
-                            chargePayload.CardId = source.Substring(5);
+                        case true when isStr && source.First.StartsWith("card_"):
+                            chargePayload.CardId = source.First.Substring(5);
                             break;
-                        case true when (source.StartsWith("bnk_") || chargeData.SecCode != null):
-                            chargePayload.BankAccountId = source.StartsWith("bnk_")
-                                ? source.Substring(4)
-                                : chargeData.BankAccountId;
+                        case true when (isStr && source.First.StartsWith("bnk_") || chargeData.SecCode != null):
+                            chargePayload.BankAccountId = (isStr && source.First.StartsWith("bnk_"))
+                                ? source.First.Substring(4)
+                                : source.Second.BankAccountId?.Substring(4);
                             chargePayload.Type = "debit";
-                            //handle achcharge
-                            break;
-                        case true when Regex.IsMatch(source, @"^\d"):
+                            return await HandleChargeAsync(HttpMethod.Post, "achcharges",  chargePayload);
+                        case true when (isStr && Regex.IsMatch(source.First, @"^\d")):
                             chargePayload.CardNumber = source;
                             break;
                     }
@@ -173,7 +172,7 @@ namespace PayarcSDK.Services
                 {
                     for (int i = 0; i < jsonCharges.Count; i++)
                     {
-                        var ch = AddObjectId(jsonCharges[i], JsonSerializer.Serialize(jsonCharges[i]));
+                        var ch = TransformJsonRawObject(jsonCharges[i], JsonSerializer.Serialize(jsonCharges[i]));
                         charges?.Add(ch);
                     }
                 }
@@ -282,7 +281,9 @@ namespace PayarcSDK.Services
             {
                 var path = $"{endpoint}/{chargeId}";
                 var parameters = GetParams(endpoint);
-                var request = new HttpRequestMessage(method, path)
+                var queryString = string.Join("&", parameters.Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}"));
+                var fullPath = $"{path}?{queryString}";
+                var request = new HttpRequestMessage(method, fullPath)
                 {
                     Content = new StringContent(JsonSerializer.Serialize(parameters), Encoding.UTF8, "application/json")
                 };
@@ -308,7 +309,7 @@ namespace PayarcSDK.Services
                     var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
                     if (dataDict != null)
                     {
-                        return AddObjectId(dataDict, dataElement.GetRawText());
+                        return TransformJsonRawObject(dataDict, dataElement.GetRawText());
                     }
                 }
 
@@ -331,15 +332,15 @@ namespace PayarcSDK.Services
             }
         }
 
-        private Dictionary<string, object>? GetAchChargeParams(AnyOf<string?, ChargeResponseData?> charge,
+        private Dictionary<string, object>? GetAchChargeParams(AnyOf<string?, AchChargeResponseData?> charge,
             Dictionary<string, object>? parameters = null)
         {
-            ChargeResponseData? chargeObj = null;
+            AchChargeResponseData? chargeObj = null;
             if (charge.IsFirst)
             {
                 if (charge.First != null)
                 {
-                    chargeObj = (ChargeResponseData?)GetChargeDataAsync(HttpMethod.Get, "charges", charge.First).Result;
+                    chargeObj = (AchChargeResponseData?)GetChargeDataAsync(HttpMethod.Get, "charges", charge.First).Result;
                 }
             }
             else
@@ -349,21 +350,20 @@ namespace PayarcSDK.Services
 
             if (chargeObj != null)
             {
-                // Initialize the parameters if null
                 parameters ??= new Dictionary<string, object>();
 
                 // Set default values for ACH-specific parameters
                 parameters["type"] = "credit";
                 parameters["amount"] = parameters.ContainsKey("amount") ? parameters["amount"] : chargeObj.Amount;
-                // parameters["sec_code"] = parameters.ContainsKey("sec_code") ? parameters["sec_code"] : chargeObj.SecCode;
+                parameters["sec_code"] = parameters.ContainsKey("sec_code") ? parameters["sec_code"] : chargeObj.SecCode;
 
                 // Handle bank account-related parameters
-                // if (chargeObj.BankAccount?.Data?.ObjectId != null)
-                // {
-                //     parameters["bank_account_id"] = parameters.ContainsKey("bank_account_id")
-                //         ? parameters["bank_account_id"]
-                //         : chargeObj.BankAccount.Data.ObjectId;
-                // }
+                if (chargeObj.BankAccount?.Data?.ObjectId != null)
+                {
+                    parameters["bank_account_id"] = parameters.ContainsKey("bank_account_id")
+                        ? parameters["bank_account_id"]
+                        : chargeObj.BankAccount.Data.ObjectId;
+                }
 
                 if (parameters.TryGetValue("bank_account_id", out var bankAccountId) &&
                     bankAccountId is string bankAccountIdStr)
@@ -384,11 +384,22 @@ namespace PayarcSDK.Services
         {
             try
             {
+                HttpContent content;
+                if (method == HttpMethod.Post && chargeData.Parameters != null)
+                {
+                    content = new StringContent(JsonConvert.SerializeObject(chargeData.Parameters), Encoding.UTF8, "application/json");
+                    Console.WriteLine(JsonConvert.SerializeObject(chargeData.Parameters));
+                }
+                else
+                {
+                    content = new StringContent(chargeData.ToJson(), Encoding.UTF8, "application/json");
+                    Console.WriteLine(chargeData.ToJson());
+                }
                 var request = new HttpRequestMessage(method, path)
                 {
-                    Content = new StringContent(chargeData.ToJson(), Encoding.UTF8, "application/json")
+                    Content = content
                 };
-                Console.WriteLine(chargeData.ToJson());
+               
 
                 var response = await _httpClient.SendAsync(request);
                 var responseBody = await response.Content.ReadAsStringAsync();
@@ -422,7 +433,7 @@ namespace PayarcSDK.Services
                     var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
                     if (dataDict != null)
                     {
-                        return AddObjectId(dataDict, dataElement.GetRawText());
+                        return TransformJsonRawObject(dataDict, dataElement.GetRawText());
                     }
                 }
 
@@ -445,7 +456,7 @@ namespace PayarcSDK.Services
             }
         }
 
-        public async Task<BaseResponse?> CreateRefund(AnyOf<string?, ChargeResponseData> charge,
+        public async Task<BaseResponse?> CreateRefund(AnyOf<string?, BaseResponse> charge,
             Dictionary<string, object>? chargeData = null)
         {
             bool achRegular = false;
@@ -454,7 +465,7 @@ namespace PayarcSDK.Services
             string? chargeId = string.Empty;
             Dictionary<string, object>? parameters = null;
 
-            chargeId = charge.IsSecond ? charge.Second.ObjectId : charge.First;
+            chargeId = charge.IsSecond ? charge.Second.ObjectId : (charge.IsFirst ? charge.First : null);
 
             try
             {
@@ -468,7 +479,7 @@ namespace PayarcSDK.Services
                     else if (chargeId.StartsWith("ach_"))
                     {
                         achRegular = true;
-                        parameters = GetAchChargeParams(charge, chargeData);
+                        parameters = GetAchChargeParams((AchChargeResponseData)charge, chargeData);
                         url = "achcharges";
                         msg = "ACH";
                     }
@@ -488,23 +499,27 @@ namespace PayarcSDK.Services
             }
         }
 
-        private BaseResponse? AddObjectId(Dictionary<string, object> obj, string? rawObj)
+        private BaseResponse? TransformJsonRawObject(Dictionary<string, object> obj, string? rawObj)
         {
             BaseResponse? response = null;
-            if (obj["object"]?.ToString() == "Charge")
+            if ((obj["object"]?.ToString() == "Charge" || obj["object"]?.ToString() == "ACHCharge") && rawObj != null)
             {
-                if (rawObj != null)
+                if (obj["object"]?.ToString() == "Charge")
                 {
-                    var chargeResponse = JsonConvert.DeserializeObject<ChargeResponseData>(rawObj);
-                    if (chargeResponse == null)
-                    {
-                        chargeResponse = new ChargeResponseData();
-                    }
-
+                    var chargeResponse = JsonConvert.DeserializeObject<ChargeResponseData>(rawObj) ?? new ChargeResponseData();
                     chargeResponse.RawData = rawObj;
                     chargeResponse.ObjectId ??= $"ch_{obj["id"]}";
                     chargeResponse.CreateRefund = async (chargeData) => await CreateRefund(chargeResponse, chargeData);
                     response = chargeResponse;
+                }
+                else if (obj["object"]?.ToString() == "ACHCharge")
+                {
+                    var achChargeResponse = JsonConvert.DeserializeObject<AchChargeResponseData>(rawObj) ?? new AchChargeResponseData();
+                    achChargeResponse.RawData = rawObj;
+                    achChargeResponse.ObjectId ??= $"ach_{obj["id"]}";
+                    achChargeResponse.CreateRefund = async (chargeData) => await CreateRefund(achChargeResponse, chargeData);
+                    if (achChargeResponse.BankAccount?.Data != null) achChargeResponse.BankAccount.Data.ObjectId = $"bnk_{obj["id"]}";
+                    response = achChargeResponse;
                 }
             }
 

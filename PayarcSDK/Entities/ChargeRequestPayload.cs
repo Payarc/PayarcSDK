@@ -4,6 +4,20 @@ namespace PayarcSDK.Entities;
 
 public class ChargeRequestPayload
 {
+    [JsonProperty("account_number")]
+    public string? AccountNumber { get; set; }
+    
+    [JsonProperty("routing_number")]
+    public string? RoutingNumber { get; set; }
+    
+    [JsonProperty("first_name")]
+    public string? FirstName { get; set; }
+    
+    [JsonProperty("last_name")]
+    public string? LastName { get; set; }
+    
+    [JsonProperty("account_type")]
+    public string? AccountType { get; set; }
     [JsonProperty("amount")]
     public long? Amount { get; set; }
     [JsonProperty("currency")]
@@ -38,6 +52,10 @@ public class ChargeRequestPayload
     
     [JsonProperty("token_id")]
     public string? TokenId { get; set; }
+    
+    [JsonProperty("sec_code")]
+    public string? SecCode { get; set; }
+    
     [JsonProperty("bank_account_id")]
     public string? BankAccountId { get; set; }
     [JsonProperty("type")]
@@ -45,6 +63,7 @@ public class ChargeRequestPayload
     [JsonProperty("card_number")]
     public string? CardNumber { get; set; }
 
+    [JsonIgnore]
     public Dictionary<string, object>? Parameters { get; set; }
     public string ToJson()
     {
