@@ -5,9 +5,13 @@ namespace PayarcSDK.Entities;
 public abstract class BaseResponse
 {
     [JsonProperty("object")]
-    public string? Object { get; set; }
+    public virtual string? Object { get; set; }
+    
+    [JsonProperty("object_id")]
+    public virtual string? ObjectId { get; set; }
+    
     [JsonProperty("id")]
-    public string? Id { get; set; }
+    public virtual string? Id { get; set; }
     [JsonIgnore]
     public string? RawData { get; set; }
         

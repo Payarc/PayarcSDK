@@ -11,6 +11,7 @@ namespace PayarcSDK
 		public SplitCampaignService SplitCampaignService { get; }
 		public CustomerService CustomerService { get; }
 		public ChargeService Charges { get; }
+		public BillingService Billing { get; }
 
 		public Payarc(HttpClient httpClient) {
 			// Instantiate the services
@@ -19,6 +20,7 @@ namespace PayarcSDK
 			SplitCampaignService = new SplitCampaignService(httpClient);
 			CustomerService = new CustomerService(httpClient);
 			Charges = new ChargeService(httpClient);
+			Billing = new BillingService(httpClient);
 		}
 
 		public string TestConnection() {
