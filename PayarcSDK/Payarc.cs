@@ -3,9 +3,6 @@ using PayarcSDK.Services;
 
 namespace PayarcSDK {
     public class Payarc {
-        private readonly HttpClient _httpClient;
-        private readonly CommonServices _commonServices;
-
         public ApplicationService ApplicationService { get; }
         public DisputeService DisputeService { get; }
         public SplitCampaignService SplitCampaignService { get; }
