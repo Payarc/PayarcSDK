@@ -1,10 +1,10 @@
-﻿using PayarcSDK.Http;
-using PayarcSDK.Services;
+﻿using PayarcSDK.Services;
 
 namespace PayarcSDK
 {
     public class Payarc {
-		private readonly ApiClient _apiClient;
+		private readonly HttpClient _httpClient;
+		private readonly CommonServices _commonServices;
 
 		public ApplicationService ApplicationService { get; }
 		public DisputeService DisputeService { get; }
@@ -13,27 +13,16 @@ namespace PayarcSDK
 		public ChargeService Charges { get; }
 		public BillingService Billing { get; }
 
-		/// <summary>
-		/// Initializes the Payarc client with the given base URL and API key.
-		/// </summary>
-		/// <param name="httpClient">An instance of HttpClient to be used for API requests.</param>
 		public Payarc(HttpClient httpClient) {
-			// Initialize the ApiClient
-			_apiClient = new ApiClient(httpClient);
-
 			// Instantiate the services
-			ApplicationService = new ApplicationService(_apiClient);
-			DisputeService = new DisputeService(_apiClient);
-			SplitCampaignService = new SplitCampaignService(_apiClient);
-			CustomerService = new CustomerService(_apiClient);
+			ApplicationService = new ApplicationService(httpClient);
+			DisputeService = new DisputeService(httpClient);
+			SplitCampaignService = new SplitCampaignService(httpClient);
+			CustomerService = new CustomerService(httpClient);
 			Charges = new ChargeService(httpClient);
 			Billing = new BillingService(httpClient);
 		}
 
-		/// <summary>
-		/// A method to ensure the Payarc client is working correctly (e.g., for health checks).
-		/// </summary>
-		/// <returns>A success message to indicate connectivity.</returns>
 		public string TestConnection() {
 			return "Payarc client initialized successfully.";
 		}

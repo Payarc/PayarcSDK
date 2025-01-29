@@ -1,32 +1,19 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PayarcSDK.Entities;
+using PayarcSDK.Entities.CustomerService;
+using PayarcSDK.Models;
 using System.Text;
+using System.Text.Json;
+using JsonException = System.Text.Json.JsonException;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace PayarcSDK.Sample {
 
 	internal class Program {
 		static async Task Main(string[] args) {
-			var requestBody = new {
-				username = "shahsuvar@payarc.com",
-				password = "6qCUnwTD.4K_CVz"
-			};
-
-			var requestContent = new StringContent(
-			JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
-			var httpClient = new HttpClient();
-			var response = await httpClient.PostAsync("https://testapi.payarc.net/v1/login", requestContent);
-
-			if (!response.IsSuccessStatusCode) {
-				var errorContent = await response.Content.ReadAsStringAsync();
-				throw new InvalidOperationException($"Failed to retrieve access token. StatusCode: {response.StatusCode}, Content: {errorContent}");
-			}
-
-			// Deserialize the success response
-			var responseContent = await response.Content.ReadAsStringAsync();
-			var successResponse = JsonConvert.DeserializeObject<AddSuccessResponse>(responseContent);
-
 			// Retrieve the access token
-			var accessToken = successResponse?.response_content?.access_token;
+			var accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiODdkNmVkMTYxYmEzOTliZTA1ZWY1YmYxNDE0MTA2NDFmMjFhNDE2Y2JlNDg1NmM2NzA2YWY3NzdjZTMwMGM2NTBiNjY2MDM3Nzc5YTI3MmUiLCJpYXQiOjE3MzgwODI1NzIuMzgzODg4LCJuYmYiOjE3MzgwODI1NzIuMzgzODksImV4cCI6MTc2OTYxODU3Mi4zNjE1MjEsInN1YiI6Ijg1MjYyMzYiLCJzY29wZXMiOltdfQ.qfo1ndtMFdDeEY2xQ9c3zlxUnjkJW0pZ9BvtaRxhhK9XkIHA3DGkKe6eGSPz6FmPW3Upwmggw9m6CFZnSoc2IrzUkJT0-68aP0xAiAT4akkM7P0fdmWFBEMNVqTHu8BYF37xo4_yRzUd5d--RdjAJKrJPBAfQaDw9CnbW5MgsVx-rkNVvIh365MQQ0TfOCmGy6-yoc79l4YwDLVLpIY1xeENAI5JQRvhprfOilSmsag4IxVNtgUg64GaOUx34pLpFUk2RmtikYuTyWcJvniYpUUOPrduIIKImxZEzH_rHD5gcRRetp1GJ8T3zs_wD5BnUKRJZiWVnBNazwoFevfhZj21XJDHzT--asVwH5RAS5oAW-uP0dUZz0BEQEeo1uQ3dTUqcTKUJdo2LqE8S-5KJA2F3OG1m2HqRpURwau0S29U8lPZSPX5d2CgXNFjGjrpBmf30v6vaDu-Q6qJ9sHX0aQ9h7kONnZtR8_TMCwJzT3JbwaLzGrcwJ5eu1YjSr-GRash3SgqAFedENUbq085ybiljl2GQlddgFjjwP7PAtTPiXqpajseIt-ZS7zfAaWL3Nr_7PAlS-QXvwxaJIXiZNn8agB6ZqyDGi9jfjMbzOWA3DZfYkm2UeXm-49FiEVO14wLzLcK7uRQq6zVdq_Hy3k0NxXfmNvdOWrUR85jYqM";
 
 			if (string.IsNullOrEmpty(accessToken)) {
 				throw new InvalidOperationException("Access token is missing in the response.");
@@ -68,113 +55,129 @@ namespace PayarcSDK.Sample {
 				Console.WriteLine($"Error: {ex.Message}");
 			}
 
-			var testService = "applicationService";
+			var testService = "customerService";
+			//var testService = "applicationService";
+			//var testService = "disputeService";
+			//var testService = "splitCampaignService";
+			//var testService = "chargeService";
 
 			switch (testService) {
 				case "customerService":
-					var cardData = new List<JObject>();
-					var bankData = new List<JObject>();
+					var cardData = new List<CardData>();
+					var bankData = new List<BankData>();
 					var customerId = "";
 
-					// Add a card to a customer
-					cardData.Add(new JObject {
-						["card_source"] = "INTERNET",
-						["card_number"] = "4012000098765439",
-						["exp_month"] = "12",
-						["exp_year"] = "2025",
-						["cvv"] = "999",
-						["card_holder_name"] = "John Doe",
-						["address_line1"] = "411 West Putnam Avenue",
-						["city"] = "Greenwich",
-						["state"] = "CT",
-						["zip"] = "06840",
-						["country"] = "US"
+					cardData.Add(new CardData {
+						CardSource = "INTERNET",
+						CardNumber = "4012000098765439",
+						ExpMonth = "12",
+						ExpYear = "2025",
+						Cvv = "999",
+						CardHolderName = "John Doe",
+						AddressLine1 = "411 West Putnam Avenue",
+						City = "Greenwich",
+						State = "CT",
+						Zip = "06840",
+						Country = "US"
 					});
 
-					// Add a card to a customer
-					cardData.Add(new JObject {
-						["card_source"] = "INTERNET",
-						["card_number"] = "4111111111111111",
-						["exp_month"] = "02",
-						["exp_year"] = "2027",
-						["cvv"] = "999",
-						["card_holder_name"] = "John Doe",
-						["address_line1"] = "411 West Putnam Avenue",
-						["city"] = "New York",
-						["state"] = "NY",
-						["zip"] = "06830",
-						["country"] = "US"
-
+					cardData.Add(new CardData {
+						CardSource = "INTERNET",
+						CardNumber = "4111111111111111",
+						ExpMonth = "02",
+						ExpYear = "2027",
+						Cvv = "999",
+						CardHolderName = "John Doe",
+						AddressLine1 = "411 West Putnam Avenue",
+						City = "New York",
+						State = "NY",
+						Zip = "06830",
+						Country = "US"
 					});
 
-					// Add a bank info to a customer
-					bankData.Add(new JObject {
-						["account_number"] = 1234567890,
-						["routing_number"] = 123456789,
-						["first_name"] = "Test",
-						["last_name"] = "Account",
-						["account_type"] = "Personal Checking",
-						["sec_code"] = "TEL"
+					bankData.Add( new BankData {
+						AccountNumber = "1234567890",
+						RoutingNumber = "123456789",
+						FirstName = "Test",
+						LastName = "Account",
+						AccountType = "Personal Checking",
+						SecCode = "TEL"
 					});
 
-					// Add a bank info to a customer
-					bankData.Add(new JObject {
-						["account_number"] = 1234567890,
-						["routing_number"] = 123456789,
-						["first_name"] = "Test2",
-						["last_name"] = "Account2",
-						["account_type"] = "Personal Checking",
-						["sec_code"] = "TEL"
+					bankData.Add(new BankData {
+						AccountNumber = "1234567890",
+						RoutingNumber = "123456789",
+						FirstName = "Test2",
+						LastName = "Account2",
+						AccountType = "Personal Checking",
+						SecCode = "TEL"
 					});
 
 					// List customers
-					var queryParams = new Dictionary<string, string> {
-						["limit"] = "10",
-						["page"] = "1"
+
+					var listOptions = new OptionsData() {
+						Limit = 10,
+						Page = 1,
 					};
 
-					var customers = await payarc.CustomerService.list(queryParams);
-					Console.WriteLine($"List of Customers: {customers["Data"]}");
+					var customers = await payarc.CustomerService.List(listOptions);
+					//Console.WriteLine($"List of Customers: {customers}");
+					Console.WriteLine("Customers Data");
+					for (int i = 0; i < customers?.Data?.Count; i++) {
+						var t = customers.Data[i];
+						Console.WriteLine(customers.Data[i]);
+					}
+					Console.WriteLine("Pagination Data");
+					Console.WriteLine(customers?.Pagination["total"]);
+					Console.WriteLine(customers?.Pagination["count"]);
+					Console.WriteLine(customers?.Pagination["per_page"]);
+					Console.WriteLine(customers?.Pagination["current_page"]);
+					Console.WriteLine(customers?.Pagination["total_pages"]);
 
-					customerId = customers["Data"]["data"]
-						.Children<JObject>()
-						.Where(p => (string)p.SelectToken("name") == "Shah Test7")
-						.Select(p => (string)p.SelectToken("customer_id")).FirstOrDefault();
 
-					var testAction = "deleteCustomer";
+					//customerId = customers["data"]
+					//	.Children<JObject>()
+					//	.Where(p => (string)p.SelectToken("name") == "Shah Test7")
+					//	.Select(p => (string)p.SelectToken("customer_id")).FirstOrDefault();
+
+					var testAction = "createCustomer";
+					//var testAction = "updateCustomer";
+					//var testAction = "deleteCustomer";
 
 					switch (testAction) {
 						case "createCustomer":
 							// Create a new customer
-							var newCustomerData = new JObject {
-								["name"] = "Shah Test8",
-								["email"] = "shah@test8.com",
-								["phone"] = "1234567890"
+							CustomerInfoData newCustomerData = new CustomerInfoData {
+								Name = "Shah Test11",
+								Email = "shah@test11.com",
+								Phone = 1234567890
 							};
-							newCustomerData.Add("cards", JToken.FromObject(cardData));
-							newCustomerData.Add("bank_accounts", JToken.FromObject(bankData));
-							var createdCustomer = await payarc.CustomerService.create(newCustomerData);
+
+							newCustomerData.Cards = cardData;
+							newCustomerData.BankAccounts = bankData;
+							BaseResponse createdCustomer = await payarc.CustomerService.Create(newCustomerData);
 							Console.WriteLine($"Created Customer: {createdCustomer}");
 							// Retrieve a customer
-							customerId = (string)createdCustomer.SelectToken("customer_id");
-							var customer = await payarc.CustomerService.retrieve(customerId);
+							customerId = createdCustomer.ObjectId;
+							customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
+							BaseResponse customer = await payarc.CustomerService.Retrieve(customerId);
 							Console.WriteLine($"Retrieved Customer: {customer}");
 							break;
 						case "updateCustomer":
 							// Update a customer
-							var customerData = new JObject {
-								["description"] = "Example customer add card",
-								["email"] = "shahupdate2@sdk.com",
-								["phone"] = "2222222222"
+							CustomerInfoData customerData = new CustomerInfoData {
+								Name = "Shah Test9",
+								Email = "shahupdate2@sdk.com",
+								Phone = 2222222222
 							};
-							customerData.Add("cards", JToken.FromObject(cardData));
-							customerData.Add("bank_accounts", JToken.FromObject(bankData));
-							var updatedCustomer = await payarc.CustomerService.update(customerId, customerData);
+							customerData.Cards = cardData;
+							customerData.BankAccounts = bankData;
+							var updatedCustomer = await payarc.CustomerService.Update(customerId, customerData);
 							Console.WriteLine($"Updated Customer: {updatedCustomer}");
 							break;
 						case "deleteCustomer":
 							// Delete a customer
-							var deleted = await payarc.CustomerService.delete(customerId);
+							var deleted = await payarc.CustomerService.Delete(customerId);
 							Console.WriteLine($"Deleted Customer: {deleted}");
 							break;
 						default:
@@ -215,7 +218,7 @@ namespace PayarcSDK.Sample {
 					};
 
 					try {
-						var addedLead = await payarcAgent.ApplicationService.create(merccandidate);
+						var addedLead = await payarcAgent.ApplicationService.Create(merccandidate);
 						Console.WriteLine($"Added Lead: {addedLead}");
 					} catch (HttpRequestException ex) {
 						Console.WriteLine($"Request failed: {ex.Message}");
@@ -230,23 +233,23 @@ namespace PayarcSDK.Sample {
 					};
 
 					// Retrieve applications
-					var applications = await payarcAgent.ApplicationService.list(queryParamsApplications);
+					var applications = await payarcAgent.ApplicationService.List(queryParamsApplications);
 					Console.WriteLine($"Applications: {applications}");
 
 					// Submit for signature
 					var applicantId = "9d6woe3qlz73jz0q";
-					var submitted = await payarcAgent.ApplicationService.submit(applicantId);
+					var submitted = await payarcAgent.ApplicationService.Submit(applicantId);
 					Console.WriteLine($"Submitted Applicant: {submitted}");
 
 					break;
 				case "disputeService":
 					// List cases
-					var cases = await payarc.DisputeService.list();
+					var cases = await payarc.DisputeService.List();
 					Console.WriteLine($"List Cases: {cases}");
 
 					var caseId = "dis_123456";
 					// Get a specific case
-					var specificCase = await payarc.DisputeService.retrieve(caseId);
+					var specificCase = await payarc.DisputeService.Retrieve(caseId);
 					Console.WriteLine($"Case Id with {caseId}: {specificCase}");
 
 					// Add a document to a case
@@ -257,7 +260,7 @@ namespace PayarcSDK.Sample {
 						{ "text", "Additional evidence for the dispute." },
 						{ "message", "Submitting dispute case with evidence." }
 					};
-					var result = await payarc.DisputeService.addDocument(caseId, documentParams);
+					var result = await payarc.DisputeService.AddDocument(caseId, documentParams);
 					Console.WriteLine($"Add Document Result: {result}");
 					break;
 				case "splitCampaignService":
@@ -277,7 +280,7 @@ namespace PayarcSDK.Sample {
 
 					var createdCampaignId = "";
 					if ((bool)createdCampaign.SelectToken("IsSuccess")) {
-						createdCampaignId = (string)createdCampaign["Data"]["data"].SelectToken("id");
+						createdCampaignId = (string)createdCampaign["data"].SelectToken("id");
 					}
 
 					// Example: Get all campaigns
@@ -300,10 +303,167 @@ namespace PayarcSDK.Sample {
 					var allAccounts = await payarc.SplitCampaignService.listAccounts();
 					Console.WriteLine($"All Accounts: {allAccounts}");
 					break;
+				case "chargeService":
+
+					//var testChargeAction = "CreateCharge";
+					//var testChargeAction = "RefundChargeById";
+					//var testChargeAction = "RefundChargeByObject";
+					//var testChargeAction = "CreateChargeByCardId";
+					//var testChargeAction = "CreateChargeByCustomerId";
+					//var testChargeAction = "GetChargeById";
+					//var testChargeAction = "CreateChargeByToken";
+					var testChargeAction = "ListCharges";
+
+					switch (testChargeAction) {
+						case "CreateCharge":
+							try {
+								var options = new ChargeCreateOptions {
+									Amount = 635,
+									Source = new SourceNestedOptions {
+										CardNumber = "4012000098765439",
+										ExpMonth = "03",
+										ExpYear = "2025",
+										CountyCode = "USA",
+										City = "GreenWitch",
+										AddressLine1 = "123 Main Street",
+										ZipCode = "12345",
+										State = "CA"
+									},
+									Currency = "usd"
+								};
+								var charge = await payarc.Charges.Create(options);
+								Console.WriteLine("Charge Data");
+								Console.WriteLine(charge);
+								Console.WriteLine("Raw Data");
+								var json = JsonSerializer.Deserialize<JsonDocument>(charge?.RawData);
+								Console.WriteLine(json.RootElement.GetProperty("id"));
+							} catch (Exception ex) {
+								Console.WriteLine(ex.Message);
+							}
+							break;
+						case "RefundChargeById":
+							try {
+								string charge = "ch_BoLWODoBLLDyLOXy";
+								var refund = await payarc.Charges.CreateRefund(charge, null);
+								Console.WriteLine("Refund Data");
+								Console.WriteLine(refund);
+							} catch (Exception ex) {
+								Console.WriteLine(ex.Message);
+							}
+							break;
+						case "RefundChargeByObject":
+							try {
+								ChargeResponseData? charge = (ChargeResponseData?)await payarc.Charges.Retrieve("ch_DMWbOLWbyyoRLOBX");
+								var refund = await charge.CreateRefund(null);
+								Console.WriteLine("Refund Data");
+								Console.WriteLine(refund);
+							} catch (Exception e) {
+								Console.WriteLine(e);
+								throw;
+							}
+							break;
+						case "CreateChargeByCardId":
+							try {
+								var options = new ChargeCreateOptions {
+									Amount = 155,
+									Source = new SourceNestedOptions {
+										CardId = "card_Ly9v09NN2P59M0m1",
+										CustomerId = "cus_jMNKVMPKnNxPVnDp"
+									},
+									Currency = "usd"
+								};
+								var charge = await payarc.Charges.Create(options);
+								Console.WriteLine("Charge Data");
+								Console.WriteLine(charge);
+								Console.WriteLine("Raw Data");
+								Console.WriteLine(charge?.RawData);
+							} catch (Exception ex) {
+								Console.WriteLine(ex.Message);
+							}
+							break;
+						case "CreateChargeByCustomerId":
+							try {
+								var options = new ChargeCreateOptions {
+									Amount = 255,
+									Source = new SourceNestedOptions {
+										CustomerId = "cus_jMNKVMPKnNxPVnDp"
+									},
+									Currency = "usd"
+								};
+								var charge = await payarc.Charges.Create(options);
+								Console.WriteLine("Charge Data");
+								Console.WriteLine(charge);
+								Console.WriteLine("Raw Data");
+								Console.WriteLine(charge?.RawData);
+							} catch (Exception ex) {
+								Console.WriteLine(ex.Message);
+							}
+							break;
+						case "GetChargeById":
+							try {
+								// var charge = await Payarc.Charges.Retrieve("ch_MnBROWLXBBXnoOWL");
+								var charge = await payarc.Charges.Retrieve("ch_XMbnObBXDDbMXORo");
+								Console.WriteLine("Get charge By Id Data");
+								Console.WriteLine(charge);
+								Console.WriteLine("Raw Data");
+								Console.WriteLine(charge?.RawData);
+							} catch (Exception ex) {
+								Console.WriteLine(ex.Message);
+							}
+							break;
+						case "CreateChargeByToken":
+							try {
+								var options = new ChargeCreateOptions {
+									Amount = 175,
+									Source = new SourceNestedOptions {
+										TokenId = "tok_mLY0wmYlL0mNEw8q"
+									},
+									Currency = "usd"
+								};
+								var charge = await payarc.Charges.Create(options);
+								Console.WriteLine("Charge Data");
+								Console.WriteLine(charge);
+								Console.WriteLine("Raw Data");
+								Console.WriteLine(charge?.RawData);
+							} catch (Exception ex) {
+								Console.WriteLine(ex.Message);
+							}
+							break;
+						case "ListCharges":
+							try {
+								var options = new OptionsData() {
+									Limit = 25,
+									Page = 1,
+								};
+								var responseData = await payarc.Charges.List(options);
+								Console.WriteLine("Charges Data");
+								for (int i = 0; i < responseData?.Data?.Count; i++) {
+									var t = responseData.Data[i];
+									Console.WriteLine(responseData.Data[i]);
+								}
+								Console.WriteLine("Pagination Data");
+								Console.WriteLine(responseData?.Pagination["total"]);
+								Console.WriteLine(responseData?.Pagination["count"]);
+								Console.WriteLine(responseData?.Pagination["per_page"]);
+								Console.WriteLine(responseData?.Pagination["current_page"]);
+								Console.WriteLine(responseData?.Pagination["total_pages"]);
+								// Console.WriteLine("Raw Data");
+								// Console.WriteLine(responseData?.RawData);
+							} catch (Exception e) {
+								Console.WriteLine(e);
+								throw;
+							}
+							break;
+						default:
+							Console.WriteLine("Nothing to test.");
+							break;
+					}
+					break;
 				default:
 					Console.WriteLine("Nothing to test.");
 					break;
 			}
+			Console.WriteLine("Finished");
 		}
 	}
 }
