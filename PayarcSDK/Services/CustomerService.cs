@@ -87,7 +87,6 @@ namespace PayarcSDK.Services {
 						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
 					}
 				}
-				//return JsonConvert.DeserializeObject<CustomerResponseData>(responseContent);
 				throw new InvalidOperationException("Response data is invalid or missing.");
 			} catch (HttpRequestException ex) {
 				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
@@ -167,7 +166,6 @@ namespace PayarcSDK.Services {
 				response.EnsureSuccessStatusCode();
 				var responseContent = await response.Content.ReadAsStringAsync();
 				Console.WriteLine($"Response status code: {response.StatusCode}");
-				// Console.WriteLine($"Response body: {responseBody}");
 				if (!response.IsSuccessStatusCode) {
 					var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
 					Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
@@ -185,7 +183,6 @@ namespace PayarcSDK.Services {
 						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
 					}
 				}
-				//return JsonConvert.DeserializeObject<CustomerResponseData>(responseContent);
 				throw new InvalidOperationException("Response data is invalid or missing.");
 			} catch (HttpRequestException ex) {
 				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
@@ -208,7 +205,6 @@ namespace PayarcSDK.Services {
 				response.EnsureSuccessStatusCode();
 				var responseContent = await response.Content.ReadAsStringAsync();
 				Console.WriteLine($"Response status code: {response.StatusCode}");
-				// Console.WriteLine($"Response body: {responseBody}");
 				if (!response.IsSuccessStatusCode) {
 					var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
 					Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
@@ -226,7 +222,6 @@ namespace PayarcSDK.Services {
 						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
 					}
 				}
-				//return JObject.Parse(responseContent);
 				throw new InvalidOperationException("Response data is invalid or missing.");
 			} catch (HttpRequestException ex) {
 				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
@@ -248,7 +243,6 @@ namespace PayarcSDK.Services {
 				response.EnsureSuccessStatusCode();
 				var responseContent = await response.Content.ReadAsStringAsync();
 				Console.WriteLine($"Response status code: {response.StatusCode}");
-				// Console.WriteLine($"Response body: {responseBody}");
 				if (!response.IsSuccessStatusCode) {
 					var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
 					Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
@@ -266,7 +260,6 @@ namespace PayarcSDK.Services {
 						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
 					}
 				}
-				//return JObject.Parse(responseContent);
 				throw new InvalidOperationException("Response data is invalid or missing.");
 			} catch (HttpRequestException ex) {
 				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
@@ -287,7 +280,6 @@ namespace PayarcSDK.Services {
 				response.EnsureSuccessStatusCode();
 				var responseContent = await response.Content.ReadAsStringAsync();
 				Console.WriteLine($"Response status code: {response.StatusCode}");
-				// Console.WriteLine($"Response body: {responseBody}");
 				if (!response.IsSuccessStatusCode) {
 					var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
 					Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
@@ -305,7 +297,6 @@ namespace PayarcSDK.Services {
 						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
 					}
 				}
-				//return JObject.Parse(responseContent);
 				throw new InvalidOperationException("Response data is invalid or missing.");
 			} catch (HttpRequestException ex) {
 				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
