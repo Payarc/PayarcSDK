@@ -44,7 +44,7 @@ namespace PayarcSDK.Services {
 		}
 
 		private async Task<BaseResponse> CreateCustomerAsync(CustomerInfoData customerData) {
-			CustomerResponseData createdCustomer = (CustomerResponseData?)CreateCustomer("customers", customerData).Result;
+			var createdCustomer =  await CreateCustomer("customers", customerData);
 			var customerId = createdCustomer.ObjectId;
 			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
 			if (customerData.Cards.Count() != 0) {
@@ -59,7 +59,7 @@ namespace PayarcSDK.Services {
 				}
 			}
 
-			createdCustomer = (CustomerResponseData?)RetrieveCustomerAsync(customerId).Result;
+			createdCustomer = await RetrieveCustomerAsync(customerId);
 			return createdCustomer;
 		}
 
