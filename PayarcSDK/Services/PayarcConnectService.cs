@@ -53,7 +53,7 @@ namespace PayarcSDK.Services {
             }
         }
 
-        public async Task<SaleResponse> Sale(string tenderType, string ecrRefNum, decimal amount, string deviceSerialNo) {
+        public async Task<SaleResponse> Sale(string tenderType, string ecrRefNum, string amount, string deviceSerialNo) {
             var seed = new { source = "Payarc Connect Sale" };
 
             try {
@@ -75,6 +75,7 @@ namespace PayarcSDK.Services {
                 var response = await _httpClient.SendAsync(requestMessage);
 
                 var responseContent = await response.Content.ReadAsStringAsync();
+
                 var responseData = JsonSerializer.Deserialize<SaleResponse>(responseContent);
 
                 if (responseData?.ErrorCode != 0) {
@@ -131,7 +132,7 @@ namespace PayarcSDK.Services {
             }
         }
 
-        public async Task<SaleResponse> Refund(decimal amount, string payarcTransactionId, string deviceSerialNo) {
+        public async Task<SaleResponse> Refund(string amount, string payarcTransactionId, string deviceSerialNo) {
             var seed = new { source = "Payarc Connect Refund" };
 
             try {
@@ -172,7 +173,7 @@ namespace PayarcSDK.Services {
             }
         }
 
-        public async Task<SaleResponse> BlindCredit(string ecrRefNum, decimal amount, string token, string expDate, string deviceSerialNo) {
+        public async Task<SaleResponse> BlindCredit(string ecrRefNum, string amount, string token, string expDate, string deviceSerialNo) {
             try {
                 var requestBody = new {
                     TransType = "RETURN",
@@ -209,7 +210,7 @@ namespace PayarcSDK.Services {
             }
         }
 
-        public async Task<SaleResponse> Auth(string ecrRefNum, decimal amount, string deviceSerialNo) {
+        public async Task<SaleResponse> Auth(string ecrRefNum, string amount, string deviceSerialNo) {
             try {
                 var requestBody = new {
                     TransType = "AUTH",
@@ -241,7 +242,7 @@ namespace PayarcSDK.Services {
             }
         }
 
-        public async Task<SaleResponse> PostAuth(string ecrRefNum, string origRefNum, decimal amount, string deviceSerialNo) {
+        public async Task<SaleResponse> PostAuth(string ecrRefNum, string origRefNum, string amount, string deviceSerialNo) {
             try {
                 var requestBody = new {
                     TransType = "POSTAUTH",
@@ -323,7 +324,7 @@ namespace PayarcSDK.Services {
             }
         }
 
-        public async Task<object> Terminals() {
+        public async Task<TerminalResponse> Terminals() {
             try {
                 var requestUri = $"{_config.BaseUrl}Terminals";
 
@@ -332,7 +333,7 @@ namespace PayarcSDK.Services {
 
                 var response = await _httpClient.SendAsync(requestMessage);
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var responseData = JsonSerializer.Deserialize<SaleResponse>(responseContent);
+                var responseData = JsonSerializer.Deserialize<TerminalResponse>(responseContent);
 
                 if (responseData?.ErrorCode != 0) {
                     throw new Exception($"Payarc Connect returned an error during the Terminals request. ErrorCode: {responseData?.ErrorCode}, ErrorMessage: {responseData?.ErrorMessage}");

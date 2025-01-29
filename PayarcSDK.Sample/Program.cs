@@ -322,10 +322,20 @@ namespace PayarcSDK.Sample {
                     Console.WriteLine($"All Accounts: {allAccounts}");
                     break;
                 case "payarcConnect":
-                    string deviceSerialNo = "1851085026";
+                    string deviceSerialNo = "1851085026"; // switch this to serial number of the device you are testing with
 
-                    LoginResponse loginResponse = await payarcConnect.PayarcConnect.Login();
-                    SaleResponse saleResponse = await payarcConnect.PayarcConnect.Sale("CREDIT", "REF99", 69, deviceSerialNo);
+                    /// Test with the following methods, replace input parameters as needed. More information can be found in the Payarc Connect API documentation.
+
+                    //LoginResponse loginResponse = await payarcConnect.PayarcConnect.Login();
+                    //SaleResponse saleResponse = await payarcConnect.PayarcConnect.Sale("CREDIT", "REF61", "61", deviceSerialNo);
+                    //SaleResponse voidResponse = await payarcConnect.PayarcConnect.Void("nbDBOMBWRoyRoORX", deviceSerialNo);
+                    //SaleResponse refundResponse = await payarcConnect.PayarcConnect.Refund("32", "DoBnOnDMWLXWbOyW", deviceSerialNo);
+                    //SaleResponse blindCreditResponse = await payarcConnect.PayarcConnect.BlindCredit("BLINDCREDIT69", "69", "2m1v0L595vN9L0MP", "0227", deviceSerialNo);
+                    //SaleResponse authResponse = await payarcConnect.PayarcConnect.Auth("AUTH64", "64", deviceSerialNo);
+                    //SaleResponse postAuthReponse = await payarcConnect.PayarcConnect.PostAuth("POSTAUTH64", "12", "64", deviceSerialNo);
+                    //SaleResponse lastTransaction = await payarcConnect.PayarcConnect.LastTransaction(deviceSerialNo);
+                    //ServerInfoResponse serverInfo = await payarcConnect.PayarcConnect.ServerInfo();
+                    //TerminalResponse terminalResponse = await payarcConnect.PayarcConnect.Terminals();
 
                     break;
                 default:
@@ -333,7 +343,5 @@ namespace PayarcSDK.Sample {
                     break;
             }
         }
-
-
     }
 }
