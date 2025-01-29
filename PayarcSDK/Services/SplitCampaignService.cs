@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
-using PayarcSDK.Http;
+using System.Text;
 
 namespace PayarcSDK.Services {
 	public class SplitCampaignService {
-		private readonly ApiClient _apiClient;
+		private readonly HttpClient _httpClient;
 
-		public SplitCampaignService(ApiClient apiClient) {
-			_apiClient = apiClient;
+		public SplitCampaignService(HttpClient httpClient) {
+			_httpClient = httpClient;
 		}
 
 		public async Task<JObject> create(JObject campaignData) {
@@ -32,7 +32,7 @@ namespace PayarcSDK.Services {
 		/// Create a new campaign.
 		private async Task<JObject> CreateCampaignAsync(JObject campaignData) {
 			try {
-				return await _apiClient.PostAsync("agent-hub/campaigns", campaignData);
+				return await PostAsync("agent-hub/campaigns", campaignData);
 			} catch (Exception ex) {
 				throw new Exception("Error creating campaign.", ex);
 			}
@@ -41,7 +41,7 @@ namespace PayarcSDK.Services {
 		/// Retrieve all campaigns.
 		private async Task<JObject> GetAllCampaignsAsync(Dictionary<string, string> queryParams = null) {
 			try {
-				return await _apiClient.GetAsync("agent-hub/campaigns", queryParams);
+				return await GetAsync("agent-hub/campaigns", queryParams);
 			} catch (Exception ex) {
 				throw new Exception("Error retrieving campaigns.", ex);
 			}
@@ -59,7 +59,7 @@ namespace PayarcSDK.Services {
 					{ "limit", "0" }
 				};
 
-				return await _apiClient.GetAsync($"agent-hub/campaigns/{campaignId}", queryParams);
+				return await GetAsync($"agent-hub/campaigns/{campaignId}", queryParams);
 			} catch (Exception ex) {
 				throw new Exception("Error retrieving campaign details.", ex);
 			}
@@ -72,7 +72,7 @@ namespace PayarcSDK.Services {
 					campaignId = campaignId.Substring(4);
 				}
 
-				return await _apiClient.PatchAsync($"agent-hub/campaigns/{campaignId}", updatedData);
+				return await PatchAsync($"agent-hub/campaigns/{campaignId}", updatedData);
 			} catch (Exception ex) {
 				throw new Exception("Error updating campaign.", ex);
 			}
@@ -81,10 +81,40 @@ namespace PayarcSDK.Services {
 		/// Retrieve all accounts.
 		private async Task<JObject> GetAllAccountsAsync() {
 			try {
-				return await _apiClient.GetAsync("account/my-accounts");
+				return await GetAsync("account/my-accounts");
 			} catch (Exception ex) {
 				throw new Exception("Error retrieving accounts.", ex);
 			}
+		}
+
+		// Generic HTTP request helper methods
+		private async Task<JObject> GetAsync(string url, Dictionary<string, string> queryParams = null) {
+			if (queryParams != null) {
+				var query = string.Join("&", queryParams.Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}"));
+				url = $"{url}?{query}";
+			}
+
+			var response = await _httpClient.GetAsync(url);
+			response.EnsureSuccessStatusCode();
+			var responseContent = await response.Content.ReadAsStringAsync();
+			return JObject.Parse(responseContent);
+		}
+
+		private async Task<JObject> PostAsync(string url, JObject data) {
+			var content = new StringContent(data.ToString(), Encoding.UTF8, "application/json");
+			var response = await _httpClient.PostAsync(url, content);
+			response.EnsureSuccessStatusCode();
+			var responseContent = await response.Content.ReadAsStringAsync();
+			return JObject.Parse(responseContent);
+		}
+
+		private async Task<JObject> PatchAsync(string url, JObject data) {
+			var content = new StringContent(data.ToString(), Encoding.UTF8, "application/json");
+			var request = new HttpRequestMessage(HttpMethod.Patch, url) { Content = content };
+			var response = await _httpClient.SendAsync(request);
+			response.EnsureSuccessStatusCode();
+			var responseContent = await response.Content.ReadAsStringAsync();
+			return JObject.Parse(responseContent);
 		}
 	}
 }

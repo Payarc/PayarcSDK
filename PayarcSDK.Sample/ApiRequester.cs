@@ -244,7 +244,7 @@ public class ApiRequester
         {
             try
             {
-                var options = new ChargeListOptions()
+                var options = new OptionsData()
                 {
                     Limit = 25,
                     Page = 1,
