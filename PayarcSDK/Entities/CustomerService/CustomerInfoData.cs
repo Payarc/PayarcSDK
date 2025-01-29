@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
+using PayarcSDK.Models;
 
-namespace PayarcSDK.Models
+namespace PayarcSDK.Entities.CustomerService
 {
     public class CustomerInfoData {
 		[JsonProperty("email")]

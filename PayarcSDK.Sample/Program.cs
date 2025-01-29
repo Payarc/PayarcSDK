@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PayarcSDK.Entities;
+using PayarcSDK.Entities.CustomerService;
 using PayarcSDK.Models;
 using System.Text;
 using System.Text.Json;
@@ -11,27 +12,8 @@ namespace PayarcSDK.Sample {
 
 	internal class Program {
 		static async Task Main(string[] args) {
-			var requestBody = new {
-				username = "shahsuvar@payarc.com",
-				password = "6qCUnwTD.4K_CVz"
-			};
-
-			var requestContent = new StringContent(
-			JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
-			var httpClient = new HttpClient();
-			var response = await httpClient.PostAsync("https://testapi.payarc.net/v1/login", requestContent);
-
-			if (!response.IsSuccessStatusCode) {
-				var errorContent = await response.Content.ReadAsStringAsync();
-				throw new InvalidOperationException($"Failed to retrieve access token. StatusCode: {response.StatusCode}, Content: {errorContent}");
-			}
-
-			// Deserialize the success response
-			var responseContent = await response.Content.ReadAsStringAsync();
-			var successResponse = JsonConvert.DeserializeObject<AddSuccessResponse>(responseContent);
-
 			// Retrieve the access token
-			var accessToken = successResponse?.response_content?.access_token;
+			var accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiODdkNmVkMTYxYmEzOTliZTA1ZWY1YmYxNDE0MTA2NDFmMjFhNDE2Y2JlNDg1NmM2NzA2YWY3NzdjZTMwMGM2NTBiNjY2MDM3Nzc5YTI3MmUiLCJpYXQiOjE3MzgwODI1NzIuMzgzODg4LCJuYmYiOjE3MzgwODI1NzIuMzgzODksImV4cCI6MTc2OTYxODU3Mi4zNjE1MjEsInN1YiI6Ijg1MjYyMzYiLCJzY29wZXMiOltdfQ.qfo1ndtMFdDeEY2xQ9c3zlxUnjkJW0pZ9BvtaRxhhK9XkIHA3DGkKe6eGSPz6FmPW3Upwmggw9m6CFZnSoc2IrzUkJT0-68aP0xAiAT4akkM7P0fdmWFBEMNVqTHu8BYF37xo4_yRzUd5d--RdjAJKrJPBAfQaDw9CnbW5MgsVx-rkNVvIh365MQQ0TfOCmGy6-yoc79l4YwDLVLpIY1xeENAI5JQRvhprfOilSmsag4IxVNtgUg64GaOUx34pLpFUk2RmtikYuTyWcJvniYpUUOPrduIIKImxZEzH_rHD5gcRRetp1GJ8T3zs_wD5BnUKRJZiWVnBNazwoFevfhZj21XJDHzT--asVwH5RAS5oAW-uP0dUZz0BEQEeo1uQ3dTUqcTKUJdo2LqE8S-5KJA2F3OG1m2HqRpURwau0S29U8lPZSPX5d2CgXNFjGjrpBmf30v6vaDu-Q6qJ9sHX0aQ9h7kONnZtR8_TMCwJzT3JbwaLzGrcwJ5eu1YjSr-GRash3SgqAFedENUbq085ybiljl2GQlddgFjjwP7PAtTPiXqpajseIt-ZS7zfAaWL3Nr_7PAlS-QXvwxaJIXiZNn8agB6ZqyDGi9jfjMbzOWA3DZfYkm2UeXm-49FiEVO14wLzLcK7uRQq6zVdq_Hy3k0NxXfmNvdOWrUR85jYqM";
 
 			if (string.IsNullOrEmpty(accessToken)) {
 				throw new InvalidOperationException("Access token is missing in the response.");
@@ -87,29 +69,29 @@ namespace PayarcSDK.Sample {
 
 					cardData.Add(new CardData {
 						CardSource = "INTERNET",
-						CardNumber = 4012000098765439,
-						ExpMonth = 12,
-						ExpYear = 2025,
-						Cvv = 999,
+						CardNumber = "4012000098765439",
+						ExpMonth = "12",
+						ExpYear = "2025",
+						Cvv = "999",
 						CardHolderName = "John Doe",
 						AddressLine1 = "411 West Putnam Avenue",
 						City = "Greenwich",
 						State = "CT",
-						Zip = 06840,
+						Zip = "06840",
 						Country = "US"
 					});
 
 					cardData.Add(new CardData {
 						CardSource = "INTERNET",
-						CardNumber = 4111111111111111,
-						ExpMonth = 02,
-						ExpYear = 2027,
-						Cvv = 999,
+						CardNumber = "4111111111111111",
+						ExpMonth = "02",
+						ExpYear = "2027",
+						Cvv = "999",
 						CardHolderName = "John Doe",
 						AddressLine1 = "411 West Putnam Avenue",
 						City = "New York",
 						State = "NY",
-						Zip = 06830,
+						Zip = "06830",
 						Country = "US"
 					});
 
@@ -166,18 +148,19 @@ namespace PayarcSDK.Sample {
 						case "createCustomer":
 							// Create a new customer
 							CustomerInfoData newCustomerData = new CustomerInfoData {
-								Name = "Shah Test10",
-								Email = "shah@test10.com",
+								Name = "Shah Test11",
+								Email = "shah@test11.com",
 								Phone = 1234567890
 							};
 
 							newCustomerData.Cards = cardData;
 							newCustomerData.BankAccounts = bankData;
-							CustomerResponseData createdCustomer = await payarc.CustomerService.Create(newCustomerData);
+							BaseResponse createdCustomer = await payarc.CustomerService.Create(newCustomerData);
 							Console.WriteLine($"Created Customer: {createdCustomer}");
 							// Retrieve a customer
-							customerId = createdCustomer.CustomerId;
-							CustomerResponseData customer = await payarc.CustomerService.Retrieve(customerId);
+							customerId = createdCustomer.ObjectId;
+							customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
+							BaseResponse customer = await payarc.CustomerService.Retrieve(customerId);
 							Console.WriteLine($"Retrieved Customer: {customer}");
 							break;
 						case "updateCustomer":
@@ -336,7 +319,7 @@ namespace PayarcSDK.Sample {
 							try {
 								var options = new ChargeCreateOptions {
 									Amount = 635,
-									Source = new CardCreateNestedOptions {
+									Source = new SourceNestedOptions {
 										CardNumber = "4012000098765439",
 										ExpMonth = "03",
 										ExpYear = "2025",
@@ -383,7 +366,7 @@ namespace PayarcSDK.Sample {
 							try {
 								var options = new ChargeCreateOptions {
 									Amount = 155,
-									Source = new CardCreateNestedOptions {
+									Source = new SourceNestedOptions {
 										CardId = "card_Ly9v09NN2P59M0m1",
 										CustomerId = "cus_jMNKVMPKnNxPVnDp"
 									},
@@ -402,7 +385,7 @@ namespace PayarcSDK.Sample {
 							try {
 								var options = new ChargeCreateOptions {
 									Amount = 255,
-									Source = new CardCreateNestedOptions {
+									Source = new SourceNestedOptions {
 										CustomerId = "cus_jMNKVMPKnNxPVnDp"
 									},
 									Currency = "usd"
@@ -432,7 +415,7 @@ namespace PayarcSDK.Sample {
 							try {
 								var options = new ChargeCreateOptions {
 									Amount = 175,
-									Source = new CardCreateNestedOptions {
+									Source = new SourceNestedOptions {
 										TokenId = "tok_mLY0wmYlL0mNEw8q"
 									},
 									Currency = "usd"

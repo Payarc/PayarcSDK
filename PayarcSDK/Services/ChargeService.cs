@@ -9,7 +9,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace PayarcSDK.Services
 {
-    public class ChargeService
+    public class ChargeService : CommonServices
     {
         private readonly HttpClient _httpClient;
 
@@ -168,7 +168,7 @@ namespace PayarcSDK.Services
                 {
                     for (int i = 0; i < jsonCharges.Count; i++)
                     {
-                        var ch = TransformJsonRawObject(jsonCharges[i], JsonSerializer.Serialize(jsonCharges[i]));
+                        var ch = TransformJsonRawObject(jsonCharges[i], JsonSerializer.Serialize(jsonCharges[i]), _httpClient);
                         charges?.Add(ch);
                     }
                 }
@@ -208,14 +208,6 @@ namespace PayarcSDK.Services
                 Console.WriteLine($"General error handling charge: {ex.Message}");
                 throw;
             }
-        }
-
-        private string BuildQueryString(Dictionary<string, object> parameters)
-        {
-            var queryString = string.Join("&",
-                parameters.Select(p =>
-                    $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value.ToString() ?? string.Empty)}"));
-            return queryString;
         }
 
         private Dictionary<string, string> GetParams(string endpoint)
@@ -305,7 +297,7 @@ namespace PayarcSDK.Services
                     var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
                     if (dataDict != null)
                     {
-                        return TransformJsonRawObject(dataDict, dataElement.GetRawText());
+                        return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
                     }
                 }
 
@@ -429,7 +421,7 @@ namespace PayarcSDK.Services
                     var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
                     if (dataDict != null)
                     {
-                        return TransformJsonRawObject(dataDict, dataElement.GetRawText());
+                        return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
                     }
                 }
 
@@ -493,33 +485,6 @@ namespace PayarcSDK.Services
                 Console.WriteLine($"Error processing refund for {msg} charge: {ex.Message}");
                 throw new InvalidOperationException($"Failed to process refund for {msg} charge", ex);
             }
-        }
-
-        private BaseResponse? TransformJsonRawObject(Dictionary<string, object> obj, string? rawObj)
-        {
-            BaseResponse? response = null;
-            if ((obj["object"]?.ToString() == "Charge" || obj["object"]?.ToString() == "ACHCharge") && rawObj != null)
-            {
-                if (obj["object"]?.ToString() == "Charge")
-                {
-                    var chargeResponse = JsonConvert.DeserializeObject<ChargeResponseData>(rawObj) ?? new ChargeResponseData();
-                    chargeResponse.RawData = rawObj;
-                    chargeResponse.ObjectId ??= $"ch_{obj["id"]}";
-                    chargeResponse.CreateRefund = async (chargeData) => await CreateRefund(chargeResponse, chargeData);
-                    response = chargeResponse;
-                }
-                else if (obj["object"]?.ToString() == "ACHCharge")
-                {
-                    var achChargeResponse = JsonConvert.DeserializeObject<AchChargeResponseData>(rawObj) ?? new AchChargeResponseData();
-                    achChargeResponse.RawData = rawObj;
-                    achChargeResponse.ObjectId ??= $"ach_{obj["id"]}";
-                    achChargeResponse.CreateRefund = async (chargeData) => await CreateRefund(achChargeResponse, chargeData);
-                    if (achChargeResponse.BankAccount?.Data != null) achChargeResponse.BankAccount.Data.ObjectId = $"bnk_{obj["id"]}";
-                    response = achChargeResponse;
-                }
-            }
-
-            return response;
         }
     }
 }

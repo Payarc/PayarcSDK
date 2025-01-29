@@ -10,20 +10,21 @@ using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using PayarcSDK.Services;
 using AnyOfTypes;
+using PayarcSDK.Entities.CustomerService;
 
 namespace PayarcSDK.Services {
-	public class CustomerService {
+	public class CustomerService : CommonServices {
 		private readonly HttpClient _httpClient;
 
 		public CustomerService(HttpClient httpClient) {
 			_httpClient = httpClient;
 		}
 
-		public async Task<CustomerResponseData> Create(CustomerInfoData customerData) {
+		public async Task<BaseResponse> Create(CustomerInfoData customerData) {
 			return await CreateCustomerAsync(customerData);
 		}
 
-		public async Task<CustomerResponseData> Retrieve(string customerId) {
+		public async Task<BaseResponse> Retrieve(string customerId) {
 			return await RetrieveCustomerAsync(customerId);
 		}
 
@@ -31,7 +32,7 @@ namespace PayarcSDK.Services {
 			return await ListCustomersAsync(options);
 		}
 
-		public async Task<JObject> Update(AnyOf<string?, CustomerResponseData> customer,
+		public async Task<BaseResponse> Update(AnyOf<string?, CustomerResponseData> customer,
 			CustomerInfoData? customerData = null) {
 			string? customerId = string.Empty;
 			customerId = customer.IsSecond ? customer.Second.ObjectId : customer.First;
@@ -42,11 +43,10 @@ namespace PayarcSDK.Services {
 			return await DeleteCustomerAsync(customerId);
 		}
 
-		private async Task<CustomerResponseData> CreateCustomerAsync(CustomerInfoData customerData) {
-			var response = await CreateCustomer("customers", customerData);
-			CustomerResponseData createdCustomer = response;
-			var customerId = createdCustomer.CustomerId?.ToString();
-
+		private async Task<BaseResponse> CreateCustomerAsync(CustomerInfoData customerData) {
+			CustomerResponseData createdCustomer = (CustomerResponseData?)CreateCustomer("customers", customerData).Result;
+			var customerId = createdCustomer.ObjectId;
+			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
 			if (customerData.Cards.Count() != 0) {
 				foreach (CardData cardData in customerData.Cards) {
 					await AddCardToCustomerAsync(customerId, cardData, customerData);
@@ -59,20 +59,49 @@ namespace PayarcSDK.Services {
 				}
 			}
 
-			createdCustomer = await RetrieveCustomerAsync(customerId);
+			createdCustomer = (CustomerResponseData?)RetrieveCustomerAsync(customerId).Result;
 			return createdCustomer;
 		}
 
-		private async Task<CustomerResponseData> RetrieveCustomerAsync(string customerId) {
-			var url = $"customers/{customerId}";
-			var response = await _httpClient.GetAsync(url);
-			response.EnsureSuccessStatusCode();
+		private async Task<BaseResponse> RetrieveCustomerAsync(string customerId) {
+			try {
+				var url = $"customers/{customerId}";
+				var response = await _httpClient.GetAsync(url);
+				response.EnsureSuccessStatusCode();
 
-			var responseContent = await response.Content.ReadAsStringAsync();
-			return JsonConvert.DeserializeObject<CustomerResponseData>(responseContent);
+				var responseContent = await response.Content.ReadAsStringAsync();
+				if (!response.IsSuccessStatusCode) {
+					var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+					Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
+					throw new InvalidOperationException($"HTTP error {response.StatusCode}: {responseContent}");
+				}
+
+				if (string.IsNullOrWhiteSpace(responseContent)) {
+					throw new InvalidOperationException("Response body is empty.");
+				}
+
+				var data = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+				if (data != null && data.TryGetValue("data", out var dataValue) && dataValue is JsonElement dataElement) {
+					var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
+					if (dataDict != null) {
+						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
+					}
+				}
+				//return JsonConvert.DeserializeObject<CustomerResponseData>(responseContent);
+				throw new InvalidOperationException("Response data is invalid or missing.");
+			} catch (HttpRequestException ex) {
+				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
+				throw;
+			} catch (JsonException ex) {
+				Console.WriteLine($"JSON error processing charge: {ex.Message}");
+				throw new InvalidOperationException("Failed to process JSON response.", ex);
+			} catch (Exception ex) {
+				Console.WriteLine($"General error handling charge: {ex.Message}");
+				throw;
+			}
 		}
 
-		private async Task<JObject> UpdateCustomerAsync(string customerId, CustomerInfoData customerData) {
+		private async Task<BaseResponse> UpdateCustomerAsync(string customerId, CustomerInfoData customerData) {
 			if (customerData.Cards.Count() != 0) {
 				foreach (CardData cardData in customerData.Cards) {
 					await AddCardToCustomerAsync(customerId, cardData, customerData);
@@ -88,14 +117,14 @@ namespace PayarcSDK.Services {
 			return await UpdateCustomer($"customers/{customerId}", customerData);
 		}
 
-		private async Task<JObject> AddCardToCustomerAsync(string customerId, CardData cardData, CustomerInfoData customerData) {
-			var cardToken = await CreateCardToken("tokens", cardData);
-			var tokenId = cardToken["data"]?["id"]?.ToString();
-			customerData.TokenId = tokenId;
+		private async Task<BaseResponse> AddCardToCustomerAsync(string customerId, CardData cardData, CustomerInfoData customerData) {
+			BaseResponse cardToken = await CreateCardToken("tokens", cardData);
+			var tokenId = cardToken.ObjectId;
+			customerData.TokenId = tokenId.StartsWith("tok_") ? tokenId.Substring(4) : tokenId;
 			return await UpdateCustomer($"customers/{customerId}", customerData);
 		}
 
-		private async Task<JObject> AddBankAccountToCustomerAsync(string customerId, BankData bankData) {
+		private async Task<BaseResponse> AddBankAccountToCustomerAsync(string customerId, BankData bankData) {
 			bankData.CustomerId = customerId;
 			return await AddBankAccount("bankaccounts", bankData);
 		}
@@ -117,8 +146,7 @@ namespace PayarcSDK.Services {
 						}
 					}
 				}
-				CommonServices commonServices = new CommonServices();
-				var query = commonServices.BuildQueryString(parameters);
+				var query = BuildQueryString(parameters);
 				return await GetCustomersAsync("customers", query);
 			} catch (Exception ex) {
 				Console.WriteLine(ex);
@@ -132,50 +160,174 @@ namespace PayarcSDK.Services {
 		}
 
 		// Generic HTTP request methods
-		private async Task<CustomerResponseData> CreateCustomer(string url, CustomerInfoData customerData) {
-			//var jsonData = JsonConvert.SerializeObject(data);
-			Console.WriteLine(customerData.ToJson());
-			var content = new StringContent(customerData.ToJson(), Encoding.UTF8, "application/json");
-			var response = await _httpClient.PostAsync(url, content);
-			response.EnsureSuccessStatusCode();
-			var responseContent = await response.Content.ReadAsStringAsync();
-			return JsonConvert.DeserializeObject<CustomerResponseData>(responseContent);
+		private async Task<BaseResponse> CreateCustomer(string url, CustomerInfoData customerData) {
+			try {
+				var content = new StringContent(customerData.ToJson(), Encoding.UTF8, "application/json");
+				var response = await _httpClient.PostAsync(url, content);
+				response.EnsureSuccessStatusCode();
+				var responseContent = await response.Content.ReadAsStringAsync();
+				Console.WriteLine($"Response status code: {response.StatusCode}");
+				// Console.WriteLine($"Response body: {responseBody}");
+				if (!response.IsSuccessStatusCode) {
+					var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+					Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
+					throw new InvalidOperationException($"HTTP error {response.StatusCode}: {responseContent}");
+				}
+
+				if (string.IsNullOrWhiteSpace(responseContent)) {
+					throw new InvalidOperationException("Response body is empty.");
+				}
+
+				var data = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+				if (data != null && data.TryGetValue("data", out var dataValue) && dataValue is JsonElement dataElement) {
+					var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
+					if (dataDict != null) {
+						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
+					}
+				}
+				//return JsonConvert.DeserializeObject<CustomerResponseData>(responseContent);
+				throw new InvalidOperationException("Response data is invalid or missing.");
+			} catch (HttpRequestException ex) {
+				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
+				throw;
+			} catch (JsonException ex) {
+				Console.WriteLine($"JSON error processing charge: {ex.Message}");
+				throw new InvalidOperationException("Failed to process JSON response.", ex);
+			} catch (Exception ex) {
+				Console.WriteLine($"General error handling charge: {ex.Message}");
+				throw;
+			}
 		}
 
-		private async Task<JObject> UpdateCustomer(string url, CustomerInfoData customerData) {
-			var content = new StringContent(customerData.ToJson(), Encoding.UTF8, "application/json");
-			var request = new HttpRequestMessage(HttpMethod.Patch, url) { Content = content };
-			var response = await _httpClient.SendAsync(request);
-			response.EnsureSuccessStatusCode();
-			var responseContent = await response.Content.ReadAsStringAsync();
-			return JObject.Parse(responseContent);
+		private async Task<BaseResponse> UpdateCustomer(string url, CustomerInfoData customerData) {
+			try {
+				Console.WriteLine($"Customer Data: {customerData.ToJson()}");
+				var content = new StringContent(customerData.ToJson(), Encoding.UTF8, "application/json");
+				var request = new HttpRequestMessage(HttpMethod.Patch, url) { Content = content };
+				var response = await _httpClient.SendAsync(request);
+				response.EnsureSuccessStatusCode();
+				var responseContent = await response.Content.ReadAsStringAsync();
+				Console.WriteLine($"Response status code: {response.StatusCode}");
+				// Console.WriteLine($"Response body: {responseBody}");
+				if (!response.IsSuccessStatusCode) {
+					var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+					Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
+					throw new InvalidOperationException($"HTTP error {response.StatusCode}: {responseContent}");
+				}
+
+				if (string.IsNullOrWhiteSpace(responseContent)) {
+					throw new InvalidOperationException("Response body is empty.");
+				}
+
+				var data = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+				if (data != null && data.TryGetValue("data", out var dataValue) && dataValue is JsonElement dataElement) {
+					var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
+					if (dataDict != null) {
+						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
+					}
+				}
+				//return JObject.Parse(responseContent);
+				throw new InvalidOperationException("Response data is invalid or missing.");
+			} catch (HttpRequestException ex) {
+				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
+				throw;
+			} catch (JsonException ex) {
+				Console.WriteLine($"JSON error processing charge: {ex.Message}");
+				throw new InvalidOperationException("Failed to process JSON response.", ex);
+			} catch (Exception ex) {
+				Console.WriteLine($"General error handling charge: {ex.Message}");
+				throw;
+			}
 		}
 
-		private async Task<JObject> CreateCardToken(string url, CardData cardData) {
-			var content = new StringContent(cardData.ToJson(), Encoding.UTF8, "application/json");
-			var response = await _httpClient.PostAsync(url, content);
-			response.EnsureSuccessStatusCode();
-			var responseContent = await response.Content.ReadAsStringAsync();
-			return JObject.Parse(responseContent);
+		private async Task<BaseResponse> CreateCardToken(string url, CardData cardData) {
+			try {
+				Console.WriteLine($"Card Data: {cardData.ToJson()}");
+				var content = new StringContent(cardData.ToJson(), Encoding.UTF8, "application/json");
+				var response = await _httpClient.PostAsync(url, content);
+				response.EnsureSuccessStatusCode();
+				var responseContent = await response.Content.ReadAsStringAsync();
+				Console.WriteLine($"Response status code: {response.StatusCode}");
+				// Console.WriteLine($"Response body: {responseBody}");
+				if (!response.IsSuccessStatusCode) {
+					var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+					Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
+					throw new InvalidOperationException($"HTTP error {response.StatusCode}: {responseContent}");
+				}
+
+				if (string.IsNullOrWhiteSpace(responseContent)) {
+					throw new InvalidOperationException("Response body is empty.");
+				}
+
+				var data = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+				if (data != null && data.TryGetValue("data", out var dataValue) && dataValue is JsonElement dataElement) {
+					var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
+					if (dataDict != null) {
+						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
+					}
+				}
+				//return JObject.Parse(responseContent);
+				throw new InvalidOperationException("Response data is invalid or missing.");
+			} catch (HttpRequestException ex) {
+				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
+				throw;
+			} catch (JsonException ex) {
+				Console.WriteLine($"JSON error processing charge: {ex.Message}");
+				throw new InvalidOperationException("Failed to process JSON response.", ex);
+			} catch (Exception ex) {
+				Console.WriteLine($"General error handling charge: {ex.Message}");
+				throw;
+			}
 		}
 
-		private async Task<JObject> AddBankAccount(string url, BankData bankData) {
-			var content = new StringContent(bankData.ToJson(), Encoding.UTF8, "application/json");
-			var response = await _httpClient.PostAsync(url, content);
-			response.EnsureSuccessStatusCode();
-			var responseContent = await response.Content.ReadAsStringAsync();
-			return JObject.Parse(responseContent);
+		private async Task<BaseResponse> AddBankAccount(string url, BankData bankData) {
+			try {
+				var content = new StringContent(bankData.ToJson(), Encoding.UTF8, "application/json");
+				var response = await _httpClient.PostAsync(url, content);
+				response.EnsureSuccessStatusCode();
+				var responseContent = await response.Content.ReadAsStringAsync();
+				Console.WriteLine($"Response status code: {response.StatusCode}");
+				// Console.WriteLine($"Response body: {responseBody}");
+				if (!response.IsSuccessStatusCode) {
+					var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+					Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
+					throw new InvalidOperationException($"HTTP error {response.StatusCode}: {responseContent}");
+				}
+
+				if (string.IsNullOrWhiteSpace(responseContent)) {
+					throw new InvalidOperationException("Response body is empty.");
+				}
+
+				var data = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+				if (data != null && data.TryGetValue("data", out var dataValue) && dataValue is JsonElement dataElement) {
+					var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
+					if (dataDict != null) {
+						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
+					}
+				}
+				//return JObject.Parse(responseContent);
+				throw new InvalidOperationException("Response data is invalid or missing.");
+			} catch (HttpRequestException ex) {
+				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
+				throw;
+			} catch (JsonException ex) {
+				Console.WriteLine($"JSON error processing charge: {ex.Message}");
+				throw new InvalidOperationException("Failed to process JSON response.", ex);
+			} catch (Exception ex) {
+				Console.WriteLine($"General error handling charge: {ex.Message}");
+				throw;
+			}
 		}
 
 		private async Task<ListBaseResponse> GetCustomersAsync(string url, string? queryParams) {
 			try {
-			if (queryParams != null) {
-				url = $"{url}?{queryParams}";
-			}
+				if (queryParams != null) {
+					url = $"{url}?{queryParams}";
+				}
 
-			var response = await _httpClient.GetAsync(url);
-			response.EnsureSuccessStatusCode();
-			var responseBody = await response.Content.ReadAsStringAsync();
+				var response = await _httpClient.GetAsync(url);
+				response.EnsureSuccessStatusCode();
+				var responseBody = await response.Content.ReadAsStringAsync();
 
 				Console.WriteLine($"Response status code: {response.StatusCode}");
 				if (!response.IsSuccessStatusCode) {
@@ -199,7 +351,7 @@ namespace PayarcSDK.Services {
 				List<BaseResponse?>? customers = new List<BaseResponse?>();
 				if (jsonCustomers != null) {
 					for (int i = 0; i < jsonCustomers.Count; i++) {
-						var customer = AddObjectId(jsonCustomers[i], JsonSerializer.Serialize(jsonCustomers[i]));
+						var customer = TransformJsonRawObject(jsonCustomers[i], JsonSerializer.Serialize(jsonCustomers[i]), _httpClient);
 						customers?.Add(customer);
 					}
 				}
@@ -236,28 +388,6 @@ namespace PayarcSDK.Services {
 		private async Task DeleteAsync(string url) {
 			var response = await _httpClient.DeleteAsync(url);
 			response.EnsureSuccessStatusCode();
-		}
-
-		private BaseResponse? AddObjectId(Dictionary<string, object> obj, string? rawObj) {
-			BaseResponse? response = null;
-			if (obj["object"]?.ToString() == "customer") {
-				if (rawObj != null) {
-					var customerResponse = JsonConvert.DeserializeObject<CustomerResponseData>(rawObj);
-					if (customerResponse == null) {
-						customerResponse = new CustomerResponseData();
-					}
-
-					customerResponse.RawData = rawObj;
-					customerResponse.ObjectId ??= $"cus_{obj["customer_id"]}";
-					customerResponse.Update = async (customerData) => {
-						var result = await Update(customerResponse, customerData);
-						return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
-					};
-					response = customerResponse;
-				}
-			}
-
-			return response;
 		}
 	}
 }

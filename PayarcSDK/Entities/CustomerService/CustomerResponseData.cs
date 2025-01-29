@@ -1,14 +1,13 @@
 ﻿using Newtonsoft.Json;
-using PayarcSDK.Models;
 
-namespace PayarcSDK.Entities
+namespace PayarcSDK.Entities.CustomerService
 {
     public class CustomerResponseData : BaseResponse {
 		[JsonProperty("object")]
-		public string Object { get; set; }
+		public override string Object { get; set; }
 
 		[JsonProperty("object_id")]
-		public string? ObjectId { get; set; }
+		public override string? ObjectId { get; set; }
 
 		[JsonIgnore]
 		public Func<CustomerInfoData?, Task<BaseResponse?>> Update { get; set; }
@@ -20,43 +19,43 @@ namespace PayarcSDK.Entities
 		public string Name { get; set; }
 
 		[JsonProperty("email")]
-		public string Email { get; set; }
+		public string? Email { get; set; }
 
 		[JsonProperty("description")]
-		public string Description { get; set; }
+		public string? Description { get; set; }
 
 		[JsonProperty("payment_overdue")]
-		public int PaymentOverdue { get; set; }
+		public int? PaymentOverdue { get; set; }
 
 		[JsonProperty("send_email_address")]
-		public string SendEmailAddress { get; set; }
+		public string? SendEmailAddress { get; set; }
 
 		[JsonProperty("cc_email_address")]
-		public string CcEmailAddress { get; set; }
+		public string? CcEmailAddress { get; set; }
 
 		[JsonProperty("source_id")]
-		public string SourceId { get; set; }
+		public string? SourceId { get; set; }
 
 		[JsonProperty("address_1")]
-		public string Address1 { get; set; }
+		public string? Address1 { get; set; }
 
 		[JsonProperty("address_2")]
-		public string Address2 { get; set; }
+		public string? Address2 { get; set; }
 
 		[JsonProperty("city")]
-		public string City { get; set; }
+		public string? City { get; set; }
 
 		[JsonProperty("state")]
-		public string State { get; set; }
+		public string? State { get; set; }
 
 		[JsonProperty("zip")]
-		public string Zip { get; set; }
+		public string? Zip { get; set; }
 
 		[JsonProperty("phone")]
-		public string Phone { get; set; }
+		public string? Phone { get; set; }
 
 		[JsonProperty("country")]
-		public string Country { get; set; }
+		public string? Country { get; set; }
 
 		[JsonProperty("created_at")]
 		public long CreatedAt { get; set; }
@@ -74,22 +73,22 @@ namespace PayarcSDK.Entities
 		public string InvoicePrefix { get; set; }
 
 		[JsonProperty("card")]
-		public CardContainer Card { get; set; }
+		public CardContainer? Card { get; set; }
 
 		[JsonProperty("bank_account")]
-		public BankAccountContainer BankAccount { get; set; }
+		public BankAccountContainer? BankAccount { get; set; }
 
 		[JsonProperty("charge")]
-		public ChargeContainer Charge { get; set; }
+		public ChargeContainer? Charge { get; set; }
 
 		[JsonIgnore]
-		public CardsContainer Cards { get; set; }
+		public CardsContainer? Cards { get; set; }
 
 		[JsonIgnore]
-		public BankAccountsContainer Bank_Accounts { get; set; }
+		public BankAccountsContainer? Bank_Accounts { get; set; }
 
 		[JsonIgnore]
-		public ChargesContainer Charges { get; set; }
+		public ChargesContainer? Charges { get; set; }
 	}
 
 	public class CardContainer {

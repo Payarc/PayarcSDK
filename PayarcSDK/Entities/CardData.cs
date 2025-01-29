@@ -7,16 +7,16 @@ namespace PayarcSDK.Models
 		public string CardSource { get; set; }
 
 		[JsonProperty("card_number")]
-		public long CardNumber { get; set; }
+		public string CardNumber { get; set; }
 
 		[JsonProperty("exp_month")]
-		public int ExpMonth { get; set; }
+		public string ExpMonth { get; set; }
 
 		[JsonProperty("exp_year")]
-		public int ExpYear { get; set; }
+		public string ExpYear { get; set; }
 
 		[JsonProperty("cvv")]
-		public int Cvv { get; set; }
+		public string Cvv { get; set; }
 
 		[JsonProperty("card_holder_name")]
 		public string CardHolderName { get; set; }
@@ -34,13 +34,13 @@ namespace PayarcSDK.Models
 		public string State { get; set; }
 
 		[JsonProperty("zip")]
-		public int Zip { get; set; }
+		public string Zip { get; set; }
 
 		[JsonProperty("country")]
 		public string Country { get; set; }
 
 		[JsonProperty("authorize_card")]
-		public int AuthorizeCard { get; set; }
+		public string AuthorizeCard { get; set; }
 
 		public string ToJson() {
 			var settings = new JsonSerializerSettings {

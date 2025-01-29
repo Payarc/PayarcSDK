@@ -1,7 +1,6 @@
 using AnyOfTypes;
 using Newtonsoft.Json;
 using PayarcSDK.Entities;
-using PayarcSDK.Http;
 using System.Text;
 using System.Text.Json;
 using JsonException = System.Text.Json.JsonException;
@@ -9,15 +8,13 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace PayarcSDK.Services;
 
-public class PlanService
+public class PlanService : CommonServices
 {
-    private readonly ApiClient _apiClient;
     private readonly HttpClient _httpClient;
 
-    public PlanService(AnyOf<ApiClient, HttpClient> apiClient)
+    public PlanService(HttpClient httpClient)
     {
-        _apiClient = apiClient.IsFirst ? apiClient.First : new ApiClient(apiClient.Second);
-        _httpClient = apiClient.IsSecond ? apiClient.Second : new HttpClient();
+        _httpClient = httpClient;
     }
 
     public async Task<BaseResponse?> Create(PlanCreateOptions options)
@@ -76,14 +73,6 @@ public class PlanService
             Console.WriteLine(ex);
             throw;
         }
-    }
-    
-    private string BuildQueryString(Dictionary<string, object> parameters)
-    {
-        var queryString = string.Join("&",
-            parameters.Select(p =>
-                $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value.ToString() ?? string.Empty)}"));
-        return queryString;
     }
 
     private async Task<ListBaseResponse?> GetPlansAsync(string endpoint, string? queryParams)
