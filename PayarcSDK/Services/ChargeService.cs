@@ -13,7 +13,7 @@ namespace PayarcSDK.Services
     {
         private readonly HttpClient _httpClient;
 
-		public ChargeService(HttpClient httpClient) {
+		public ChargeService(HttpClient httpClient) : base(httpClient) {
 			_httpClient = httpClient;
 		}
 
@@ -61,7 +61,7 @@ namespace PayarcSDK.Services
                                 ? source.First.Substring(4)
                                 : source.Second.BankAccountId?.Substring(4);
                             chargePayload.Type = "debit";
-                            return await HandleChargeAsync(HttpMethod.Post, "achcharges",  chargePayload);
+                            return await HandleChargeAsync(HttpMethod.Post, "achcharges",  chargePayload, "ACHCharge");
                         case true when (isStr && Regex.IsMatch(source.First, @"^\d")):
                             chargePayload.CardNumber = source;
                             break;
@@ -90,7 +90,7 @@ namespace PayarcSDK.Services
             try
             {
                 var (endpoint, id) = DetermineEndpointAndId(chargeId);
-                return await GetChargeDataAsync(HttpMethod.Get, endpoint, id);
+                return await GetChargeDataAsync(HttpMethod.Get, endpoint, id, GetChargeType(chargeId));
             }
             catch (Exception ex)
             {
@@ -99,29 +99,17 @@ namespace PayarcSDK.Services
             }
         }
 
-        public async Task<ListBaseResponse?> List(OptionsData options)
+        public async Task<ListBaseResponse?> List(BaseListOptions options)
         {
             try
             {
-                var parameters = new Dictionary<string, object>
-                {
-                    { "limit", options.Limit ?? 25 },
-                    { "page", options.Page ?? 1 }
-                };
-                if (!string.IsNullOrEmpty(options.Search))
-                {
-                    var searchArray = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(options.Search);
-                    if (searchArray != null)
+                var parameters = new Dictionary<string, object?>
                     {
-                        foreach (var searchItem in searchArray)
-                        {
-                            foreach (var kvp in searchItem)
-                            {
-                                parameters.Add(kvp.Key, kvp.Value);
-                            }
-                        }
-                    }
-                }
+                        { "limit", options?.Limit ?? 25 },
+                        { "page", options?.Page ?? 1 },
+                        { "search", options?.Search }
+                    }.Where(kvp => kvp.Value != null)
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
                 var query = BuildQueryString(parameters);
                 return await GetChargesAsync("charges", query);
@@ -133,7 +121,7 @@ namespace PayarcSDK.Services
             }
         }
 
-        private async Task<ListBaseResponse?> GetChargesAsync(string endpoint, string? queryParams)
+        private async Task<ListBaseResponse?> GetChargesAsync(string endpoint, string? queryParams, string type = "Charge")
         {
             try
             {
@@ -168,7 +156,7 @@ namespace PayarcSDK.Services
                 {
                     for (int i = 0; i < jsonCharges.Count; i++)
                     {
-                        var ch = TransformJsonRawObject(jsonCharges[i], JsonSerializer.Serialize(jsonCharges[i]), _httpClient);
+                        var ch = TransformJsonRawObject(jsonCharges[i], JsonSerializer.Serialize(jsonCharges[i]), type);
                         charges?.Add(ch);
                     }
                 }
@@ -233,12 +221,12 @@ namespace PayarcSDK.Services
 
         private (string endpoint, string id) DetermineEndpointAndId(string chargeId)
         {
-            if (chargeId.StartsWith("ch_"))
+            if (GetChargeType(chargeId) == "Charge")
             {
                 return ("charges", chargeId.Substring(3));
             }
 
-            if (chargeId.StartsWith("ach_"))
+            if (GetChargeType(chargeId) == "ACHCharge")
             {
                 return ("achcharges", chargeId.Substring(4));
             }
@@ -246,6 +234,14 @@ namespace PayarcSDK.Services
             throw new Exception("Invalid charge ID format.");
         }
 
+        private string GetChargeType(string chargeId)
+        {
+            if(chargeId.StartsWith("ch_"))
+                return "Charge";
+            if(chargeId.StartsWith("ach_"))
+                return "ACHCharge";
+            throw new Exception("Invalid charge ID format.");
+        }
         public void NormalizeIDs(ChargeRequestPayload payload, Dictionary<string, int> idPrefixes)
         {
             foreach (var (key, prefixLength) in idPrefixes)
@@ -263,7 +259,7 @@ namespace PayarcSDK.Services
             }
         }
 
-        private async Task<BaseResponse?> GetChargeDataAsync(HttpMethod method, string endpoint, string chargeId)
+        private async Task<BaseResponse?> GetChargeDataAsync(HttpMethod method, string endpoint, string chargeId, string type = "Charge")
         {
             try
             {
@@ -297,7 +293,7 @@ namespace PayarcSDK.Services
                     var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
                     if (dataDict != null)
                     {
-                        return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
+                        return TransformJsonRawObject(dataDict, dataElement.GetRawText(), type);
                     }
                 }
 
@@ -328,7 +324,7 @@ namespace PayarcSDK.Services
             {
                 if (charge.First != null)
                 {
-                    chargeObj = (AchChargeResponseData?)GetChargeDataAsync(HttpMethod.Get, "charges", charge.First).Result;
+                    chargeObj = (AchChargeResponseData?)GetChargeDataAsync(HttpMethod.Get, "charges", charge.First, "ACHCharge").Result;
                 }
             }
             else
@@ -368,7 +364,7 @@ namespace PayarcSDK.Services
         }
 
         public async Task<BaseResponse?> HandleChargeAsync(HttpMethod method, string path,
-            ChargeRequestPayload chargeData)
+            ChargeRequestPayload chargeData, string type = "Charge")
         {
             try
             {
@@ -421,7 +417,7 @@ namespace PayarcSDK.Services
                     var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
                     if (dataDict != null)
                     {
-                        return TransformJsonRawObject(dataDict, dataElement.GetRawText(), _httpClient);
+                        return TransformJsonRawObject(dataDict, dataElement.GetRawText(), type);
                     }
                 }
 
@@ -457,8 +453,10 @@ namespace PayarcSDK.Services
 
             try
             {
+                var type = "Charge";
                 if (chargeId != null)
                 {
+                    type = GetChargeType(chargeId);
                     if (chargeId.StartsWith("ch_"))
                     {
                         chargeId = chargeId.Substring(3);
@@ -476,7 +474,7 @@ namespace PayarcSDK.Services
                 var response = await HandleChargeAsync(HttpMethod.Post, url, new ChargeRequestPayload
                 {
                     Parameters = parameters
-                });
+                },type);
 
                 return response;
             }

@@ -2,7 +2,6 @@ using System.Net;
 using AnyOfTypes;
 using Newtonsoft.Json;
 using PayarcSDK.Entities;
-using PayarcSDK.Http;
 using System.Text;
 using System.Text.Json;
 using PayarcSDK.Entities.Billing;

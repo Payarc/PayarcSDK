@@ -18,7 +18,7 @@ namespace PayarcSDK.Sample
         {
             // Retrieve the access token
             var accessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzIiwianRpIjoiODdkNmVkMTYxYmEzOTliZTA1ZWY1YmYxNDE0MTA2NDFmMjFhNDE2Y2JlNDg1NmM2NzA2YWY3NzdjZTMwMGM2NTBiNjY2MDM3Nzc5YTI3MmUiLCJpYXQiOjE3MzgwODI1NzIuMzgzODg4LCJuYmYiOjE3MzgwODI1NzIuMzgzODksImV4cCI6MTc2OTYxODU3Mi4zNjE1MjEsInN1YiI6Ijg1MjYyMzYiLCJzY29wZXMiOltdfQ.qfo1ndtMFdDeEY2xQ9c3zlxUnjkJW0pZ9BvtaRxhhK9XkIHA3DGkKe6eGSPz6FmPW3Upwmggw9m6CFZnSoc2IrzUkJT0-68aP0xAiAT4akkM7P0fdmWFBEMNVqTHu8BYF37xo4_yRzUd5d--RdjAJKrJPBAfQaDw9CnbW5MgsVx-rkNVvIh365MQQ0TfOCmGy6-yoc79l4YwDLVLpIY1xeENAI5JQRvhprfOilSmsag4IxVNtgUg64GaOUx34pLpFUk2RmtikYuTyWcJvniYpUUOPrduIIKImxZEzH_rHD5gcRRetp1GJ8T3zs_wD5BnUKRJZiWVnBNazwoFevfhZj21XJDHzT--asVwH5RAS5oAW-uP0dUZz0BEQEeo1uQ3dTUqcTKUJdo2LqE8S-5KJA2F3OG1m2HqRpURwau0S29U8lPZSPX5d2CgXNFjGjrpBmf30v6vaDu-Q6qJ9sHX0aQ9h7kONnZtR8_TMCwJzT3JbwaLzGrcwJ5eu1YjSr-GRash3SgqAFedENUbq085ybiljl2GQlddgFjjwP7PAtTPiXqpajseIt-ZS7zfAaWL3Nr_7PAlS-QXvwxaJIXiZNn8agB6ZqyDGi9jfjMbzOWA3DZfYkm2UeXm-49FiEVO14wLzLcK7uRQq6zVdq_Hy3k0NxXfmNvdOWrUR85jYqM";
-
+            
             if (string.IsNullOrEmpty(accessToken)) {
                 throw new InvalidOperationException("Access token is missing in the response.");
             }
@@ -35,32 +35,12 @@ namespace PayarcSDK.Sample
                         config.BearerToken = accessToken;   // Set the Bearer Token
                     })
                     .Build();
-
+            
                 // Use Payarc services
                 Console.WriteLine("SDK initialized successfully.");
             } catch (Exception ex) {
                 Console.WriteLine($"Error: {ex.Message}");
             }
-            // try
-            // {
-            //     payarc = new SdkBuilder()
-            //         .Configure(config =>
-            //         {
-            //             config.Environment = "dev"; // Use sandbox environment
-            //             config.BaseUrl = "http://localapi6.payarc.net";
-            //             config.ApiVersion = "v1"; // Use version 2 of the API
-            //             config.BearerToken =
-            //                 "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIyNiIsImp0aSI6IjZkNTA1YTA2YjdlNWMwYTk5OGU4MWQ2YjJjYmJmMWFjNzFkMGFlNWU0MmE2MjIxMzk5NGZhYzE4MzI1ZWVlNDhhOGQ0MDRkZTVjNDc5NTYyIiwiaWF0IjoxNjU5MDIwNjUyLCJuYmYiOjE2NTkwMjA2NTIsImV4cCI6MTgxNjY4OTg1Miwic3ViIjoiMTU0MTQiLCJzY29wZXMiOiIqIn0.KDaegyhna7eFAQRQfIuYv-nVFPI2G7iMyCR4fyEFwtirXOxAky7Sie0Oc8HJXiuQ9k7UaNhGF3akFo_8vipTBfQD6L-_wbr8Nj3vf_EuX2Yjz35e5HBBwaJ3b5vGXJGsu_UlpgIntLYPW6DRFSWAdzTtv0t6uyW_98oVvhm-Yxf6stj-UR3mHA18tjP1ISti53Oc2BrIKH_s58eFFdyzj6q1Q63r05uAQ9XC96Gl35ZCnaGEzcWgviTxCrKVfMuRKCzFKB-rJPlRM1lfzGcz-5wvWuqp0jWgsS383I7Pn1uXRWTxasHM93-ioa7TCWlOtyvmrs1_HIG8x9c2QgUoPXGhKzCA8pYiYyeWfguPX250P03B3hks3hZSMu6L9f1xbCBBFH484oMdxYn-CUAOQhysFN7b9-O6PW0Ge2XhsCA3rs3c9vEewTlPggoa8WHr4tTOS1GdCFxneFPzHjsbB3C-ig7r7Qq6594nw-Bb_l2ONsVmsQ19GTU08zwq4hKtdKyPI879pvh9f-IDqJliHAc1qXga5pqX_Cj4pkcTihltdQ3Q0KyKp-Wi3O0Xi6afw8EXcrVLlDnVtyic8sbBpl8Gh8EVOL1zq8D4qwrWH-oZSITmZaBqRiTz-UaKmRyMVg0yVxAfGfqjXtNYkINJEQxwS2X-Id_Mr0sUb72LmyE";
-            //         })
-            //         .Build();
-            //
-            //     // Use Payarc services
-            //     Console.WriteLine("SDK initialized successfully.");
-            // }
-            // catch (Exception ex)
-            // {
-            //     Console.WriteLine($"Error: {ex.Message}");
-            // }
 
             //Temprorary Agent Access Token taken from portal
             var agentAccessToken =
@@ -74,31 +54,13 @@ namespace PayarcSDK.Sample
                         config.BearerToken = agentAccessToken;  // Set the Bearer Token
                     })
                     .Build();
-
+            
                 // Use Payarc services
                 Console.WriteLine("SDK initialized successfully.");
             } catch (Exception ex) {
                 Console.WriteLine($"Error: {ex.Message}");
             }
-            // try
-            // {
-            //     payarcAgent = new SdkBuilder()
-            //         .Configure(config =>
-            //         {
-            //             config.Environment = "dev"; // Use sandbox environment
-            //             config.BaseUrl = "http://localapi6.payarc.net";
-            //             config.ApiVersion = "v1"; // Use version 2 of the API
-            //             config.BearerToken = agentAccessToken; // Set the Bearer Token
-            //         })
-            //         .Build();
-            //
-            //     // Use Payarc services
-            //     Console.WriteLine("SDK initialized successfully.");
-            // }
-            // catch (Exception ex)
-            // {
-            //     Console.WriteLine($"Error: {ex.Message}");
-            // }
+          
             
             // Payarc Connect 
             string payarcConnectAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0Mzg4IiwianRpIjoiOTI0ODMyZjJiM2Q1MDZiZjU1M2Q0NWQzMWJkNTg0MWQ0ZWRjMjdmMjI4ODg4NWU4NWQzMDdmNjk3MWJmYjMxMTJhZjYyYzhmN2MyZTlhZTciLCJpYXQiOjE2MTExNzUxNjgsIm5iZiI6MTYxMTE3NTE2OCwiZXhwIjoxNzY4ODU1MTY4LCJzdWIiOiIxNTY1MyIsInNjb3BlcyI6IioifQ.bYo6ZQ4Jg3wjT_KibvLGpmTpWgapBfyJOXxH-1boMbVyzmj9oO_o8NpLu4aR8vGt4ZcCwmqWkuAJkYdDij0DeDuqI_7IJcBK7hRHBR4tjRbo2plmc44xnxFp5G-NbXC3lj620L2lfgBheyMRAhpkaLfwaVBQvOsq829kNmSlPhom_OhTmyBEDZi5oTFg44vKi4LfI9gORlV0wBFELrcjWoodTsMJHDk_Tiuxwkdf81XvaM6uIiJUTgnnPZM4LDINHbi9YQZ7HYORSIFn2gOyfdGSwTiY5gi13vC-ISDZxBxQWN61JMEwIheaFTubmNgUTvn7gSsp8rnSLo1Hm7p_Mh5lg6Jf2Z89509KRgO5X3iQMWMWmvAX3leSYUi0ngAXQBGdEHlyUNNy0S3dh-fJzkyFpQxkftUDX3ZKbJxCd4H4Vfe5WpgmEdjhD2wb6RI1GnPBkG6SwGy6kcHGjNKxK4hFBKZPCSwWJD7VgJP-eXQMU2J-i9tcc-zp4Acb4qjWe02FYBMKxY6FmDpFpLSvRZGXdH5Xegw6kfDIZWJF-mOB5g0ISFC_tjfxza544iEIOXlYkKzkCNXO0XbJUH6XFFv0Obd74VBrfPaHR-zxbgDmqHFRH_6bWIGAbwiwK3S8GG5RwDpk5uvEaC2F6V0M_o7ePEint8u6BCCK8WYPm7g";
@@ -122,7 +84,7 @@ namespace PayarcSDK.Sample
             //var testService = "applicationService";
             //var testService = "disputeService";
             //var testService = "splitCampaignService";
-            //var testService = "chargeService";
+            // var testService = "chargeService";
             //var testService = "payarcConnect";
             var apiRequester = new ApiRequester(payarc);
             var apiAgentRequester = new ApiRequester(payarcAgent);
@@ -400,7 +362,7 @@ namespace PayarcSDK.Sample
                         // await apiRequester.ListSubscriptions();
                         // await apiRequester.UpdateSubscription();
                         // await apiRequester.UpdateSubscriptionByObject();
-                        await apiRequester.CancelSubscription();
+                        // await apiRequester.CancelSubscription();
                         break;
                     case "payarcConnect":
                         string deviceSerialNo = "1851085026"; // switch this to serial number of the device you are testing with

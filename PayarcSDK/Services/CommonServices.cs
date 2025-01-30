@@ -9,9 +9,6 @@ using System.Threading.Tasks;
 using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using PayarcSDK.Entities.Billing.Subscriptions;
-using PayarcSDK.Http;
-
-namespace PayarcSDK.Services;
 
 namespace PayarcSDK.Services {
 	public class CommonServices {
@@ -29,46 +26,6 @@ namespace PayarcSDK.Services {
 					$"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value?.ToString() ?? string.Empty)}"));
 			return queryString;
 		}
-
-		public BaseResponse? TransformJsonRawObject(Dictionary<string, object> obj, string? rawObj, HttpClient httpClient) {
-			BaseResponse? response = null;
-			if ((obj["object"]?.ToString() == "Charge" || obj["object"]?.ToString() == "ACHCharge" || obj["object"]?.ToString() == "customer" || obj["object"]?.ToString() == "Token" || obj["object"]?.ToString() == "Charge" || obj["object"]?.ToString() == "ACHCharge") && rawObj != null) {
-
-				if (obj["object"]?.ToString() == "Charge") {
-					ChargeService chargeService = new ChargeService(httpClient);
-					var chargeResponse = JsonConvert.DeserializeObject<ChargeResponseData>(rawObj) ?? new ChargeResponseData();
-					chargeResponse.RawData = rawObj;
-					chargeResponse.ObjectId ??= $"ch_{obj["id"]}";
-					chargeResponse.CreateRefund = async (chargeData) => await chargeService.CreateRefund(chargeResponse, chargeData);
-					response = chargeResponse;
-				} else if (obj["object"]?.ToString() == "ACHCharge") {
-					ChargeService chargeService = new ChargeService(httpClient);
-					var achChargeResponse = JsonConvert.DeserializeObject<AchChargeResponseData>(rawObj) ?? new AchChargeResponseData();
-					achChargeResponse.RawData = rawObj;
-					achChargeResponse.ObjectId ??= $"ach_{obj["id"]}";
-					achChargeResponse.CreateRefund = async (chargeData) => await chargeService.CreateRefund(achChargeResponse, chargeData);
-					if (achChargeResponse.BankAccount?.Data != null) achChargeResponse.BankAccount.Data.ObjectId = $"bnk_{obj["id"]}";
-					response = achChargeResponse;
-				} else if (obj["object"]?.ToString() == "customer") {
-					CustomerService customerService = new CustomerService(httpClient);
-					var customerResponse = JsonConvert.DeserializeObject<CustomerResponseData>(rawObj) ?? new CustomerResponseData();
-					customerResponse.RawData = rawObj;
-					customerResponse.ObjectId ??= $"cus_{obj["customer_id"]}";
-					customerResponse.Update = async (customerData) => {
-						var result = await customerService.Update(customerResponse, customerData);
-						return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
-					};
-					response = customerResponse;
-				} else if (obj["object"]?.ToString() == "Token") {
-					var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(rawObj) ?? new TokenResponse();
-					tokenResponse.RawData = rawObj;
-					tokenResponse.ObjectId ??= $"tok_{obj["id"]}";
-					response = tokenResponse;
-				}
-			}
-			return response;
-		}
-		
 		public BaseResponse? TransformJsonRawObject(Dictionary<string, object> obj, string? rawObj, string type = "object")
 		{
 			BaseResponse? response = null;
@@ -90,7 +47,7 @@ namespace PayarcSDK.Services {
 					}
 					response = planResponse;
 				}
-				if (type == "Subscription")
+				else if (type == "Subscription")
 				{
 					var subService = new SubscriptionService(_httpClient);
 					var subResponse = JsonConvert.DeserializeObject<SubscriptionResponseData>(rawObj) ?? new SubscriptionResponseData();
@@ -99,6 +56,41 @@ namespace PayarcSDK.Services {
 					subResponse.Update = async (newData) => await subService.Update(subResponse, newData);
 					subResponse.Cancel = async () => await subService.Cancel(subResponse);
 					response = subResponse;
+				}
+				else if (type == "Charge")
+				{
+					ChargeService chargeService = new ChargeService(_httpClient);
+					var chargeResponse = JsonConvert.DeserializeObject<ChargeResponseData>(rawObj) ?? new ChargeResponseData();
+					chargeResponse.RawData = rawObj;
+					chargeResponse.ObjectId ??= $"ch_{obj["id"]}";
+					chargeResponse.CreateRefund = async (chargeData) => await chargeService.CreateRefund(chargeResponse, chargeData);
+					response = chargeResponse;
+				}
+				else if (type == "ACHCharge")
+				{
+					ChargeService chargeService = new ChargeService(_httpClient);
+					var achChargeResponse = JsonConvert.DeserializeObject<AchChargeResponseData>(rawObj) ?? new AchChargeResponseData();
+					achChargeResponse.RawData = rawObj;
+					achChargeResponse.ObjectId ??= $"ach_{obj["id"]}";
+					achChargeResponse.CreateRefund = async (chargeData) => await chargeService.CreateRefund(achChargeResponse, chargeData);
+					if (achChargeResponse.BankAccount?.Data != null) achChargeResponse.BankAccount.Data.ObjectId = $"bnk_{obj["id"]}";
+					response = achChargeResponse;
+				}
+				else if (obj["object"]?.ToString() == "customer") {
+					CustomerService customerService = new CustomerService(_httpClient);
+					var customerResponse = JsonConvert.DeserializeObject<CustomerResponseData>(rawObj) ?? new CustomerResponseData();
+					customerResponse.RawData = rawObj;
+					customerResponse.ObjectId ??= $"cus_{obj["customer_id"]}";
+					customerResponse.Update = async (customerData) => {
+						var result = await customerService.Update(customerResponse, customerData);
+						return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
+					};
+					response = customerResponse;
+				} else if (obj["object"]?.ToString() == "Token") {
+					var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(rawObj) ?? new TokenResponse();
+					tokenResponse.RawData = rawObj;
+					tokenResponse.ObjectId ??= $"tok_{obj["id"]}";
+					response = tokenResponse;
 				}
 			}
        

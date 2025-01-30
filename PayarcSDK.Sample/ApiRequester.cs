@@ -200,7 +200,7 @@ public class ApiRequester
         {
             try
             {
-                string charge = "ch_BoLWODoBLLDyLOXy";
+                string charge = "ch_nbDBOMWRyyBRbORX";
                 var refund = await _payarc.Charges.CreateRefund(charge, null);
                 Console.WriteLine("Refund Data");
                 Console.WriteLine(refund);
@@ -245,7 +245,7 @@ public class ApiRequester
         {
             try
             {
-                var options = new OptionsData()
+                var options = new BaseListOptions()
                 {
                     Limit = 25,
                     Page = 1,
@@ -301,7 +301,7 @@ public class ApiRequester
         {
             try
             {
-                var plan = await _payarc.Billing.Plan.Retrieve("plan_50c1b33a") as PlanResponseData;
+                var plan = await _payarc.Billing.Plan.Retrieve("plan_7dd08753") as PlanResponseData;
                 Console.WriteLine("Plan was Retrieved");
                 Console.WriteLine(plan);
                 Console.WriteLine("Raw Data");

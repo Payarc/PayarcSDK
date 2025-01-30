@@ -1,5 +1,4 @@
 using AnyOfTypes;
-using PayarcSDK.Http;
 
 namespace PayarcSDK.Services;
 

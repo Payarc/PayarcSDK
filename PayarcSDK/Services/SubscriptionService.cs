@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using PayarcSDK.Entities;
 using PayarcSDK.Entities.Billing;
 using PayarcSDK.Entities.Billing.Subscriptions;
-using PayarcSDK.Http;
 using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
