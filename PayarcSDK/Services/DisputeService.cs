@@ -1,23 +1,27 @@
-﻿using Newtonsoft.Json.Linq;
-using PayarcSDK.Http;
+﻿using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PayarcSDK.Services {
 	public class DisputeService {
-		private readonly ApiClient _apiClient;
+		private readonly HttpClient _httpClient;
 
-		public DisputeService(ApiClient apiClient) {
-			_apiClient = apiClient;
+		public DisputeService(HttpClient httpClient) {
+			_httpClient = httpClient;
 		}
 
-		public async Task<JObject> list(Dictionary<string, string> queryParams = null) {
+		public async Task<JObject> List(Dictionary<string, string> queryParams = null) {
 			return await ListCasesAsync(queryParams);
 		}
 
-		public async Task<JObject> retrieve(string disputeId) {
+		public async Task<JObject> Retrieve(string disputeId) {
 			return await GetCaseAsync(disputeId);
 		}
 
-		public async Task<JObject> addDocument(string disputeId, JObject documentParams) {
+		public async Task<JObject> AddDocument(string disputeId, JObject documentParams) {
 			return await AddDocumentCaseAsync(disputeId, documentParams);
 		}
 
@@ -35,7 +39,7 @@ namespace PayarcSDK.Services {
 				};
 			}
 
-			return await _apiClient.GetAsync("cases", queryParams);
+			return await GetAsync("cases", queryParams);
 		}
 
 		// Retrieve a specific dispute case
@@ -44,7 +48,7 @@ namespace PayarcSDK.Services {
 				disputeId = disputeId.Substring(4);
 			}
 
-			return await _apiClient.GetAsync($"cases/{disputeId}");
+			return await GetAsync($"cases/{disputeId}");
 		}
 
 		// Add a document to a dispute case
@@ -62,7 +66,7 @@ namespace PayarcSDK.Services {
 				var fileContent = new ByteArrayContent(binaryData);
 
 				var mimeType = documentParams.Value<string>("mimeType") ?? "application/pdf";
-				fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(mimeType);
+				fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
 
 				content.Add(fileContent, "file", "filename1.png");
 			}
@@ -73,17 +77,45 @@ namespace PayarcSDK.Services {
 			}
 
 			// Submit evidence
-			var response = await _apiClient.PostRawAsync($"cases/{disputeId}/evidence", content);
+			var evidenceResponse = await PostRawAsync($"cases/{disputeId}/evidence", content);
 
 			// Submit case with a message
 			var message = documentParams.Value<string>("message") ?? "Case number#: xxxxxxxx, submitted by SDK";
 			var submitBody = JObject.FromObject(new { message });
-			var submitResponse = await _apiClient.PostAsync($"cases/{disputeId}/submit", submitBody);
+			var submitResponse = await PostAsync($"cases/{disputeId}/submit", submitBody);
 
 			return JObject.FromObject(new {
-				EvidenceResponse = response,
+				EvidenceResponse = evidenceResponse,
 				SubmitResponse = submitResponse
 			});
+		}
+
+		// Generic HTTP request helper methods
+		private async Task<JObject> GetAsync(string url, Dictionary<string, string> queryParams = null) {
+			if (queryParams != null) {
+				var query = string.Join("&", queryParams.Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}"));
+				url = $"{url}?{query}";
+			}
+
+			var response = await _httpClient.GetAsync(url);
+			response.EnsureSuccessStatusCode();
+			var responseContent = await response.Content.ReadAsStringAsync();
+			return JObject.Parse(responseContent);
+		}
+
+		private async Task<JObject> PostAsync(string url, JObject data) {
+			var content = new StringContent(data.ToString(), Encoding.UTF8, "application/json");
+			var response = await _httpClient.PostAsync(url, content);
+			response.EnsureSuccessStatusCode();
+			var responseContent = await response.Content.ReadAsStringAsync();
+			return JObject.Parse(responseContent);
+		}
+
+		private async Task<JObject> PostRawAsync(string url, HttpContent content) {
+			var response = await _httpClient.PostAsync(url, content);
+			response.EnsureSuccessStatusCode();
+			var responseContent = await response.Content.ReadAsStringAsync();
+			return JObject.Parse(responseContent);
 		}
 	}
 }

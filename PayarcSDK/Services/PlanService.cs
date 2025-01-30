@@ -14,13 +14,11 @@ namespace PayarcSDK.Services;
 
 public class PlanService : CommonServices
 {
-    private readonly ApiClient _apiClient;
     private readonly HttpClient _httpClient;
 
-    public PlanService(AnyOf<ApiClient, HttpClient> apiClient) : base(apiClient)
+    public PlanService(HttpClient httpClient) : base(httpClient)
     {
-        _apiClient = apiClient.IsFirst ? apiClient.First : new ApiClient(apiClient.Second);
-        _httpClient = apiClient.IsSecond ? apiClient.Second : new HttpClient();
+        _httpClient = httpClient;
     }
 
     public async Task<BaseResponse?> Create(PlanCreateOptions options)
@@ -283,36 +281,4 @@ public class PlanService : CommonServices
     {
         return base.TransformJsonRawObject(obj, rawObj, type);
     }
-
-    // private BaseResponse? TransformJsonRawObject(Dictionary<string, object> obj, string? rawObj, string type = "object")
-    // {
-    //     BaseResponse? response = null;
-    //     if (rawObj != null)
-    //     {
-    //         if (type == "Plan")
-    //         {
-    //             var planResponse = JsonConvert.DeserializeObject<PlanResponseData>(rawObj) ?? new PlanResponseData();
-    //             planResponse.RawData = rawObj;
-    //             if (obj.ContainsKey("plan_id") && obj["plan_id"]?.ToString() != null)
-    //             {
-    //                 planResponse.Object = "Plan";
-    //                 planResponse.ObjectId ??= $"{obj["plan_id"]}";
-    //                 planResponse.Retrieve = async() => await Retrieve(planResponse);
-    //                 planResponse.Update = async (newData) => await Update(planResponse, newData);
-    //                 planResponse.Delete = async() => await Delete(planResponse);
-    //                 planResponse.CreateSubscription = async (newData) => await CreateSubscription(planResponse, newData);
-    //             }
-    //             response = planResponse;
-    //         }
-    //         if (type == "Subscription")
-    //         {
-    //             var subResponse = JsonConvert.DeserializeObject<SubscriptionResponseData>(rawObj) ?? new SubscriptionResponseData();
-    //             subResponse.RawData = rawObj;
-    //             subResponse.ObjectId ??= $"sub_{obj["id"]}";
-    //             response = subResponse;
-    //         }
-    //     }
-    //    
-    //     return response;
-    // }
 }

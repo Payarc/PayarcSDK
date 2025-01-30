@@ -14,13 +14,11 @@ namespace PayarcSDK.Services;
 
 public class SubscriptionService : CommonServices
 {
-    private readonly ApiClient _apiClient;
     private readonly HttpClient _httpClient;
 
-    public SubscriptionService(AnyOf<ApiClient, HttpClient> apiClient) : base(apiClient)
+    public SubscriptionService(HttpClient httpClient) : base(httpClient)
     {
-        _apiClient = apiClient.IsFirst ? apiClient.First : new ApiClient(apiClient.Second);
-        _httpClient = apiClient.IsSecond ? apiClient.Second : new HttpClient();
+        _httpClient = httpClient;
     }
 
     public async Task<BaseResponse?> Update(AnyOf<string, SubscriptionResponseData> sub, UpdateSubscriptionOptions? options = null)
