@@ -74,6 +74,12 @@ public class SubscriptionResponseData : BaseResponse
     public string? PaymentType { get; set; }
     [JsonProperty("plan")]
     public PlanWrapper? PlanWrapper { get; set; }
+    
+    [JsonIgnore]
+    public Func<UpdateSubscriptionOptions?, Task<BaseResponse?>> Update { get; set; }
+    
+    [JsonIgnore]
+    public Func<Task<BaseResponse?>> Cancel { get; set; }
 }
 
 public class PlanWrapper

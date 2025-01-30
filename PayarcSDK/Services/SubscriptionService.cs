@@ -1,7 +1,10 @@
+using System.Net;
+using System.Text;
 using System.Text.Json;
 using AnyOfTypes;
 using Newtonsoft.Json;
 using PayarcSDK.Entities;
+using PayarcSDK.Entities.Billing;
 using PayarcSDK.Entities.Billing.Subscriptions;
 using PayarcSDK.Http;
 using JsonException = System.Text.Json.JsonException;
@@ -9,17 +12,49 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace PayarcSDK.Services;
 
-public class SubscriptionService
+public class SubscriptionService : CommonServices
 {
     private readonly ApiClient _apiClient;
     private readonly HttpClient _httpClient;
 
-    public SubscriptionService(AnyOf<ApiClient, HttpClient> apiClient)
+    public SubscriptionService(AnyOf<ApiClient, HttpClient> apiClient) : base(apiClient)
     {
         _apiClient = apiClient.IsFirst ? apiClient.First : new ApiClient(apiClient.Second);
         _httpClient = apiClient.IsSecond ? apiClient.Second : new HttpClient();
     }
-    
+
+    public async Task<BaseResponse?> Update(AnyOf<string, SubscriptionResponseData> sub, UpdateSubscriptionOptions? options = null)
+    {
+        try
+        {
+            var subId = sub.IsSecond ? sub.Second.ObjectId : (sub.IsFirst ? sub.First : null);
+            subId = subId.StartsWith("sub_") ? subId.Substring("sub_".Length) : subId;
+            var subData = new SubscriptionRequestPeyload();
+            JsonConvert.PopulateObject(JsonConvert.SerializeObject(options), subData);
+            return await HandleSubscriptionAsync(HttpMethod.Patch, $"subscriptions/{subId}", subData);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+    }
+
+    public async Task<BaseResponse?> Cancel(AnyOf<string, SubscriptionResponseData> sub)
+    {
+        try
+        {
+            var subId = sub.IsSecond ? sub.Second.ObjectId : (sub.IsFirst ? sub.First : null);
+            subId = subId.StartsWith("sub_") ? subId.Substring("sub_".Length) : subId;
+            return await HandleSubscriptionAsync(HttpMethod.Patch, $"subscriptions/{subId}/cancel");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
     public async Task<ListBaseResponse?> List(SubscriptionListOptions? options = null)
     {
         var parameters = new Dictionary<string, object?>
@@ -33,12 +68,84 @@ public class SubscriptionService
             return await GetSubsAsync("subscriptions", query);
     }
     
-    private string BuildQueryString(Dictionary<string, object?> parameters)
+      public async Task<BaseResponse?> HandleSubscriptionAsync(HttpMethod method, string path,
+        BaseRequestPayload? Data = null, string objectType = "Subscription")
     {
-        var queryString = string.Join("&",
-            parameters.Select(p =>
-                $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value?.ToString() ?? string.Empty)}"));
-        return queryString;
+        try
+        {
+            HttpContent? content  = null;
+            if (Data != null)
+            {
+                if (method == HttpMethod.Post && Data.Parameters != null)
+                {
+                    content = new StringContent(JsonConvert.SerializeObject(Data.Parameters), Encoding.UTF8,
+                        "application/json");
+                    Console.WriteLine(JsonConvert.SerializeObject(Data.Parameters));
+                }
+                else
+                {
+                    content = new StringContent(Data.ToJson(), Encoding.UTF8, "application/json");
+                    Console.WriteLine(Data.ToJson());
+                }
+            }
+           
+            var request = new HttpRequestMessage(method, path)
+            {
+                Content = content
+            };
+            var response = await _httpClient.SendAsync(request);
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Response status code: {response.StatusCode}");
+            // Console.WriteLine($"Response body: {responseBody}");
+            if (!response.IsSuccessStatusCode)
+            {
+                try
+                {
+                    var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseBody);
+                    Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
+                    throw new InvalidOperationException($"HTTP error {response.StatusCode}: {responseBody}");
+                }
+                catch (JsonException jsonEx)
+                {
+                    Console.WriteLine($"Failed to parse error JSON: {jsonEx.Message}");
+                    throw new InvalidOperationException(
+                        $"HTTP error {response.StatusCode}: Unable to parse error response.");
+                }
+            }
+            if(response.StatusCode == (HttpStatusCode)204 && method == HttpMethod.Delete)
+            {
+                return null;
+            }
+            if (string.IsNullOrWhiteSpace(responseBody))
+            {
+                throw new InvalidOperationException("Response body is empty.");
+            }
+            var data = JsonSerializer.Deserialize<Dictionary<string, object>>(responseBody);
+            if (data != null && data.TryGetValue("data", out var dataValue) && dataValue is JsonElement dataElement)
+            {
+                var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
+                if (dataDict != null)
+                {
+                    return TransformJsonRawObject(dataDict, dataElement.GetRawText(), objectType);
+                }
+            }
+            throw new InvalidOperationException("Response data is invalid or missing.");
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"HTTP error processing charge: {ex.Message}");
+            throw;
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"JSON error processing charge: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"General error handling charge: {ex.Message}");
+            throw;
+        }
     }
     
      private async Task<ListBaseResponse?> GetSubsAsync(string endpoint, string? queryParams, string type = "Subscription")
@@ -114,21 +221,10 @@ public class SubscriptionService
             throw;
         }
     }
-
     private BaseResponse? TransformJsonRawObject(Dictionary<string, object> obj, string? rawObj, string type = "object")
     {
-        BaseResponse? response = null;
-        if (rawObj != null)
-        {
-            if (type == "Subscription")
-            {
-                var subResponse = JsonConvert.DeserializeObject<SubscriptionResponseData>(rawObj) ?? new SubscriptionResponseData();
-                subResponse.RawData = rawObj;
-                subResponse.ObjectId ??= $"sub_{obj["id"]}";
-                response = subResponse;
-            }
-        }
-       
-        return response;
+        return base.TransformJsonRawObject(obj, rawObj, type);
     }
+
+  
 }

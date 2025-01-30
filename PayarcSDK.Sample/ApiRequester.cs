@@ -421,7 +421,7 @@ public class ApiRequester
                 };
                 if (plans?.Data?.Count > 0)
                 {
-                    var plan = (PlanResponseData?)plans?.Data?[0];
+                    var plan = (PlanResponseData?)plans?.Data?[8];
                     if (plan != null)
                     {
                         var subscription = await plan.CreateSubscription(options) as SubscriptionResponseData;
@@ -460,6 +460,74 @@ public class ApiRequester
             }
         }
 
+        public async Task UpdateSubscription()
+        {
+            try
+            {
+                var options = new UpdateSubscriptionOptions()
+                {
+                    Description = "new tax percent 50",
+                    TaxPercent = 50.0
+                };
+                var subs = await _payarc.Billing.Subscription.Update("sub_lRV0PjPVxXxjgxXr", options) as SubscriptionResponseData;
+                Console.WriteLine("Subscription was Updated");
+                Console.WriteLine(subs);
+                Console.WriteLine("Raw Data");
+                Console.WriteLine(subs?.RawData);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+        
+        public async Task UpdateSubscriptionByObject()
+        {
+            try
+            {
+                var subs = await _payarc.Billing.Subscription.List(new SubscriptionListOptions() {Search = "test"});
+                var options = new UpdateSubscriptionOptions()
+                {
+                    Description = "new tax percent 55.3",
+                    TaxPercent = 55.3
+                };
+                if (subs?.Data?.Count > 0)
+                {
+                    var sub = (SubscriptionResponseData?)subs?.Data?[0];
+                    if (sub != null)
+                    {
+                        var subscription = await sub.Update(options) as SubscriptionResponseData;
+                        Console.WriteLine("Subscription was Created");
+                        Console.WriteLine(subscription);
+                        Console.WriteLine("Raw Data");
+                        Console.WriteLine(subscription?.RawData);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public async Task CancelSubscription()
+        {
+            try
+            {
+                var subs = await _payarc.Billing.Subscription.Cancel("sub_lRV0PjPVxXxjgxXr") as SubscriptionResponseData;
+                Console.WriteLine("Subscription was Canceled");
+                Console.WriteLine(subs);
+                Console.WriteLine("Raw Data");
+                Console.WriteLine(subs?.RawData);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
         public async Task ListSubscriptions()
         {
             try

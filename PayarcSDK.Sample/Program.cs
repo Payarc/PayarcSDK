@@ -366,7 +366,10 @@ namespace PayarcSDK.Sample
                         // await apiRequester.DeletePlanById();
                         // await apiRequester.CreateSubscription();
                         // await apiRequester.CreateSubscriptionById();
-                        await apiRequester.ListSubscriptions();
+                        // await apiRequester.ListSubscriptions();
+                        // await apiRequester.UpdateSubscription();
+                        // await apiRequester.UpdateSubscriptionByObject();
+                        await apiRequester.CancelSubscription();
                         break;
                     default:
                         Console.WriteLine("Nothing to test.");

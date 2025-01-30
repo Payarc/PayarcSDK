@@ -13,6 +13,9 @@ public class SubscriptionRequestPeyload : BaseRequestPayload
     [JsonProperty("description")]
     public string? Description { get; set; }
 
+    [JsonProperty("tax_percent")]
+    public decimal? TaxPercent { get; set; }
+    
     [JsonProperty("start_after_days")]
     public int? StartAfterDays { get; set; } 
      
