@@ -1,5 +1,6 @@
 using System.Text.Json;
 using PayarcSDK.Entities;
+using PayarcSDK.Entities.Billing.Subscriptions;
 
 namespace PayarcSDK.Sample;
 
@@ -199,7 +200,7 @@ public class ApiRequester
         {
             try
             {
-                string charge = "ch_BoLWODoBLLDyLOXy";
+                string charge = "ch_nbDBOMWRyyBRbORX";
                 var refund = await _payarc.Charges.CreateRefund(charge, null);
                 Console.WriteLine("Refund Data");
                 Console.WriteLine(refund);
@@ -244,7 +245,7 @@ public class ApiRequester
         {
             try
             {
-                var options = new OptionsData()
+                var options = new BaseListOptions()
                 {
                     Limit = 25,
                     Page = 1,
@@ -300,7 +301,7 @@ public class ApiRequester
         {
             try
             {
-                var plan = await _payarc.Billing.Plan.Retrieve("plan_50c1b33a") as PlanResponseData;
+                var plan = await _payarc.Billing.Plan.Retrieve("plan_7dd08753") as PlanResponseData;
                 Console.WriteLine("Plan was Retrieved");
                 Console.WriteLine(plan);
                 Console.WriteLine("Raw Data");
@@ -319,7 +320,8 @@ public class ApiRequester
                 var options = new PlanListOptions()
                 {
                     Limit = 10,
-                    Page = 3,
+                    Page = 1,
+                    Search = "test"
                 };
                 var responseData = await _payarc.Billing.Plan.List(options);
                 Console.WriteLine("Plans Data");
@@ -350,7 +352,7 @@ public class ApiRequester
             {
                 var options = new UpdatePlanOptions()
                 {
-                    Name = "Monthly billing regular test update",
+                    Name = "Monthly billing regular test update 2",
                 };
                 var responseData = await _payarc.Billing.Plan.List();
                 if (responseData?.Data?.Count > 0)
@@ -392,6 +394,166 @@ public class ApiRequester
                 Console.WriteLine(e);
                 throw;
             }
-            
+        }
+        
+        public async Task DeletePlanById()
+        {
+            try
+            {
+                await _payarc.Billing.Plan.Delete("plan_50c1b33a");
+                Console.WriteLine("Plan was Deleted");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public async Task CreateSubscription()
+        {
+            try
+            {
+                var plans = await _payarc.Billing.Plan.List(new PlanListOptions {Search = "test"});
+                var options = new SubscriptionCreateOptions()
+                {
+                    CustomerId = "cus_DPNMVjx4AMNNVnjA"
+                };
+                if (plans?.Data?.Count > 0)
+                {
+                    var plan = (PlanResponseData?)plans?.Data?[8];
+                    if (plan != null)
+                    {
+                        var subscription = await plan.CreateSubscription(options) as SubscriptionResponseData;
+                        Console.WriteLine("Subscription was Created");
+                        Console.WriteLine(subscription);
+                        Console.WriteLine("Raw Data");
+                        Console.WriteLine(subscription?.RawData);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+        
+        public async Task CreateSubscriptionById()
+        {
+            try
+            {
+                var options = new SubscriptionCreateOptions()
+                {
+                    CustomerId = "cus_DPNMVjx4AMNNVnjA"
+                };
+                var subScription = await _payarc.Billing.Plan.CreateSubscription("plan_08dbb4bb", options) as SubscriptionResponseData;
+                Console.WriteLine("Subscription was Created");
+                Console.WriteLine(subScription);
+                Console.WriteLine("Raw Data");
+                Console.WriteLine(subScription?.RawData);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public async Task UpdateSubscription()
+        {
+            try
+            {
+                var options = new UpdateSubscriptionOptions()
+                {
+                    Description = "new tax percent 50",
+                    TaxPercent = 50.0
+                };
+                var subs = await _payarc.Billing.Subscription.Update("sub_lRV0PjPVxXxjgxXr", options) as SubscriptionResponseData;
+                Console.WriteLine("Subscription was Updated");
+                Console.WriteLine(subs);
+                Console.WriteLine("Raw Data");
+                Console.WriteLine(subs?.RawData);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+        
+        public async Task UpdateSubscriptionByObject()
+        {
+            try
+            {
+                var subs = await _payarc.Billing.Subscription.List(new SubscriptionListOptions() {Search = "test"});
+                var options = new UpdateSubscriptionOptions()
+                {
+                    Description = "new tax percent 55.3",
+                    TaxPercent = 55.3
+                };
+                if (subs?.Data?.Count > 0)
+                {
+                    var sub = (SubscriptionResponseData?)subs?.Data?[0];
+                    if (sub != null)
+                    {
+                        var subscription = await sub.Update(options) as SubscriptionResponseData;
+                        Console.WriteLine("Subscription was Created");
+                        Console.WriteLine(subscription);
+                        Console.WriteLine("Raw Data");
+                        Console.WriteLine(subscription?.RawData);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public async Task CancelSubscription()
+        {
+            try
+            {
+                var subs = await _payarc.Billing.Subscription.Cancel("sub_lRV0PjPVxXxjgxXr") as SubscriptionResponseData;
+                Console.WriteLine("Subscription was Canceled");
+                Console.WriteLine(subs);
+                Console.WriteLine("Raw Data");
+                Console.WriteLine(subs?.RawData);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+        public async Task ListSubscriptions()
+        {
+            try
+            {
+                var options = new SubscriptionListOptions()
+                {
+                   Search = "test"
+                };
+                var subscription = await _payarc.Billing.Subscription.List(options);
+                Console.WriteLine("Subscriptions Data");
+                for (int i = 0; i < subscription?.Data?.Count; i++)
+                {
+                    var t = subscription.Data[i];
+                    Console.WriteLine(subscription.Data[i]);
+                }
+                Console.WriteLine("Pagination Data");
+                Console.WriteLine($"Total: {subscription?.Pagination["total"]}");
+                Console.WriteLine($"Count: {subscription?.Pagination["count"]}");
+                Console.WriteLine($"Per Page {subscription?.Pagination["per_page"]}");
+                Console.WriteLine($"Current Page {subscription?.Pagination["current_page"]}");
+                Console.WriteLine($"Total Pages: {subscription?.Pagination["total_pages"]}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 }

@@ -1,4 +1,6 @@
+using AnyOfTypes;
 using Newtonsoft.Json;
+using PayarcSDK.Entities.Billing.Subscriptions;
 
 namespace PayarcSDK.Entities;
 
@@ -40,4 +42,15 @@ public class PlanResponseData : BaseResponse
 
     [JsonProperty("updated_at")]
     public string? UpdatedAt { get; set; }
+    
+    [JsonIgnore]
+    public Func<Task<BaseResponse?>> Retrieve { get; set; }
+    [JsonIgnore]
+    public Func<UpdatePlanOptions?, Task<BaseResponse?>> Update { get; set; }
+    
+    [JsonIgnore]
+    public Func<Task<BaseResponse?>> Delete { get; set; }
+    
+    [JsonIgnore]
+    public  Func<SubscriptionCreateOptions?, Task<BaseResponse?>> CreateSubscription { get; set; }
 }

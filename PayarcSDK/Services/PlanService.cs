@@ -1,8 +1,11 @@
+using System.Net;
 using AnyOfTypes;
 using Newtonsoft.Json;
 using PayarcSDK.Entities;
 using System.Text;
 using System.Text.Json;
+using PayarcSDK.Entities.Billing;
+using PayarcSDK.Entities.Billing.Subscriptions;
 using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -12,7 +15,7 @@ public class PlanService : CommonServices
 {
     private readonly HttpClient _httpClient;
 
-    public PlanService(HttpClient httpClient)
+    public PlanService(HttpClient httpClient) : base(httpClient)
     {
         _httpClient = httpClient;
     }
@@ -50,11 +53,14 @@ public class PlanService : CommonServices
 
     public async Task<ListBaseResponse?> List(PlanListOptions? options = null)
     {
-        var parameters = new Dictionary<string, object>
-        {
-            { "limit", options?.Limit ?? 9999 },
-            { "page", options?.Page ?? 0 }
-        };
+        
+        var parameters = new Dictionary<string, object?>
+            {
+                { "limit", options?.Limit ?? 9999 },
+                { "page", options?.Page ?? 1 },
+                { "search", options?.Search }
+            }.Where(kvp => kvp.Value != null)
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         var query = BuildQueryString(parameters);
         return await GetPlansAsync("plans", query);
     }
@@ -75,7 +81,49 @@ public class PlanService : CommonServices
         }
     }
 
-    private async Task<ListBaseResponse?> GetPlansAsync(string endpoint, string? queryParams)
+    public async Task<BaseResponse?> CreateSubscription(AnyOf<string, PlanResponseData> plan,
+        SubscriptionCreateOptions? options = null)
+    {
+        try
+        {
+            var planId = plan.IsSecond ? plan.Second.ObjectId : (plan.IsFirst ? plan.First : null);
+            var subData = new SubscriptionRequestPeyload();
+            JsonConvert.PopulateObject(JsonConvert.SerializeObject(options), subData);
+            subData.PlanId ??= planId;
+            subData.CustomerId = subData.CustomerId.StartsWith("cus_") ?
+                                 subData.CustomerId.Substring("cus_".Length) : subData.CustomerId;
+            return await HandlePlanAsync(HttpMethod.Post, "subscriptions", subData, "Subscription");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<BaseResponse?> Delete(AnyOf<string, PlanResponseData> plan)
+    {
+        try
+        {
+            var planId = plan.IsSecond ? plan.Second.ObjectId : (plan.IsFirst ? plan.First : null);
+            return await HandlePlanAsync(HttpMethod.Delete, $"plans/{planId}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+    
+    private string BuildQueryString(Dictionary<string, object?> parameters)
+    {
+        var queryString = string.Join("&",
+            parameters.Select(p =>
+                $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value.ToString() ?? string.Empty)}"));
+        return queryString;
+    }
+
+    private async Task<ListBaseResponse?> GetPlansAsync(string endpoint, string? queryParams, string objectType = "Plan")
     {
         try
         {
@@ -109,7 +157,7 @@ public class PlanService : CommonServices
             {
                 for (int i = 0; i < jsonPlans.Count; i++)
                 {
-                    var ch = TransformJsonRawObject(jsonPlans[i], JsonSerializer.Serialize(jsonPlans[i]));
+                    var ch = TransformJsonRawObject(jsonPlans[i], JsonSerializer.Serialize(jsonPlans[i]), objectType);
                     plans?.Add(ch);
                 }
             }
@@ -149,7 +197,7 @@ public class PlanService : CommonServices
         }
     }
     public async Task<BaseResponse?> HandlePlanAsync(HttpMethod method, string path,
-        PlanRequestPayload? planData = null)
+        BaseRequestPayload? planData = null, string objectType = "Plan")
     {
         try
         {
@@ -192,7 +240,10 @@ public class PlanService : CommonServices
                         $"HTTP error {response.StatusCode}: Unable to parse error response.");
                 }
             }
-
+            if(response.StatusCode == (HttpStatusCode)204 && method == HttpMethod.Delete)
+            {
+                return null;
+            }
             if (string.IsNullOrWhiteSpace(responseBody))
             {
                 throw new InvalidOperationException("Response body is empty.");
@@ -203,7 +254,7 @@ public class PlanService : CommonServices
                 var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
                 if (dataDict != null)
                 {
-                    return TransformJsonRawObject(dataDict, dataElement.GetRawText());
+                    return TransformJsonRawObject(dataDict, dataElement.GetRawText(), objectType);
                 }
             }
             throw new InvalidOperationException("Response data is invalid or missing.");
@@ -224,22 +275,9 @@ public class PlanService : CommonServices
             throw;
         }
     }
-    
-    private BaseResponse? TransformJsonRawObject(Dictionary<string, object> obj, string? rawObj)
+
+    private BaseResponse? TransformJsonRawObject(Dictionary<string, object> obj, string? rawObj, string type = "object")
     {
-        BaseResponse? response = null;
-        if (rawObj != null)
-        {
-            var planResponse = JsonConvert.DeserializeObject<PlanResponseData>(rawObj) ?? new PlanResponseData();
-            planResponse.RawData = rawObj;
-            if (obj["plan_id"]?.ToString() != null)
-            {
-                planResponse.Object = "Plan";
-                planResponse.ObjectId ??= $"{obj["plan_id"]}";
-                // chargeResponse.CreateRefund = async (chargeData) => await CreateRefund(chargeResponse, chargeData);
-            }
-            response = planResponse;
-        }
-        return response;
+        return base.TransformJsonRawObject(obj, rawObj, type);
     }
 }

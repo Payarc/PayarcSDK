@@ -11,9 +11,9 @@ public class BillingService
     {
         _httpClient = httpClient;
         Plan = new PlanService(_httpClient);
-        SubscriptionService = new SubscriptionService(_httpClient);
+        Subscription = new SubscriptionService(_httpClient);
     }
     
     public PlanService Plan { get; set; }
-    public SubscriptionService SubscriptionService { get; set; }
+    public SubscriptionService Subscription { get; set; }
 }
