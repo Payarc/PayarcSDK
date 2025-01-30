@@ -1,5 +1,6 @@
 using System.Text.Json;
 using PayarcSDK.Entities;
+using PayarcSDK.Entities.Billing.Subscriptions;
 
 namespace PayarcSDK.Sample;
 
@@ -319,7 +320,8 @@ public class ApiRequester
                 var options = new PlanListOptions()
                 {
                     Limit = 10,
-                    Page = 3,
+                    Page = 1,
+                    Search = "test"
                 };
                 var responseData = await _payarc.Billing.Plan.List(options);
                 Console.WriteLine("Plans Data");
@@ -350,7 +352,7 @@ public class ApiRequester
             {
                 var options = new UpdatePlanOptions()
                 {
-                    Name = "Monthly billing regular test update",
+                    Name = "Monthly billing regular test update 2",
                 };
                 var responseData = await _payarc.Billing.Plan.List();
                 if (responseData?.Data?.Count > 0)
@@ -392,6 +394,98 @@ public class ApiRequester
                 Console.WriteLine(e);
                 throw;
             }
-            
+        }
+        
+        public async Task DeletePlanById()
+        {
+            try
+            {
+                await _payarc.Billing.Plan.Delete("plan_50c1b33a");
+                Console.WriteLine("Plan was Deleted");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public async Task CreateSubscription()
+        {
+            try
+            {
+                var plans = await _payarc.Billing.Plan.List(new PlanListOptions {Search = "test"});
+                var options = new SubscriptionCreateOptions()
+                {
+                    CustomerId = "cus_DPNMVjx4AMNNVnjA"
+                };
+                if (plans?.Data?.Count > 0)
+                {
+                    var plan = (PlanResponseData?)plans?.Data?[0];
+                    if (plan != null)
+                    {
+                        var subscription = await plan.CreateSubscription(options) as SubscriptionResponseData;
+                        Console.WriteLine("Subscription was Created");
+                        Console.WriteLine(subscription);
+                        Console.WriteLine("Raw Data");
+                        Console.WriteLine(subscription?.RawData);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+        
+        public async Task CreateSubscriptionById()
+        {
+            try
+            {
+                var options = new SubscriptionCreateOptions()
+                {
+                    CustomerId = "cus_DPNMVjx4AMNNVnjA"
+                };
+                var subScription = await _payarc.Billing.Plan.CreateSubscription("plan_08dbb4bb", options) as SubscriptionResponseData;
+                Console.WriteLine("Subscription was Created");
+                Console.WriteLine(subScription);
+                Console.WriteLine("Raw Data");
+                Console.WriteLine(subScription?.RawData);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public async Task ListSubscriptions()
+        {
+            try
+            {
+                var options = new SubscriptionListOptions()
+                {
+                   Search = "test"
+                };
+                var subscription = await _payarc.Billing.Subscription.List(options);
+                Console.WriteLine("Subscriptions Data");
+                for (int i = 0; i < subscription?.Data?.Count; i++)
+                {
+                    var t = subscription.Data[i];
+                    Console.WriteLine(subscription.Data[i]);
+                }
+                Console.WriteLine("Pagination Data");
+                Console.WriteLine($"Total: {subscription?.Pagination["total"]}");
+                Console.WriteLine($"Count: {subscription?.Pagination["count"]}");
+                Console.WriteLine($"Per Page {subscription?.Pagination["per_page"]}");
+                Console.WriteLine($"Current Page {subscription?.Pagination["current_page"]}");
+                Console.WriteLine($"Total Pages: {subscription?.Pagination["total_pages"]}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 }

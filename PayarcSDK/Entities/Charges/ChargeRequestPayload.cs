@@ -1,8 +1,9 @@
 using Newtonsoft.Json;
+using PayarcSDK.Entities.Billing;
 
 namespace PayarcSDK.Entities;
 
-public class ChargeRequestPayload
+public class ChargeRequestPayload : BaseRequestPayload
 {
     [JsonProperty("account_number")]
     public string? AccountNumber { get; set; }
@@ -62,17 +63,4 @@ public class ChargeRequestPayload
     public string? Type { get; set; }
     [JsonProperty("card_number")]
     public string? CardNumber { get; set; }
-
-    [JsonIgnore]
-    public Dictionary<string, object>? Parameters { get; set; }
-    public string ToJson()
-    {
-        var settings = new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            Formatting = Formatting.Indented
-        };
-    
-        return JsonConvert.SerializeObject(this, settings);
-    }
 }

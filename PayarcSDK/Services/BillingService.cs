@@ -14,9 +14,9 @@ public class BillingService
         _apiClient = apiClient.IsFirst ? apiClient.First : new ApiClient(apiClient.Second);
         _httpClient = apiClient.IsSecond ? apiClient.Second : new HttpClient();
         Plan = new PlanService(apiClient);
-        SubscriptionService = new SubscriptionService(apiClient);
+        Subscription = new SubscriptionService(apiClient);
     }
     
     public PlanService Plan { get; set; }
-    public SubscriptionService SubscriptionService { get; set; }
+    public SubscriptionService Subscription { get; set; }
 }
