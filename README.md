@@ -44,7 +44,7 @@ To access **candidate merchant** features, you need an **Agent Identification To
 ### Configuration Setup
 
 1. Create the `.env` file in the root of your project.
-2. Add the following rows and update wiht your environment-specific values.
+2. Add the following rows and update with your environment-specific values.
 
     ```ini
     PAYARC_ENV=''
