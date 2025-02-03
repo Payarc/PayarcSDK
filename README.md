@@ -9,7 +9,7 @@ The Payarc SDK allows developers to integrate Payarc's payment processing capabi
 - [Usage](#usage)
 - [API Reference](#api-reference)
 - [Examples](#examples)
-- [License](#license-1)
+- [License](#license)
 
 # Payarc Connect
 The following functionality will pertain only to user who are utilizing the Payarc Connect integration:
