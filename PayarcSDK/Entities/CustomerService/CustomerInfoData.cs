@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using PayarcSDK.Models;
+using PayarcSDK.Entities;
 
 namespace PayarcSDK.Entities.CustomerService
 {

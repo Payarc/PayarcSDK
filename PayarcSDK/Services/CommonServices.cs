@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using PayarcSDK.Entities;
+using PayarcSDK.Entities.ApplicationService;
 using PayarcSDK.Entities.CustomerService;
 using System;
 using System.Collections.Generic;
@@ -29,26 +30,21 @@ namespace PayarcSDK.Services {
 		public BaseResponse? TransformJsonRawObject(Dictionary<string, object> obj, string? rawObj, string type = "object")
 		{
 			BaseResponse? response = null;
-			if (rawObj != null)
-			{
-				if (type == "Plan")
-				{
+			if (rawObj != null) {
+				if (type == "Plan") {
 					var planResponse = JsonConvert.DeserializeObject<PlanResponseData>(rawObj) ?? new PlanResponseData();
 					planResponse.RawData = rawObj;
-					if (obj.ContainsKey("plan_id") && obj["plan_id"]?.ToString() != null)
-					{
+					if (obj.ContainsKey("plan_id") && obj["plan_id"]?.ToString() != null) {
 						var planService = new PlanService(_httpClient);
 						planResponse.Object = "Plan";
 						planResponse.ObjectId ??= $"{obj["plan_id"]}";
-						planResponse.Retrieve = async() => await planService.Retrieve(planResponse);
+						planResponse.Retrieve = async () => await planService.Retrieve(planResponse);
 						planResponse.Update = async (newData) => await planService.Update(planResponse, newData);
-						planResponse.Delete = async() => await planService.Delete(planResponse);
+						planResponse.Delete = async () => await planService.Delete(planResponse);
 						planResponse.CreateSubscription = async (newData) => await planService.CreateSubscription(planResponse, newData);
 					}
 					response = planResponse;
-				}
-				else if (type == "Subscription")
-				{
+				} else if (type == "Subscription") {
 					var subService = new SubscriptionService(_httpClient);
 					var subResponse = JsonConvert.DeserializeObject<SubscriptionResponseData>(rawObj) ?? new SubscriptionResponseData();
 					subResponse.RawData = rawObj;
@@ -56,18 +52,14 @@ namespace PayarcSDK.Services {
 					subResponse.Update = async (newData) => await subService.Update(subResponse, newData);
 					subResponse.Cancel = async () => await subService.Cancel(subResponse);
 					response = subResponse;
-				}
-				else if (type == "Charge")
-				{
+				} else if (type == "Charge") {
 					ChargeService chargeService = new ChargeService(_httpClient);
 					var chargeResponse = JsonConvert.DeserializeObject<ChargeResponseData>(rawObj) ?? new ChargeResponseData();
 					chargeResponse.RawData = rawObj;
 					chargeResponse.ObjectId ??= $"ch_{obj["id"]}";
 					chargeResponse.CreateRefund = async (chargeData) => await chargeService.CreateRefund(chargeResponse, chargeData);
 					response = chargeResponse;
-				}
-				else if (type == "ACHCharge")
-				{
+				} else if (type == "ACHCharge") {
 					ChargeService chargeService = new ChargeService(_httpClient);
 					var achChargeResponse = JsonConvert.DeserializeObject<AchChargeResponseData>(rawObj) ?? new AchChargeResponseData();
 					achChargeResponse.RawData = rawObj;
@@ -75,8 +67,7 @@ namespace PayarcSDK.Services {
 					achChargeResponse.CreateRefund = async (chargeData) => await chargeService.CreateRefund(achChargeResponse, chargeData);
 					if (achChargeResponse.BankAccount?.Data != null) achChargeResponse.BankAccount.Data.ObjectId = $"bnk_{obj["id"]}";
 					response = achChargeResponse;
-				}
-				else if (obj["object"]?.ToString() == "customer") {
+				} else if (type == "Customer") {
 					CustomerService customerService = new CustomerService(_httpClient);
 					var customerResponse = JsonConvert.DeserializeObject<CustomerResponseData>(rawObj) ?? new CustomerResponseData();
 					customerResponse.RawData = rawObj;
@@ -86,14 +77,63 @@ namespace PayarcSDK.Services {
 						return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
 					};
 					response = customerResponse;
-				} else if (obj["object"]?.ToString() == "Token") {
+				} else if (type == "Token") {
 					var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(rawObj) ?? new TokenResponse();
 					tokenResponse.RawData = rawObj;
 					tokenResponse.ObjectId ??= $"tok_{obj["id"]}";
 					response = tokenResponse;
-				}
-			}
-       
+				} else if (type == "ApplyApp") {
+					var applicationResponse = JsonConvert.DeserializeObject<ApplicationResponseData>(rawObj) ?? new ApplicationResponseData();
+					applicationResponse.RawData = rawObj;
+					applicationResponse.ObjectId ??= $"appl_{obj["id"]}";
+					applicationResponse.Documents?.ForEach(doc => {
+						doc.ObjectId = $"doc_{doc.Id}";
+					});
+					response = applicationResponse;
+				} else if (type == "MerchantCode") {
+                    var documentChangeResponse = JsonConvert.DeserializeObject<DocumentChangeResponse>(rawObj) ?? new DocumentChangeResponse();
+                    documentChangeResponse.RawData = rawObj;
+                    documentChangeResponse.ObjectId ??= $"appl_{obj["MerchantCode"]}";
+                    documentChangeResponse.Object = "ApplyApp";
+                    documentChangeResponse.MerchantDocuments?.ForEach(doc => {
+						doc.Object = "ApplyDocuments";
+                        doc.ObjectId = $"doc_{doc.DocumentCode}";
+                    });
+                    obj.Remove("MerchantCode");
+					response = documentChangeResponse;
+				} else if (type == "DocumentCode") {
+
+                    var documentChangeResponse = JsonConvert.DeserializeObject<DocumentChangeResponse>(rawObj) ?? new DocumentChangeResponse();
+                    documentChangeResponse.RawData = rawObj;
+                    documentChangeResponse.Object = "ApplyApp";
+                    documentChangeResponse.MerchantDocuments?.ForEach(doc => {
+                        doc.Object = "ApplyDocuments";
+                        doc.ObjectId = $"doc_{doc.DocumentCode}";
+                    });
+                    obj.Remove("MerchantDocuments");
+					response = documentChangeResponse;
+				} else if (type == "ApplyDocuments") {
+					//CustomerService customerService = new CustomerService(_httpClient);
+					var documentResponse = JsonConvert.DeserializeObject<DocumentResponseData>(rawObj) ?? new DocumentResponseData();
+					documentResponse.RawData = rawObj;
+					documentResponse.ObjectId ??= $"doc_{obj["id"]}";
+					//customerResponse.Update = async (customerData) => {
+					//	var result = await customerService.Update(customerResponse, customerData);
+					//	return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
+					//};
+					response = documentResponse;
+				} else if (type == "User") {
+                    //CustomerService customerService = new CustomerService(_httpClient);
+                    var documentResponse = JsonConvert.DeserializeObject<SubAgentResponseData>(rawObj) ?? new SubAgentResponseData();
+                    documentResponse.RawData = rawObj;
+                    documentResponse.ObjectId ??= $"usr_{obj["id"]}";
+                    //customerResponse.Update = async (customerData) => {
+                    //	var result = await customerService.Update(customerResponse, customerData);
+                    //	return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
+                    //};
+                    response = documentResponse;
+                }
+            }
 			return response;
 		}
 	}
