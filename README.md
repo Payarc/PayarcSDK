@@ -188,3 +188,5 @@ try {
     Console.WriteLine("Error detected: " + ex.Message);
 }
 ```
+
+## License [MIT](LICENSE)
