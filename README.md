@@ -11,6 +11,76 @@ The Payarc SDK allows developers to integrate Payarc's payment processing capabi
 - [Examples](#examples)
 - [License](#license)
 
+## Requirements
+.NET 8 or later.
+
+## Installation
+You can install the Payarc SDK package using the .NET CLI with the following command:
+
+```sh
+dotnet add package <placeholder_package_name> 
+```
+
+## Usage
+
+Before using the Payarc SDK, you must initialize it with your **API key** and the appropriate **environment**. This ensures your requests are authenticated and directed to the correct API endpoint.  
+
+### Available Environments  
+Each environment has unique API keys and endpoints:  
+
+- **`prod`** – Production environment (live transactions).  
+- **`sandbox`** – Testing environment (no real transactions).  
+- **`payarcConnect`** – Production environment for Payarc Connect.  
+- **`payarcConnectDev`** – Development/testing for Payarc Connect.
+
+> ⚠️ Keep your API key **secure** and **never expose it** to clients. This information should remain on your server.
+
+### Managing API Credentials  
+The examples provided use [dotenv.net](https://www.nuget.org/packages/dotenv.net) to store API credentials securely and load them in the constructor. However, this is **not mandatory**—you may use any configuration method that fits your setup.  
+
+### Candidate Merchant Functionality  
+To access **candidate merchant** features, you need an **Agent Identification Token**, which can be obtained from the Payarc portal.
+
+### Configuration Setup
+
+1. Create the `.env` file in the root of your project.
+2. Add the following rows and update wiht your environment-specific values.
+
+    ```ini
+    PAYARC_ENV=''
+    PAYARC_KEY=''
+    AGENT_KEY=''
+    PAYARC_VERSION=''
+    ```
+
+3. Install the [dotenv.net](https://www.nuget.org/packages/dotenv.net) package
+
+    ```sh
+    dotnet add package dotenv.net
+    ```
+
+4. Create an instance of the Payarc SDK which can be used to call different methods depending on your business needs. The following code provides a guideline:
+
+    ```csharp
+    // Load the environment variables from your .env file
+    Dotenv.Load();
+
+    // Now build the Payarc SDK
+    Payarc payarc = new SdkBuilder()
+        .Configure(config => {
+            config.Environment = Environment.GetEnvironmentVariable("PAYARC_ENV") ?? "sandbox";
+            config.ApiVersion = Environment.GetEnvironmentVariable("PAYARC_VERSION") ?? "v1"; 
+            config.BearerToken = Environment.GetEnvironmentVariable("PAYARC_KEY"); 
+        })
+        .Build();
+    ```
+
+    If there are no errors, you are good to go!
+
+## API Reference
+- Documentation for existing payment API provided by Payarc can be found on https://docs.payarc.net/
+- Documentation for existing candidate merchant management API can be found on https://docs.apply.payarc.net/
+
 # Payarc Connect
 The following functionality will pertain only to user who are utilizing the Payarc Connect integration:
 
