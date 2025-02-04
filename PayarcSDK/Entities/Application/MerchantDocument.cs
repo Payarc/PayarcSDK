@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PayarcSDK.Entities.ApplicationService
+namespace PayarcSDK.Entities
 {
 	public class MerchantDocument {
 		[JsonProperty("DocumentType")]

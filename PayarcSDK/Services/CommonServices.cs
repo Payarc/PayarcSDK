@@ -1,7 +1,5 @@
 using Newtonsoft.Json;
 using PayarcSDK.Entities;
-using PayarcSDK.Entities.ApplicationService;
-using PayarcSDK.Entities.CustomerService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +8,7 @@ using System.Threading.Tasks;
 using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using PayarcSDK.Entities.Billing.Subscriptions;
+using PayarcSDK.Entities.Dispute;
 
 namespace PayarcSDK.Services {
 	public class CommonServices {
@@ -132,8 +131,19 @@ namespace PayarcSDK.Services {
                     //	return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
                     //};
                     response = documentResponse;
-                }
-            }
+                } else if (type == "Cases") {
+					//CustomerService customerService = new CustomerService(_httpClient);
+					var disputeCaseResponse = JsonConvert.DeserializeObject<DisputeCasesResponseData>(rawObj) ?? new DisputeCasesResponseData();
+					disputeCaseResponse.RawData = rawObj;
+					disputeCaseResponse.Object = "Dispute";
+					disputeCaseResponse.ObjectId ??= $"dis_{obj["id"]}";
+					//customerResponse.Update = async (customerData) => {
+					//	var result = await customerService.Update(customerResponse, customerData);
+					//	return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
+					//};
+					response = disputeCaseResponse;
+				}
+			}
 			return response;
 		}
 	}

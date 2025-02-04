@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PayarcSDK.Entities.ApplicationService
+namespace PayarcSDK.Entities
 {
 	public partial class ApplicationInfoData {
 		[JsonProperty("agentId")]

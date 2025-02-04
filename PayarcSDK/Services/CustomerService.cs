@@ -9,7 +9,6 @@ using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using PayarcSDK.Services;
 using AnyOfTypes;
-using PayarcSDK.Entities.CustomerService;
 
 namespace PayarcSDK.Services {
 	public class CustomerService : CommonServices {
@@ -19,7 +18,7 @@ namespace PayarcSDK.Services {
 			_httpClient = httpClient;
 		}
 
-		public async Task<BaseResponse> Create(CustomerInfoData customerData) {
+		public async Task<BaseResponse> Create(CustomerRequestData customerData) {
 			return await CreateCustomerAsync(customerData);
 		}
 
@@ -32,7 +31,7 @@ namespace PayarcSDK.Services {
 		}
 
 		public async Task<BaseResponse> Update(AnyOf<string?, CustomerResponseData> customer,
-			CustomerInfoData? customerData = null) {
+			CustomerRequestData? customerData = null) {
 			string? customerId = string.Empty;
 			customerId = customer.IsSecond ? customer.Second.ObjectId : customer.First;
 			return await UpdateCustomerAsync(customerId, customerData);
@@ -42,7 +41,7 @@ namespace PayarcSDK.Services {
 			return await DeleteCustomerAsync(customerId);
 		}
 
-		private async Task<BaseResponse> CreateCustomerAsync(CustomerInfoData customerData) {
+		private async Task<BaseResponse> CreateCustomerAsync(CustomerRequestData customerData) {
 			var createdCustomer =  await CreateCustomer("customers", customerData);
 			var customerId = createdCustomer.ObjectId;
 			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
@@ -100,7 +99,7 @@ namespace PayarcSDK.Services {
 			}
 		}
 
-		private async Task<BaseResponse> UpdateCustomerAsync(string customerId, CustomerInfoData customerData) {
+		private async Task<BaseResponse> UpdateCustomerAsync(string customerId, CustomerRequestData customerData) {
 			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
 			if (customerData.Cards.Count() != 0) {
 				foreach (CardData cardData in customerData.Cards) {
@@ -117,7 +116,7 @@ namespace PayarcSDK.Services {
 			return await UpdateCustomer($"customers/{customerId}", customerData);
 		}
 
-		private async Task<BaseResponse> AddCardToCustomerAsync(string customerId, CardData cardData, CustomerInfoData customerData) {
+		private async Task<BaseResponse> AddCardToCustomerAsync(string customerId, CardData cardData, CustomerRequestData customerData) {
 			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
 			BaseResponse cardToken = await CreateCardToken("tokens", cardData);
 			var tokenId = cardToken.ObjectId;
@@ -163,7 +162,7 @@ namespace PayarcSDK.Services {
 		}
 
 		// Generic HTTP request methods
-		private async Task<BaseResponse?> CreateCustomer(string url, CustomerInfoData customerData, string type = "Customer") {
+		private async Task<BaseResponse?> CreateCustomer(string url, CustomerRequestData customerData, string type = "Customer") {
 			try {
 				var content = new StringContent(customerData.ToJson(), Encoding.UTF8, "application/json");
 				var response = await _httpClient.PostAsync(url, content);
@@ -200,7 +199,7 @@ namespace PayarcSDK.Services {
 			}
 		}
 
-		private async Task<BaseResponse?> UpdateCustomer(string url, CustomerInfoData customerData, string type = "Customer") {
+		private async Task<BaseResponse?> UpdateCustomer(string url, CustomerRequestData customerData, string type = "Customer") {
 			try {
 				Console.WriteLine($"Customer Data: {customerData.ToJson()}");
 				var content = new StringContent(customerData.ToJson(), Encoding.UTF8, "application/json");

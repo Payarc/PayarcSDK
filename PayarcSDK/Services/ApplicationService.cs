@@ -5,8 +5,6 @@ using System.Text.Json;
 using AnyOfTypes;
 using Newtonsoft.Json.Linq;
 using PayarcSDK.Entities;
-using PayarcSDK.Entities.ApplicationService;
-using PayarcSDK.Entities.CustomerService;
 
 namespace PayarcSDK.Services {
 	public class ApplicationService : CommonServices {
@@ -150,7 +148,7 @@ namespace PayarcSDK.Services {
                     }
                 }
                 var query = BuildQueryString(parameters);
-                return await GetListAubAgentsAsync("agent-hub/sub-agents", query);
+                return await GetListSubAgentsAsync("agent-hub/sub-agents", query);
             }
             catch (Exception ex) {
                 Console.WriteLine(ex);
@@ -254,7 +252,7 @@ namespace PayarcSDK.Services {
 		}
 
 		// Generic HTTP request helper methods
-		private async Task<ListBaseResponse> GetListAubAgentsAsync(string url, string? queryParams = null, string type = "User") {
+		private async Task<ListBaseResponse> GetListSubAgentsAsync(string url, string? queryParams = null, string type = "User") {
 			try {
 				if (queryParams != null) {
 					url = $"{url}?{queryParams}";

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PayarcSDK.Entities.CustomerService
+namespace PayarcSDK.Entities
 {
     public class TokenResponse : BaseResponse {
 		[JsonProperty("object")]

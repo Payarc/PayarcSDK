@@ -3,8 +3,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PayarcSDK.Entities.PayarcConnectService;
 using PayarcSDK.Entities;
-using PayarcSDK.Entities.ApplicationService;
-using PayarcSDK.Entities.CustomerService;
 using System.Text.Json;
 using System.Text;
 using PayarcSDK.Entities;
@@ -141,8 +139,8 @@ namespace PayarcSDK.Sample {
 			//var testService = "billingService";
 			//var testService = "customerService";
 			//var testService = "applicationService";
-			var testService = "disputeService";
-			//var testService = "splitCampaignService";
+			//var testService = "disputeService";
+			var testService = "splitCampaignService";
 			//var testService = "chargeService";
 			//var testService = "payarcConnect";
 			var apiRequester = new ApiRequester(payarc);
@@ -231,7 +229,7 @@ namespace PayarcSDK.Sample {
 						switch (testCustomerAction) {
 							case "createCustomer":
 								// Create a new customer
-								CustomerInfoData newCustomerData = new CustomerInfoData {
+								CustomerRequestData newCustomerData = new CustomerRequestData {
 									Name = "Shah Test11",
 									Email = "shah@test11.com",
 									Phone = 1234567890
@@ -248,7 +246,7 @@ namespace PayarcSDK.Sample {
 								break;
 							case "updateCustomer":
 								// Update a customer
-								CustomerInfoData customerData = new CustomerInfoData {
+								CustomerRequestData customerData = new CustomerRequestData {
 									Name = "Shah Test9",
 									Email = "shahupdate2@sdk.com",
 									Phone = 2222222222
@@ -399,26 +397,43 @@ namespace PayarcSDK.Sample {
 						}
 						break;
 					case "disputeService":
-						// List cases
-						var cases = await payarcDisputeCases.DisputeService.List();
-						Console.WriteLine($"List Cases: {cases}");
+                        // List cases
+                        var caseId = "";
 
-                        //var caseId = "dis_123456";
-                        //// Get a specific case
-                        //var specificCase = await payarcDisputeCases.DisputeService.Retrieve(caseId);
-                        //Console.WriteLine($"Case Id with {caseId}: {specificCase}");
+						var currentDate = DateTime.UtcNow;
+						var tomorrowDate = currentDate.AddDays(1).ToString("yyyy-MM-dd");
+						var lastMonthDate = currentDate.AddMonths(-60).ToString("yyyy-MM-dd");
 
-                        //// Add a document to a case
-                        //var documentParams = new JObject
-                        //{
-                        //	{ "DocumentDataBase64", "iVBORw0KGgoAAAANSUhEUgAAAIUAAABsCAYAAABEkXF2AAAABHNCSVQICAgIfAhkiAAAAupJREFUeJzt3cFuEkEcx/E/001qUQ+E4NF48GB4BRM9+i59AE16ANlE4wv4Mp5MjI8gZ+ONEMJBAzaWwZsVf2VnstPZpfb7STh06ewu5JuFnSzQ8d5vDfiLa3sHcHiIAoIoIIgCgiggitwbWM/f2vniTe7NoIZ7Dz9Y0X0qy7NHYfbLtn6dfzOoYXPlUl4+IIgCooGXj10ngzM77p81vVmY2Y9vL+xi9Tn4f41HYVZYx3Wb3yws9oWBlw8IooAgCgiigCAKCKKAIAoIooAgCoikGU3nqpvy3qesPvv6+/2+LZfLpHUcsrrPD0cKCKKAIAoIooAgCgiigCAKCOecs7q3iJXbZDLZWVaWZfR4733lLbfZbBbchzZvvV4vy+PmSAFBFBBEAUEUEEQBQRQQRAFR5DzfD81FxMxVpMg9l3HT938fjhQQRAFBFBBEAUEUEEQBQRQQRe5z7SptnYejGkcKCKKAIAoIooAgCgiigCAKiKQoYj6bMB6Pd8aMRqPoz22kfCalzfmXm45nDoIoIIgCgiggiAKCKCCIAiJrFKnfTxHS9vdX5P7+ibZwpIAgCgiigCAKCKKAIAoIooDomNl2352hc+WY3+NYzyf2c345V3EyGNmdwevo8anbr3Lbfu/j+9fndrH69Ofv+48+WtF9JuM4UkAQBQRRQBAFBFFAEAUEUUBUfo9m6jUPzjl7eWr26vRyWVmW9u59GT2+Suo1B4vFImn8/4ojBQRRQBAFBFFAEAUEUUAQBUTHe7/3eorUeYrQ9RSprmP/UtZ/6OP/xfUUqI0oIIgCgiggiqY36Ddz25x/uZZ1PXmcNj60H6H1H/p4sV1F/VvjZx84HJx9IFrl733wexy3U/b3FO7ogR0dD7OsezqdVt4/HFZvNzQ+t9T9C40P6ty9erElfEKsbblnDHNrekYzFu8pIIgCgiggiAKCKCAqzz5Ccr+7T3133fb1DG0//ro4UkAQBQRRQBAFBFFAEAXEb3wL3JblytFeAAAAAElFTkSuQmCC" },
-                        //	{ "mimeType", "application/pdf" },
-                        //	{ "text", "Additional evidence for the dispute." },
-                        //	{ "message", "Submitting dispute case with evidence." }
-                        //};
-                        //var result = await payarcDisputeCases.DisputeService.AddDocument(caseId, documentParams);
-                        //Console.WriteLine($"Add Document Result: {result}");
-                        break;
+						OptionsData queryParamsDisputeCases = new OptionsData {
+							Report_DateGTE = lastMonthDate,
+							Report_DateLTE = tomorrowDate,
+						};
+
+                        var cases = await payarcDisputeCases.DisputeService.List(queryParamsDisputeCases);
+						Console.WriteLine($"List Cases:");
+						for (int i = 0; i < cases?.Data?.Count; i++) {
+							var t = cases.Data[i];
+							Console.WriteLine(t);
+							if (i == cases?.Data?.Count - 1) {
+								caseId = t.ObjectId;
+							}
+						}
+
+						// Get a specific case
+						var specificCase = await payarcDisputeCases.DisputeService.Retrieve(caseId);
+						Console.WriteLine($"Case Id with {caseId}: {specificCase}");
+
+						//// Add a document to a case
+						//var documentParams = new JObject
+						//{
+						//	{ "DocumentDataBase64", "iVBORw0KGgoAAAANSUhEUgAAAIUAAABsCAYAAABEkXF2AAAABHNCSVQICAgIfAhkiAAAAupJREFUeJzt3cFuEkEcx/E/001qUQ+E4NF48GB4BRM9+i59AE16ANlE4wv4Mp5MjI8gZ+ONEMJBAzaWwZsVf2VnstPZpfb7STh06ewu5JuFnSzQ8d5vDfiLa3sHcHiIAoIoIIgCgiggitwbWM/f2vniTe7NoIZ7Dz9Y0X0qy7NHYfbLtn6dfzOoYXPlUl4+IIgCooGXj10ngzM77p81vVmY2Y9vL+xi9Tn4f41HYVZYx3Wb3yws9oWBlw8IooAgCgiigCAKCKKAIAoIooAgCoikGU3nqpvy3qesPvv6+/2+LZfLpHUcsrrPD0cKCKKAIAoIooAgCgiigCAKCOecs7q3iJXbZDLZWVaWZfR4733lLbfZbBbchzZvvV4vy+PmSAFBFBBEAUEUEEQBQRQQRAFR5DzfD81FxMxVpMg9l3HT938fjhQQRAFBFBBEAUEUEEQBQRQQRe5z7SptnYejGkcKCKKAIAoIooAgCgiigCAKiKQoYj6bMB6Pd8aMRqPoz22kfCalzfmXm45nDoIoIIgCgiggiAKCKCCIAiJrFKnfTxHS9vdX5P7+ibZwpIAgCgiigCAKCKKAIAoIooDomNl2352hc+WY3+NYzyf2c345V3EyGNmdwevo8anbr3Lbfu/j+9fndrH69Ofv+48+WtF9JuM4UkAQBQRRQBAFBFFAEAUEUUBUfo9m6jUPzjl7eWr26vRyWVmW9u59GT2+Suo1B4vFImn8/4ojBQRRQBAFBFFAEAUEUUAQBUTHe7/3eorUeYrQ9RSprmP/UtZ/6OP/xfUUqI0oIIgCgiggiqY36Ddz25x/uZZ1PXmcNj60H6H1H/p4sV1F/VvjZx84HJx9IFrl733wexy3U/b3FO7ogR0dD7OsezqdVt4/HFZvNzQ+t9T9C40P6ty9erElfEKsbblnDHNrekYzFu8pIIgCgiggiAKCKCAqzz5Ccr+7T3133fb1DG0//ro4UkAQBQRRQBAFBFFAEAXEb3wL3JblytFeAAAAAElFTkSuQmCC" },
+						//	{ "mimeType", "application/pdf" },
+						//	{ "text", "Additional evidence for the dispute." },
+						//	{ "message", "Submitting dispute case with evidence." }
+						//};
+						//var result = await payarcDisputeCases.DisputeService.AddDocument(caseId, documentParams);
+						//Console.WriteLine($"Add Document Result: {result}");
+						break;
 					case "splitCampaignService":
 						// Example: Create a new campaign
 						var newCampaign = new JObject {
