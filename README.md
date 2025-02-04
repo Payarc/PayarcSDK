@@ -78,8 +78,67 @@ To access **candidate merchant** features, you need an **Agent Identification To
     If there are no errors, you are good to go!
 
 ## API Reference
-- Documentation for existing payment API provided by Payarc can be found on https://docs.payarc.net/
-- Documentation for existing candidate merchant management API can be found on https://docs.apply.payarc.net/
+Comprehensive documentation for Payarc's payment processing and candidate merchant management APIs is available at: https://docs.payarc.net/
+
+## Examples
+The Payrc SDK is build around the `Payarc` object. From this object you can access properties and function that will support your operations.
+
+### The `Payarc` object has the following services:
+- **Charges** - Manage payments
+- **Customers** - Manage customers  
+- **Applications** - Manage candidate merchants  
+- **SplitCampaigns** - Manage split campaigns  
+- **Billing**  
+    - **Plan** - Manage plans  
+    - **Subscription** - Manage plan subscriptions
+
+> [!NOTE]
+> The `Payarc` object referenced in the below examples will be created as `payarc`, you can name it whatever you'd like though.
+
+### Service `payarc.Charges`
+#### The `payarc.Charges` service facilitates the management of payments within the system, providing the following functions:
+- **Create** - Initiates a payment intent or charge with various configurable parameters. Refer to the examples for specific use cases.
+- **Retrieve** - Fetches a JSON object `charge` containing detailed information about a specific charge.
+- **List** - returns an object containing two attributes:  `charges` and `pagination`. The `charges` attribute is a list of JSON objects, each providing detailed information about individual charges. The `pagination` attribute contains deatails for navigating through the list of charges.
+- **CreateRefund** - Processes a refund for an existing charge.
+
+### Service `payarc.Customer`
+#### The `payarc.Customer` service manages your customers' personal information, including addresses and payment methods such as credit cards and bank accounts. This data is securely stored for future transactions.
+- **Create** - Creates a customer object in the database and generates a unique identifier for future reference and inquiries. See examples and documentation for more details.
+- **Retrieve** - Retrieves detailed information about a specific customer from the database.
+- **List** - Searches through previously created customers, allowing filtering based on specific criteria. See examples and documentation for more details.
+- **Update** - Modifies attributes of an existing customer object.
+- **Delete** - Removes a customer object from the database.
+
+### Service `payarc.Applications`
+##### The `payarc.Applications` service is designed for Agents and ISVs to manage candidate merchants during new customer acquisition. It allows you to create, retrieve, list, and manage the necessary documents for the onboarding process.
+- **Create** - Adds a new candidate merchant to the database. See the documentation for available attributes, valid values, and required fields.
+**List** - Returns a list of application objects representing potential merchants. Use this function to find the relevant identifier.
+**Retrieve** - based on identifier or an object returned from list function, this function will return details 
+**Delete** - in case candidate merchant is no longer needed it will remove information for it.
+**AddDocument** - this function is adding base64 encoded document to existing candidate merchant. For different types of document required in the process contact Payarc. See examples how the function could be invoked
+**DeleteDocument** - this function removes document, when document is no longer valid.
+**ListSubAgents** - this function is usefull to create candidate in behalf of other agent.
+**Submit** - this function initialize the process of sing off contract between Payarc and your client
+
+### Service `payarc.Billing`
+The payarc.Billing service is responsible for managing recurring payments. It currently includes the `Plan` service for handling plans and the `Subscription` service for managing plan subscriptions.
+
+#### Service `payarc.Billing.Plan` 
+#### This Service contains information specific for each plan like identification details, rules for payment request and additional information. This SERVICE has methods for:
+    create - you can programmatically created new objects to meet client's needs,
+    list - inquiry available plans,
+    retrieve - collect detailed information for a plan,
+    update - modify details of a plan,
+    delete - remove plan when no longer needed,
+    create_subscription: issue a subscription for a customer from a plan.
+Based on plans you can create subscription. Time scheduled job will request and collect payments (charges) according plan schedule from customer.
+
+#### Service `payarc.Billing.Subscription`
+This abstraction encapsulate information for subscription the link between customer and plan. it has following methods:
+    list - enumerate subscriptions,
+    cancel - stop and cancel active subscription,
+    update - modify details of a subscription
 
 # Payarc Connect
 The following functionality will pertain only to user who are utilizing the Payarc Connect integration:
