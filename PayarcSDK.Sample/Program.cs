@@ -11,6 +11,13 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 namespace PayarcSDK.Sample {
 	internal class Program {
 		static async Task Main(string[] args) {
+			Payarc payarc = null;
+			Payarc payarcAgent = null;
+			Payarc payarcAgentWithSubAgent = null;
+			Payarc payarcConnect = null;
+			Payarc payarcDisputeCases = null;
+			Payarc payarcAccountListExisting = null;
+
 			// Get Tokens from appsettings.secrets.json
 			var tokens = SecretManager.LoadTokens("appsettings.secrets.json");
 			var serials = SecretManager.LoadSerials("appsettings.secrets.json");
@@ -25,14 +32,8 @@ namespace PayarcSDK.Sample {
 				throw new InvalidOperationException("Access token is missing in the response.");
 			}
 
-			Payarc payarc = null;
-			Payarc payarcAgent = null;
-            Payarc payarcAgentWithSubAgent = null;
-            Payarc payarcConnect = null;
-			Payarc payarcDisputeCases = null;
-
-            //Temprorary Merchant Access Token taken from portal
-            try {
+			//Temprorary Merchant Access Token taken from portal
+			try {
 				payarc = new SdkBuilder()
 					.Configure(config => {
 						config.Environment = "sandbox";     // Use sandbox environment
@@ -136,11 +137,34 @@ namespace PayarcSDK.Sample {
 				Console.WriteLine($"Error: {ex.Message}");
 			}
 
+			// Retrieve the access token
+			var AccountListExistingAccessToken = tokens["AccountListExistingToken"]; // "";
+
+			if (string.IsNullOrEmpty(accessToken)) {
+				throw new InvalidOperationException("Access token is missing in the response.");
+			}
+
+			//Temprorary Merchant Access Token taken from portal
+			try {
+				payarcAccountListExisting = new SdkBuilder()
+					.Configure(config => {
+						config.Environment = "sandbox";     // Use sandbox environment
+						config.ApiVersion = "v1";           // Use version 2 of the API
+						config.BearerToken = AccountListExistingAccessToken;   // Set the Bearer Token
+					})
+					.Build();
+
+				// Use Payarc services
+				Console.WriteLine("SDK initialized successfully.");
+			} catch (Exception ex) {
+				Console.WriteLine($"Error: {ex.Message}");
+			}
+
 			//var testService = "billingService";
 			//var testService = "customerService";
 			//var testService = "applicationService";
-			var testService = "disputeService";
-			//var testService = "splitCampaignService";
+			//var testService = "disputeService";
+			var testService = "splitCampaignService";
 			//var testService = "chargeService";
 			//var testService = "payarcConnect";
 			var apiRequester = new ApiRequester(payarc);
@@ -430,13 +454,6 @@ namespace PayarcSDK.Sample {
 							Text = "Additional evidence for the dispute.",
 							Message = "Submitting dispute case with evidence."
 						};
-						//var documentParams = new JObject
-						//{
-						//	{ "DocumentDataBase64", "iVBORw0KGgoAAAANSUhEUgAAAIUAAABsCAYAAABEkXF2AAAABHNCSVQICAgIfAhkiAAAAupJREFUeJzt3cFuEkEcx/E/001qUQ+E4NF48GB4BRM9+i59AE16ANlE4wv4Mp5MjI8gZ+ONEMJBAzaWwZsVf2VnstPZpfb7STh06ewu5JuFnSzQ8d5vDfiLa3sHcHiIAoIoIIgCgiggitwbWM/f2vniTe7NoIZ7Dz9Y0X0qy7NHYfbLtn6dfzOoYXPlUl4+IIgCooGXj10ngzM77p81vVmY2Y9vL+xi9Tn4f41HYVZYx3Wb3yws9oWBlw8IooAgCgiigCAKCKKAIAoIooAgCoikGU3nqpvy3qesPvv6+/2+LZfLpHUcsrrPD0cKCKKAIAoIooAgCgiigCAKCOecs7q3iJXbZDLZWVaWZfR4733lLbfZbBbchzZvvV4vy+PmSAFBFBBEAUEUEEQBQRQQRAFR5DzfD81FxMxVpMg9l3HT938fjhQQRAFBFBBEAUEUEEQBQRQQRe5z7SptnYejGkcKCKKAIAoIooAgCgiigCAKiKQoYj6bMB6Pd8aMRqPoz22kfCalzfmXm45nDoIoIIgCgiggiAKCKCCIAiJrFKnfTxHS9vdX5P7+ibZwpIAgCgiigCAKCKKAIAoIooDomNl2352hc+WY3+NYzyf2c345V3EyGNmdwevo8anbr3Lbfu/j+9fndrH69Ofv+48+WtF9JuM4UkAQBQRRQBAFBFFAEAUEUUBUfo9m6jUPzjl7eWr26vRyWVmW9u59GT2+Suo1B4vFImn8/4ojBQRRQBAFBFFAEAUEUUAQBUTHe7/3eorUeYrQ9RSprmP/UtZ/6OP/xfUUqI0oIIgCgiggiqY36Ddz25x/uZZ1PXmcNj60H6H1H/p4sV1F/VvjZx84HJx9IFrl733wexy3U/b3FO7ogR0dD7OsezqdVt4/HFZvNzQ+t9T9C40P6ty9erElfEKsbblnDHNrekYzFu8pIIgCgiggiAKCKCAqzz5Ccr+7T3133fb1DG0//ro4UkAQBQRRQBAFBFFAEAXEb3wL3JblytFeAAAAAElFTkSuQmCC" },
-						//	{ "mimeType", "application/pdf" },
-						//	{ "text", "Additional evidence for the dispute." },
-						//	{ "message", "Submitting dispute case with evidence." }
-						//};
 						var result = await payarcDisputeCases.Disputes.AddCaseDocumentAsync(caseId, documentParams);
 						Console.WriteLine($"Add Document Result: {result}");
 						var evidenceAddedCase = await payarcDisputeCases.Disputes.Retrieve(caseId);
@@ -463,8 +480,8 @@ namespace PayarcSDK.Sample {
 						}
 
 						//var testCampaignAction = "createCampaign";
-						var testCampaignAction = "updateCampaign";
-						//var testCampaignAction = "listAccounts";
+						//var testCampaignAction = "updateCampaign";
+						var testCampaignAction = "getListAccounts";
 
 						switch (testCampaignAction) {
 							case "createCampaign":
@@ -496,12 +513,16 @@ namespace PayarcSDK.Sample {
 								Console.WriteLine($"Updated Campaign: {updatedCampaign}");
 								break;
 							case "getListAccounts":
-								// Example: Get all accounts
-							//	var allAccounts = await payarc.SplitCampaignService.ListAccounts();
-							//	Console.WriteLine($"All Accounts: {allAccounts}");
-							//	break;
-							//default:
-							//	Console.WriteLine("Nothing to test.");
+								//Example: Get all accounts
+								var allAccounts = await payarcAccountListExisting.SplitCampaigns.ListAccounts();
+								Console.WriteLine($"All Accounts:");
+								for (int i = 0; i < allAccounts?.Data?.Count; i++) {
+									var t = allAccounts.Data[i];
+									Console.WriteLine(t);
+								}
+								break;
+							default:
+								Console.WriteLine("Nothing to test.");
 								break;
 						}
 						break;

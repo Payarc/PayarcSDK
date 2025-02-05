@@ -9,6 +9,7 @@ using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using PayarcSDK.Entities.Billing.Subscriptions;
 using PayarcSDK.Entities.Dispute;
+using PayarcSDK.Entities.SplitCampaign;
 
 namespace PayarcSDK.Services {
 	public class CommonServices {
@@ -181,6 +182,12 @@ namespace PayarcSDK.Services {
 					//	var result = await customerService.Update(customerResponse, customerData);
 					//	return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
 					//};
+					response = disputeCaseResponse;
+				} else if (type == "MyAccount") {
+					var disputeCaseResponse = JsonConvert.DeserializeObject<MyAccountResponseData>(rawObj) ?? new MyAccountResponseData();
+					disputeCaseResponse.RawData = rawObj;
+					disputeCaseResponse.Object = "MyAccount";
+					disputeCaseResponse.ObjectId ??= $"macc_{obj["id"]}";
 					response = disputeCaseResponse;
 				}
 			}
