@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PayarcSDK.Entities.Dispute
 {
     public class DisputeCasesResponseData : BaseResponse {
 		[JsonProperty("object")]
-		public Object Object { get; set; }
+		public override string Object { get; set; }
 
 		[JsonProperty("id")]
 		public string Id { get; set; }
@@ -194,5 +195,14 @@ namespace PayarcSDK.Entities.Dispute
 
 		[JsonProperty("responded_date")]
 		public DateTimeOffset? RespondedDate { get; set; }
+
+		[JsonProperty("file")]
+		public ListBaseResponse? File { get; set; }
+
+		[JsonProperty("evidence")]
+		public ListBaseResponse? Evidence { get; set; }
+
+		[JsonProperty("case_submission")]
+		public ListBaseResponse? CaseSubmission { get; set; }
 	}
 }

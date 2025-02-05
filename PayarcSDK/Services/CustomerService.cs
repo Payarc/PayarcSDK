@@ -130,7 +130,7 @@ namespace PayarcSDK.Services {
 			return await AddBankAccount("bankaccounts", bankData);
 		}
 
-		private async Task<ListBaseResponse> ListCustomersAsync(OptionsData options) {
+		private async Task<ListBaseResponse> ListCustomersAsync(OptionsData? options) {
 			try {
 				var parameters = new Dictionary<string, object>
 				{

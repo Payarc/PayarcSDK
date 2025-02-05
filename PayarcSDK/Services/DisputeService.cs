@@ -61,44 +61,83 @@ namespace PayarcSDK.Services {
 			return await GetDisputeCasesAsync("cases", query);
 		}
 
-		//// Add a document to a dispute case
+		// Add a document to a dispute case
 		//private async Task<JObject> AddDocumentCaseAsync(string disputeId, JObject documentParams) {
-		//	if (disputeId.StartsWith("dis_")) {
-		//		disputeId = disputeId.Substring(4);
-		//	}
+		//	//if (disputeId.StartsWith("dis_")) {
+		//	//	disputeId = disputeId.Substring(4);
+		//	//}
 
-		//	// Prepare form-data content
-		//	var boundary = "----WebKitFormBoundary3OdUODzy6DLxDNt8";
-		//	var content = new MultipartFormDataContent(boundary);
+		//	//// Prepare form-data content
+		//	//var boundary = "----WebKitFormBoundary3OdUODzy6DLxDNt8";
+		//	//var content = new MultipartFormDataContent(boundary);
 
-		//	if (documentParams.TryGetValue("DocumentDataBase64", out var base64Data)) {
-		//		var binaryData = Convert.FromBase64String(base64Data.ToString());
-		//		var fileContent = new ByteArrayContent(binaryData);
+		//	//if (documentParams.TryGetValue("DocumentDataBase64", out var base64Data)) {
+		//	//	var binaryData = Convert.FromBase64String(base64Data.ToString());
+		//	//	var fileContent = new ByteArrayContent(binaryData);
 
-		//		var mimeType = documentParams.Value<string>("mimeType") ?? "application/pdf";
-		//		fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
+		//	//	var mimeType = documentParams.Value<string>("mimeType") ?? "application/pdf";
+		//	//	fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
 
-		//		content.Add(fileContent, "file", "filename1.png");
-		//	}
+		//	//	content.Add(fileContent, "file", "filename1.png");
+		//	//}
 
-		//	if (documentParams.TryGetValue("text", out var text)) {
-		//		var stringContent = new StringContent(text.ToString());
-		//		content.Add(stringContent, "text");
-		//	}
+		//	//if (documentParams.TryGetValue("text", out var text)) {
+		//	//	var stringContent = new StringContent(text.ToString());
+		//	//	content.Add(stringContent, "text");
+		//	//}
 
-		//	// Submit evidence
-		//	var evidenceResponse = await PostRawAsync($"cases/{disputeId}/evidence", content);
+		//	//// Submit evidence
+		//	//var evidenceResponse = await PostRawAsync($"cases/{disputeId}/evidence", content);
 
-		//	// Submit case with a message
-		//	var message = documentParams.Value<string>("message") ?? "Case number#: xxxxxxxx, submitted by SDK";
-		//	var submitBody = JObject.FromObject(new { message });
-		//	var submitResponse = await PostAsync($"cases/{disputeId}/submit", submitBody);
+		//	//// Submit case with a message
+		//	//var message = documentParams.Value<string>("message") ?? "Case number#: xxxxxxxx, submitted by SDK";
+		//	//var submitBody = JObject.FromObject(new { message });
+		//	//var submitResponse = await PostAsync($"cases/{disputeId}/submit", submitBody);
 
-		//	return JObject.FromObject(new {
-		//		EvidenceResponse = evidenceResponse,
-		//		SubmitResponse = submitResponse
-		//	});
+		//	//return JObject.FromObject(new {
+		//	//	EvidenceResponse = evidenceResponse,
+		//	//	SubmitResponse = submitResponse
+		//	//});
+
 		//}
+
+		public async Task<string> AddCaseDocumentAsync(string disputeId, DocumentParameters documentParameters/*string documentBase64, string mimeType = "application/pdf", string message = "Case number#: xxxxxxxx, submitted by SDK"*/) {
+			try {
+				disputeId = disputeId.StartsWith("dis_") ? disputeId.Substring(4) : disputeId;
+
+				var boundary = "----WebKitFormBoundary3OdUODzy6DLxDNt8";
+				using var multipartContent = new MultipartFormDataContent(boundary);
+
+				if (!string.IsNullOrEmpty(documentParameters.DocumentDataBase64)) {
+					byte[] fileBytes = Convert.FromBase64String(documentParameters.DocumentDataBase64);
+					var byteArrayContent = new ByteArrayContent(fileBytes);
+					byteArrayContent.Headers.ContentType = new MediaTypeHeaderValue(documentParameters.MimeType);
+					multipartContent.Add(byteArrayContent, "file", "filename1.png");
+				}
+
+				var requestMessage = new HttpRequestMessage(HttpMethod.Post, $"cases/{disputeId}/evidence") {
+					Content = multipartContent
+				};
+
+				var response = await _httpClient.SendAsync(requestMessage);
+				response.EnsureSuccessStatusCode();
+				string responseData = await response.Content.ReadAsStringAsync();
+
+				// Submit the case
+				var submitContent = new StringContent(JsonSerializer.Serialize(new { documentParameters.Message }), Encoding.UTF8, "application/json");
+				var submitRequestMessage = new HttpRequestMessage(HttpMethod.Post, $"cases/{disputeId}/submit") {
+					Content = submitContent
+				};
+
+				var submitResponse = await _httpClient.SendAsync(submitRequestMessage);
+				submitResponse.EnsureSuccessStatusCode();
+
+				return responseData;
+			} catch (HttpRequestException ex) {
+				// Handle error appropriately in SDK (logging, wrapping exceptions, etc.)
+				return $"Error: {ex.Message}";
+			}
+		}
 
 		private async Task<ListBaseResponse> GetDisputeCasesAsync(string url, string? queryParams = null, string type = "Cases") {
 			try {
@@ -127,11 +166,11 @@ namespace PayarcSDK.Services {
 				}
 
 				var rawData = dataElement.GetRawText();
-				var jsonApplications = dataElement.Deserialize<List<Dictionary<string, object>>>();
+				var jsonDicputeCases = dataElement.Deserialize<List<Dictionary<string, object>>>();
 				List<BaseResponse?>? disputeCases = new List<BaseResponse?>();
-				if (jsonApplications != null) {
-					for (int i = 0; i < jsonApplications.Count; i++) {
-						var disputeCase = TransformJsonRawObject(jsonApplications[i], JsonSerializer.Serialize(jsonApplications[i]), type);
+				if (jsonDicputeCases != null) {
+					for (int i = 0; i < jsonDicputeCases.Count; i++) {
+						var disputeCase = TransformJsonRawObject(jsonDicputeCases[i], JsonSerializer.Serialize(jsonDicputeCases[i]), type);
 						disputeCases?.Add(disputeCase);
 					}
 				}
@@ -174,13 +213,87 @@ namespace PayarcSDK.Services {
 
 				var jsonObject = JsonNode.Parse(responseContent);
 				var primaryCase = jsonObject?["primary_case"];
+				var primaryCaseFiles = primaryCase["data"]["file"];
+				var primaryEvidences = primaryCase["data"]["evidence"];
+				var primaryCaseSubmissions = primaryCase["data"]["case_submission"];
+				primaryCase?["data"]?.AsObject().Remove("file");
+				primaryCase?["data"]?.AsObject().Remove("evidence");
+				primaryCase?["data"]?.AsObject().Remove("case_submission");
 				responseContent = primaryCase?.ToJsonString() ?? "{}";
+				var responseCaseFiles = primaryCaseFiles?.ToJsonString() ?? "[]";
+				var responseEvidences = primaryEvidences?.ToJsonString() ?? "[]";
+				var responseCaseSubmissions = primaryCaseSubmissions?.ToJsonString() ?? "[]";
+
+				var responseCaseFilesData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseCaseFiles);
+				if (responseCaseFilesData == null || !responseCaseFilesData.TryGetValue("data", out var caseFilesDataValue) ||
+					!(caseFilesDataValue is JsonElement caseFilesDataElement)) {
+					throw new InvalidOperationException("Response data is invalid or missing.");
+				}
+
+				var caseFilesRawData = caseFilesDataElement.GetRawText();
+				var jsonCaseFiles = caseFilesDataElement.Deserialize<List<Dictionary<string, object>>>();
+				List<BaseResponse?>? disputeCaseFiles = new List<BaseResponse?>();
+				if (primaryCaseFiles != null) {
+					for (int i = 0; i < jsonCaseFiles.Count; i++) {
+						var disputeCase = TransformJsonRawObject(jsonCaseFiles[i], JsonSerializer.Serialize(jsonCaseFiles[i]), "CaseFile");
+						disputeCaseFiles?.Add(disputeCase);
+					}
+				}
+				CaseFileListResponse listResponseCaseFiles = new CaseFileListResponse {
+					Data = disputeCaseFiles,
+					RawData = caseFilesRawData
+				};
+
+				var responseEvidencesData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseEvidences);
+				if (responseEvidencesData == null || !responseEvidencesData.TryGetValue("data", out var evidencesDataValue) ||
+					!(evidencesDataValue is JsonElement evidencesDataElement)) {
+					throw new InvalidOperationException("Response data is invalid or missing.");
+				}
+
+				var evidencesRawData = evidencesDataElement.GetRawText();
+				var jsonEvidences = evidencesDataElement.Deserialize<List<Dictionary<string, object>>>();
+				List<BaseResponse?>? disputeEvidences = new List<BaseResponse?>();
+				if (primaryEvidences != null) {
+					for (int i = 0; i < jsonEvidences.Count; i++) {
+						var disputeEvidence = TransformJsonRawObject(jsonEvidences[i], JsonSerializer.Serialize(jsonEvidences[i]), "Evidence");
+						disputeEvidences?.Add(disputeEvidence);
+					}
+				}
+				EvidenceListResponse listResponseEvidences = new EvidenceListResponse {
+					Data = disputeEvidences,
+					RawData = evidencesRawData
+				};
+
+				var responseCaseSubmissionsData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseCaseSubmissions);
+				if (responseCaseSubmissionsData == null || !responseCaseSubmissionsData.TryGetValue("data", out var caseSubmissionsDataValue) ||
+					!(caseSubmissionsDataValue is JsonElement caseSubmissionsDataElement)) {
+					throw new InvalidOperationException("Response data is invalid or missing.");
+				}
+
+				var caseSubmissionsRawData = caseSubmissionsDataElement.GetRawText();
+				var jsonCaseSubmissions = caseSubmissionsDataElement.Deserialize<List<Dictionary<string, object>>>();
+				List<BaseResponse?>? disputeCaseSubmissions = new List<BaseResponse?>();
+				if (primaryCaseSubmissions != null) {
+					for (int i = 0; i < jsonCaseSubmissions.Count; i++) {
+						var disputeSubmission = TransformJsonRawObject(jsonCaseSubmissions[i], JsonSerializer.Serialize(jsonCaseSubmissions[i]), "CaseSubmission");
+						disputeCaseSubmissions?.Add(disputeSubmission);
+					}
+				}
+				CaseSubmissionListResponse listResponseCaseSubmissions = new CaseSubmissionListResponse {
+					Data = disputeCaseSubmissions,
+					RawData = caseSubmissionsRawData
+				};
 
 				var data = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+
 				if (data != null && data.TryGetValue("data", out var dataValue) && dataValue is JsonElement dataElement) {
 					var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
 					if (dataDict != null) {
-						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), type);
+						var disputeResponse = TransformJsonRawObject(dataDict, dataElement.GetRawText(), type);
+						((DisputeCasesResponseData)disputeResponse).File = listResponseCaseFiles;
+						((DisputeCasesResponseData)disputeResponse).Evidence = listResponseEvidences;
+						((DisputeCasesResponseData)disputeResponse).CaseSubmission = listResponseCaseSubmissions;
+						return disputeResponse;
 					}
 				}
 				throw new InvalidOperationException("Response data is invalid or missing.");

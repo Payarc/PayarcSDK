@@ -53,10 +53,7 @@ namespace PayarcSDK.Services {
 		}
 
 		private async Task<BaseResponse> AddLeadAsync(ApplicationInfoData applicant) {
-			if (applicant.agentId != null && applicant.agentId.ToString().StartsWith("usr_")) {
-				applicant.agentId = applicant.agentId.ToString().Substring(4);
-			}
-
+			applicant.agentId = applicant.agentId.StartsWith("usr_") ? applicant.agentId.Substring(4) : applicant.agentId;
 			return await CreateApplicationAsync("agent-hub/apply/add-lead", applicant);
 		}
 
@@ -385,73 +382,6 @@ namespace PayarcSDK.Services {
 				var rawData = dataElement.GetRawText();
 				var jsonApplication = dataElement.Deserialize<Dictionary<string, object>>();
 				return TransformJsonRawObject(jsonApplication, JsonSerializer.Serialize(jsonApplication), type);
-
-			} catch (HttpRequestException ex) {
-				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
-				throw;
-			} catch (JsonException ex) {
-				Console.WriteLine($"JSON error processing charge: {ex.Message}");
-				throw new InvalidOperationException("Failed to process JSON response.", ex);
-			} catch (Exception ex) {
-				Console.WriteLine($"General error handling charge: {ex.Message}");
-				throw;
-			}
-		}
-
-		// Generic HTTP request helper methods
-		private async Task<ListBaseResponse> GetApplyDocumentsAsync(string url, string? queryParams = null, string type = "ApplyDocuments") {
-			try {
-				if (queryParams != null) {
-					url = $"{url}?{queryParams}";
-				}
-
-				var response = await _httpClient.GetAsync(url);
-				response.EnsureSuccessStatusCode();
-				var responseBody = await response.Content.ReadAsStringAsync();
-				Console.WriteLine($"Response status code: {response.StatusCode}");
-				if (!response.IsSuccessStatusCode) {
-					var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseBody);
-					Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
-					throw new InvalidOperationException($"HTTP error {response.StatusCode}: {responseBody}");
-				}
-
-				if (string.IsNullOrWhiteSpace(responseBody)) {
-					throw new InvalidOperationException("Response body is empty.");
-				}
-
-				var responseData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseBody);
-				if (responseData == null || !responseData.TryGetValue("data", out var dataValue) ||
-					!(dataValue is JsonElement dataElement)) {
-					throw new InvalidOperationException("Response data is invalid or missing.");
-				}
-
-				var rawData = dataElement.GetRawText();
-				var jsonDocuments = dataElement.Deserialize<List<Dictionary<string, object>>>();
-				List<BaseResponse?>? documents = new List<BaseResponse?>();
-				if (jsonDocuments != null) {
-					for (int i = 0; i < jsonDocuments.Count; i++) {
-						var document = TransformJsonRawObject(jsonDocuments[i], JsonSerializer.Serialize(jsonDocuments[i]), type);
-						documents?.Add(document);
-					}
-				}
-
-				var pagination = new Dictionary<string, object>();
-				if (responseData.TryGetValue("meta", out var metaValue) && metaValue is JsonElement metaElement) {
-					var paginationElement = metaElement.GetProperty("pagination");
-					pagination["total"] = paginationElement.GetProperty("total").GetInt32();
-					pagination["count"] = paginationElement.GetProperty("count").GetInt32();
-					pagination["per_page"] = paginationElement.GetProperty("per_page").GetInt32();
-					pagination["current_page"] = paginationElement.GetProperty("current_page").GetInt32();
-					pagination["total_pages"] = paginationElement.GetProperty("total_pages").GetInt32();
-				}
-
-				pagination?.Remove("links");
-
-				return new ApplicationListResponse {
-					Data = documents,
-					Pagination = pagination,
-					RawData = rawData
-				};
 
 			} catch (HttpRequestException ex) {
 				Console.WriteLine($"HTTP error processing charge: {ex.Message}");

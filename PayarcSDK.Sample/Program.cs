@@ -139,8 +139,8 @@ namespace PayarcSDK.Sample {
 			//var testService = "billingService";
 			//var testService = "customerService";
 			//var testService = "applicationService";
-			//var testService = "disputeService";
-			var testService = "splitCampaignService";
+			var testService = "disputeService";
+			//var testService = "splitCampaignService";
 			//var testService = "chargeService";
 			//var testService = "payarcConnect";
 			var apiRequester = new ApiRequester(payarc);
@@ -414,7 +414,7 @@ namespace PayarcSDK.Sample {
 						for (int i = 0; i < cases?.Data?.Count; i++) {
 							var t = cases.Data[i];
 							Console.WriteLine(t);
-							if (i == cases?.Data?.Count - 1) {
+							if (i == cases?.Data?.Count - 2) {
 								caseId = t.ObjectId;
 							}
 						}
@@ -423,7 +423,13 @@ namespace PayarcSDK.Sample {
 						var specificCase = await payarcDisputeCases.DisputeService.Retrieve(caseId);
 						Console.WriteLine($"Case Id with {caseId}: {specificCase}");
 
-						//// Add a document to a case
+						// Add a document to a case
+						var documentParams = new DocumentParameters {
+							DocumentDataBase64 = "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",
+							MimeType = "application/pdf",
+							Text = "Additional evidence for the dispute.",
+							Message = "Submitting dispute case with evidence."
+						};
 						//var documentParams = new JObject
 						//{
 						//	{ "DocumentDataBase64", "iVBORw0KGgoAAAANSUhEUgAAAIUAAABsCAYAAABEkXF2AAAABHNCSVQICAgIfAhkiAAAAupJREFUeJzt3cFuEkEcx/E/001qUQ+E4NF48GB4BRM9+i59AE16ANlE4wv4Mp5MjI8gZ+ONEMJBAzaWwZsVf2VnstPZpfb7STh06ewu5JuFnSzQ8d5vDfiLa3sHcHiIAoIoIIgCgiggitwbWM/f2vniTe7NoIZ7Dz9Y0X0qy7NHYfbLtn6dfzOoYXPlUl4+IIgCooGXj10ngzM77p81vVmY2Y9vL+xi9Tn4f41HYVZYx3Wb3yws9oWBlw8IooAgCgiigCAKCKKAIAoIooAgCoikGU3nqpvy3qesPvv6+/2+LZfLpHUcsrrPD0cKCKKAIAoIooAgCgiigCAKCOecs7q3iJXbZDLZWVaWZfR4733lLbfZbBbchzZvvV4vy+PmSAFBFBBEAUEUEEQBQRQQRAFR5DzfD81FxMxVpMg9l3HT938fjhQQRAFBFBBEAUEUEEQBQRQQRe5z7SptnYejGkcKCKKAIAoIooAgCgiigCAKiKQoYj6bMB6Pd8aMRqPoz22kfCalzfmXm45nDoIoIIgCgiggiAKCKCCIAiJrFKnfTxHS9vdX5P7+ibZwpIAgCgiigCAKCKKAIAoIooDomNl2352hc+WY3+NYzyf2c345V3EyGNmdwevo8anbr3Lbfu/j+9fndrH69Ofv+48+WtF9JuM4UkAQBQRRQBAFBFFAEAUEUUBUfo9m6jUPzjl7eWr26vRyWVmW9u59GT2+Suo1B4vFImn8/4ojBQRRQBAFBFFAEAUEUUAQBUTHe7/3eorUeYrQ9RSprmP/UtZ/6OP/xfUUqI0oIIgCgiggiqY36Ddz25x/uZZ1PXmcNj60H6H1H/p4sV1F/VvjZx84HJx9IFrl733wexy3U/b3FO7ogR0dD7OsezqdVt4/HFZvNzQ+t9T9C40P6ty9erElfEKsbblnDHNrekYzFu8pIIgCgiggiAKCKCAqzz5Ccr+7T3133fb1DG0//ro4UkAQBQRRQBAFBFFAEAXEb3wL3JblytFeAAAAAElFTkSuQmCC" },
@@ -431,48 +437,73 @@ namespace PayarcSDK.Sample {
 						//	{ "text", "Additional evidence for the dispute." },
 						//	{ "message", "Submitting dispute case with evidence." }
 						//};
-						//var result = await payarcDisputeCases.DisputeService.AddDocument(caseId, documentParams);
-						//Console.WriteLine($"Add Document Result: {result}");
+						var result = await payarcDisputeCases.DisputeService.AddCaseDocumentAsync(caseId, documentParams);
+						Console.WriteLine($"Add Document Result: {result}");
+						var evidenceAddedCase = await payarcDisputeCases.DisputeService.Retrieve(caseId);
+						Console.WriteLine($"Evidence Added Case: {evidenceAddedCase}");
 						break;
 					case "splitCampaignService":
-						// Example: Create a new campaign
-						var newCampaign = new JObject {
-							["name"] = "Mega bonus Shah2",
-							["description"] = "Compliment for my favorite customers",
-							["note"] = "Only for VIPs",
-							["base_charge"] = 33.33,
-							["perc_charge"] = 7.77,
-							["is_default"] = "0",
-							["accounts"] = new JArray()
+						var campaignId = "";
+						// List campaign
+
+						var listCampaignOptions = new OptionsData() {
+							Limit = 10,
+							Page = 1,
 						};
 
-						var createdCampaign = await payarcAgent.SplitCampaignService.create(newCampaign);
-						Console.WriteLine($"Campaign Created: {createdCampaign}");
-
-						var createdCampaignId = "";
-						if ((bool)createdCampaign.SelectToken("IsSuccess")) {
-							createdCampaignId = (string)createdCampaign["data"].SelectToken("id");
+						var campaigns = await payarcAgent.SplitCampaignService.List(listCampaignOptions);
+						//Console.WriteLine($"List of Customers: {customers}");
+						Console.WriteLine("Campaigns List");
+						for (int i = 0; i < campaigns?.Data?.Count; i++) {
+							var t = campaigns.Data[i];
+							Console.WriteLine(t);
+							if (i == campaigns?.Data?.Count - 1) {
+								campaignId = t.ObjectId;
+							}
 						}
 
-						// Example: Get all campaigns
-						var allCampaigns = await payarc.SplitCampaignService.list();
-						Console.WriteLine($"All Campaigns: {allCampaigns}");
+						//var testCampaignAction = "createCampaign";
+						var testCampaignAction = "updateCampaign";
+						//var testCampaignAction = "listAccounts";
 
-						// Example: Get campaign details
-						var campaignDetails = await payarc.SplitCampaignService.retrieve(createdCampaignId);
-						Console.WriteLine($"Campaign Details: {campaignDetails}");
+						switch (testCampaignAction) {
+							case "createCampaign":
+								// Example: Create a new campaign
+								SplitCampaignRequestData newCampaign = new SplitCampaignRequestData {
+									Name = "Mega bonus Shah2",
+									Description = "Compliment for my favorite customers",
+									Notes = "Only for VIPs",
+									BaseCharge = 33.33,
+									PercCharge = "7.77",
+									IsDefault = "0",
+									Accounts = new string[] { }
+								};
 
-						// Example: Update a campaign
-						var updatedData = new JObject {
-							["budget"] = 6000
-						};
+								var createdCampaign = await payarcAgent.SplitCampaignService.Create(newCampaign);
+								Console.WriteLine($"Campaign Created: {createdCampaign}");
 
-						var updatedCampaign = await payarc.SplitCampaignService.update(createdCampaignId, updatedData);
-						Console.WriteLine($"Updated Campaign: {updatedCampaign}");
-
-						// Example: Get all accounts
-						var allAccounts = await payarc.SplitCampaignService.listAccounts();
-						Console.WriteLine($"All Accounts: {allAccounts}");
+								// Retrieve a campaign
+								campaignId = createdCampaign.ObjectId;
+								BaseResponse campaign = await payarcAgent.SplitCampaignService.Retrieve(campaignId);
+								Console.WriteLine($"Retrieved Campaign: {campaign}");
+								break;
+							case "updateCampaign":
+								// Update a campaign
+								SplitCampaignRequestData updatedData = new SplitCampaignRequestData {
+									Name = "Shah Update"
+								};
+								var updatedCampaign = await payarcAgent.SplitCampaignService.Update(campaignId, updatedData);
+								Console.WriteLine($"Updated Campaign: {updatedCampaign}");
+								break;
+							case "getListAccounts":
+								// Example: Get all accounts
+							//	var allAccounts = await payarc.SplitCampaignService.ListAccounts();
+							//	Console.WriteLine($"All Accounts: {allAccounts}");
+							//	break;
+							//default:
+							//	Console.WriteLine("Nothing to test.");
+								break;
+						}
 						break;
 					case "chargeService":
 						// await apiRequester.CreateChargeExample();

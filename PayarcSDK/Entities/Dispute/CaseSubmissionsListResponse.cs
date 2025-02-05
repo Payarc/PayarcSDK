@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PayarcSDK.Entities
+namespace PayarcSDK.Entities.Dispute
 {
-    public class DisputeListResponse : ListBaseResponse {
-		[JsonProperty("cases")]
+    class CaseSubmissionListResponse : ListBaseResponse {
+		[JsonProperty("CaseSubmission")]
 		public override List<BaseResponse?>? Data { get; set; }
 	}
 }

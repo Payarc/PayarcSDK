@@ -5,14 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PayarcSDK.Entities.SplitCampaign
+namespace PayarcSDK.Entities
 {
     public class SplitCampaignRequestData {
 		[JsonProperty("name")]
 		public string Name { get; set; }
 
 		[JsonProperty("base_charge")]
-		public long BaseCharge { get; set; }
+		public double BaseCharge { get; set; }
 
 		[JsonProperty("perc_charge")]
 		public string PercCharge { get; set; }

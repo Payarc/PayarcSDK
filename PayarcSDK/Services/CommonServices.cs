@@ -142,6 +142,46 @@ namespace PayarcSDK.Services {
 					//	return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
 					//};
 					response = disputeCaseResponse;
+				} else if (type == "CaseFile") {
+					//CustomerService customerService = new CustomerService(_httpClient);
+					var disputeCaseResponse = JsonConvert.DeserializeObject<DisputeCaseFileData>(rawObj) ?? new DisputeCaseFileData();
+					disputeCaseResponse.RawData = rawObj;
+					disputeCaseResponse.ObjectId ??= $"cfl_{obj["id"]}";
+					//customerResponse.Update = async (customerData) => {
+					//	var result = await customerService.Update(customerResponse, customerData);
+					//	return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
+					//};
+					response = disputeCaseResponse;
+				} else if (type == "Evidence") {
+					//CustomerService customerService = new CustomerService(_httpClient);
+					var disputeCaseResponse = JsonConvert.DeserializeObject<DisputeEvidenceData>(rawObj) ?? new DisputeEvidenceData();
+					disputeCaseResponse.RawData = rawObj;
+					disputeCaseResponse.ObjectId ??= $"evd_{obj["id"]}";
+					//customerResponse.Update = async (customerData) => {
+					//	var result = await customerService.Update(customerResponse, customerData);
+					//	return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
+					//};
+					response = disputeCaseResponse;
+				} else if (type == "CaseSubmission") {
+					//CustomerService customerService = new CustomerService(_httpClient);
+					var disputeCaseResponse = JsonConvert.DeserializeObject<DisputeCaseSubmissionData>(rawObj) ?? new DisputeCaseSubmissionData();
+					disputeCaseResponse.RawData = rawObj;
+					disputeCaseResponse.ObjectId ??= $"sbm_{obj["id"]}";
+					//customerResponse.Update = async (customerData) => {
+					//	var result = await customerService.Update(customerResponse, customerData);
+					//	return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
+					//};
+					response = disputeCaseResponse;
+				} else if (type == "Campaign") {
+					//CustomerService customerService = new CustomerService(_httpClient);
+					var disputeCaseResponse = JsonConvert.DeserializeObject<CampaignResponseData>(rawObj) ?? new CampaignResponseData();
+					disputeCaseResponse.RawData = rawObj;
+					disputeCaseResponse.ObjectId ??= $"cmp_{obj["id"]}";
+					//customerResponse.Update = async (customerData) => {
+					//	var result = await customerService.Update(customerResponse, customerData);
+					//	return JsonConvert.DeserializeObject<CustomerResponseData>(result.ToString());
+					//};
+					response = disputeCaseResponse;
 				}
 			}
 			return response;
