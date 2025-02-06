@@ -81,13 +81,13 @@ To access **candidate merchant** features, you need an **Agent Identification To
 Comprehensive documentation for Payarc's payment processing and candidate merchant management APIs is available at: https://docs.payarc.net/
 
 ## Examples
-The Payrc SDK is build around the `Payarc` object. From this object you can access properties and function that will support your operations.
+The Payarc SDK is build around the `Payarc` object. From this object you can access properties and function that will support your operations.
 
-### The `Payarc` object has the following services:
+#### The `Payarc` object has the following services:
 - **Charges** - Manage payments
 - **Customers** - Manage customers  
 - **Applications** - Manage candidate merchants  
-- **SplitCampaigns** - Manage split campaigns  
+- **SplitCampaigns** - Manage split campaigns
 - **Billing**  
     - **Plan** - Manage plans  
     - **Subscription** - Manage plan subscriptions
@@ -95,50 +95,419 @@ The Payrc SDK is build around the `Payarc` object. From this object you can acce
 > [!NOTE]
 > The `Payarc` object referenced in the below examples will be created as `payarc`, you can name it whatever you'd like though.
 
-### Service `payarc.Charges`
+## Service `payarc.Charges`
 #### The `payarc.Charges` service facilitates the management of payments within the system, providing the following functions:
 - **Create** - Initiates a payment intent or charge with various configurable parameters. Refer to the examples for specific use cases.
 - **Retrieve** - Fetches a JSON object `charge` containing detailed information about a specific charge.
-- **List** - returns an object containing two attributes:  `charges` and `pagination`. The `charges` attribute is a list of JSON objects, each providing detailed information about individual charges. The `pagination` attribute contains deatails for navigating through the list of charges.
+- **List** - Returns an object containing two attributes:  `charges` and `pagination`. The `charges` attribute is a list of JSON objects, each providing detailed information about individual charges. The `pagination` attribute contains deatails for navigating through the list of charges.
 - **CreateRefund** - Processes a refund for an existing charge.
 
-### Service `payarc.Customer`
-#### The `payarc.Customer` service manages your customers' personal information, including addresses and payment methods such as credit cards and bank accounts. This data is securely stored for future transactions.
+## Creating a Charge
+
+### Example: Create a Charge with Minimum Information
+To create a payment (charge) from a customer, the following minimum information is required:
+- `Amount` - Converted to cents (e.g. $1.00 &rarr; 100).
+- `Currency` - Must be set to 'usd'.
+- `Source` - The credit card to be charged the specified amount.
+
+> [!NOTE]
+> For credit card minimum needed attributes are `CardNumber` and the expiration date, `ExpMonth` and `ExpYear`. For full list of attributes see API documentation.
+
+#### This example demonstrates how to create a charge with the minimum required information:
+```csharp
+try {
+    var charge = payarc.Charges.Create(new ChargeCreateOptions {
+        Amount = 2860,
+        Currency = "usd",
+        Source = new SourceNestedOptions {
+            CardNumber = "4012******5439",
+            ExpMonth = "03",
+            ExpYear = "2025",
+        }
+    });
+    Console.WriteLine($"Charge created: {JsonSerializer.Serialize(charge)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
+### Example: Create a Charge by Token
+To create a payment (charge) from a customer, the following minimum information is required:
+- `Amount` - Converted to cents (e.g. $1.00 &rarr; 100).
+- `Currency` - Must be set to 'usd'.
+- `Source` An object containing the `TokenId` attribute. This can be obtained by using the [CREATE TOKEN API](https://docs.payarc.net/#ee16415a-8d0c-4a71-a5fe-48257ca410d7) to generate a token.
+
+#### This example demonstrates how to create a charge using a token:
+```csharp
+try {
+    var charge = payarc.Charges.Create(new ChargeCreateOptions {
+        Amount = 1285,
+        Currency = "usd",
+        Source = new SourceNestedOptions {
+            TokenId = "tok_mE*****LL8wYl",
+        }
+    });
+    Console.WriteLine($"Charge created: {JsonSerializer.Serialize(charge)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
+### Example: Create a Charge by Card ID
+Charges can be generated for a specific credit cards if you have the `CardId` and the associated `CustomerId` linked to the card.
+
+#### This example demonstrates how to create a charge using a card ID:
+```csharp
+try {
+    var charge = payarc.Charges.Create(new ChargeCreateOptions {
+        Amount = 3985,
+        Currency = "usd",
+        Source = new SourceNestedOptions {
+            CardId = "card_Ly9*****59M0m1",
+            CustomerId = "cus_j*******PVnDp"
+        }
+    });
+    Console.WriteLine($"Charge created: {JsonSerializer.Serialize(charge)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
+### Example: Create a Charge by Bank account ID
+Charges can be generated for a specific bank account if you have the `BankAccountId`, which is the bank account of the customer.
+
+#### This example shows how to create an ACH charge using a bank account ID:
+```csharp
+try {
+    var charge = payarc.Charges.Create(new ChargeCreateOptions {
+        Amount = 3785,
+        SecCode = "WEB",
+        Currency = "usd",
+        Source = new SourceNestedOptions {
+            BankAccountId = "bnk_eJjbbbbbblL"
+        }
+    });
+    Console.WriteLine($"Charge created: {JsonSerializer.Serialize(charge)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
+### Example: Create a Charge with a bank account
+Charges can be generated for a bank account if you have the bank account information. Details for the bank account are in the `Source` attribute.
+
+#### This example shows how to create an ACH charge with new bank account:
+```csharp
+try {
+    var charge = payarc.Charges.Create(new ChargeCreateOptions {
+        Amount = 3785,
+        SecCode = "WEB",
+        Currency = "usd",
+        Source = new SourceNestedOptions {
+            AccountNumber = "123432575352",
+            RoutingNumber = "123345349",
+            FirstName = "FirstName",
+            LastName = "LastName",
+            AccountType = "Personal Savings"
+        }
+    });
+    Console.WriteLine($"Charge created: {JsonSerializer.Serialize(charge)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
+## Retrieving a Charge
+
+### Example: Retrieve a Charge
+
+#### This example shows how to retrieve a specific charge by its ID:
+```csharp
+try {
+    var charge = payarc.Charges.Retrieve("ch_1J*****3");
+    Console.WriteLine($"Charge retrieved {JsonSerializer.Serialize(charge)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
+### Example: Retrieve an ACH Charge
+
+#### This example shows how to retrieve a specific ACH charge by its ID:
+```csharp
+try {
+    var charge = payarc.Charges.Retrieve("ach_1J*****3");
+    Console.WriteLine($"Charge retrieved: {JsonSerializer.Serialize(charge)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
+## Listing Charges
+
+### Example: List Charges with No Constraints
+
+#### This example demonstrates how to list all charges without any constraints:
+```csharp
+try {
+    var charges = payarc.Charges.List(new BaseListOptions {
+        Limit = 25,
+        Page = 1
+    });
+    Console.WriteLine($"Charges list: {JsonSerializer.Serialize(charges)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
+## Refunding a Charge
+
+### Example: Refund a Charge
+Charges can be refunded using the `ch_` prefix for regular charges and the `ach_` prefix for ACH charges.
+
+#### This example demonstrates how to refund a charge, whether it's a regular charge or an ACH charge, using its respective ID:
+```csharp
+try {
+    string id = "ach_g**********08eA";
+    var options = new Dictionary<string, object> {                                
+        { "reason", "requested_by_customer" },
+        { "description", "The customer returned the product, did not like it" }
+    };
+
+    var charge = payarc.Charges.CreateRefund(id, options);
+    Console.WriteLine($"Charge refunded: {JsonConvert.SerializeObject(charge)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+<br/>
+
+## Service `payarc.Customers`
+#### The `payarc.Customers` service manages your customers' personal information, including addresses and payment methods such as credit cards and bank accounts. This data is securely stored for future transactions.
 - **Create** - Creates a customer object in the database and generates a unique identifier for future reference and inquiries. See examples and documentation for more details.
 - **Retrieve** - Retrieves detailed information about a specific customer from the database.
 - **List** - Searches through previously created customers, allowing filtering based on specific criteria. See examples and documentation for more details.
 - **Update** - Modifies attributes of an existing customer object.
 - **Delete** - Removes a customer object from the database.
 
-### Service `payarc.Applications`
-##### The `payarc.Applications` service is designed for Agents and ISVs to manage candidate merchants during new customer acquisition. It allows you to create, retrieve, list, and manage the necessary documents for the onboarding process.
-- **Create** - Adds a new candidate merchant to the database. See the documentation for available attributes, valid values, and required fields.
-**List** - Returns a list of application objects representing potential merchants. Use this function to find the relevant identifier.
-**Retrieve** - based on identifier or an object returned from list function, this function will return details 
-**Delete** - in case candidate merchant is no longer needed it will remove information for it.
-**AddDocument** - this function is adding base64 encoded document to existing candidate merchant. For different types of document required in the process contact Payarc. See examples how the function could be invoked
-**DeleteDocument** - this function removes document, when document is no longer valid.
-**ListSubAgents** - this function is usefull to create candidate in behalf of other agent.
-**Submit** - this function initialize the process of sing off contract between Payarc and your client
+## Creating a Customer
+
+### Example: Create a Customer with Credit Card Information
+
+#### This example shows how to create a new customer with credit card information:
+```csharp
+var customerData = new Dictionary<string, object> {
+    { "email", "anon+50@example.com" },
+    { "cards", new List<Dictionary<string, object>> {
+            new Dictionary<string, object> {
+                { "card_source", "INTERNET" },
+                { "card_number", "4012000098765439" },
+                { "exp_month", "07" },
+                { "exp_year", "2025" },
+                { "cvv", "997" },
+                { "card_holder_name", "Bat Doncho" },
+                { "address_line1", "123 Main Street" },
+                { "city", "Greenwich" },
+                { "state", "CT" },
+                { "zip", "06830" },
+                { "country", "US" }
+            },
+            new Dictionary<string, object> {
+                { "card_source", "INTERNET" },
+                { "card_number", "4012000098765439" },
+                { "exp_month", "01" },
+                { "exp_year", "2025" },
+                { "cvv", "998" },
+                { "card_holder_name", "Bat Gancho" },
+                { "address_line1", "123 Main Street Apt 44" },
+                { "city", "Greenwich" },
+                { "state", "CT" },
+                { "zip", "06830" },
+                { "country", "US" }
+            }
+        }
+    }
+};
+
+try {
+    var customer = payarc.Customers.Create(customerData);
+    Console.WriteLine($"Customer created: {JsonConvert.SerializeObject(customer)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Retrieving a Customer
+
+### Example: Retrieve a Customer by their ID:
+
+#### This example demonstrates how to retrieve a customer given their unique customer ID:
+```csharp
+try {
+    var customer = payarc.Customers.Retrieve("cus_j*******p");
+    Console.WriteLine($"Customer retrieved: {JsonConvert.SerializeObject(customer)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Listing Customers
+
+### Example: List Customers with a Limit
+
+#### This example demonstrates how to list customers with a specified limit:
+```csharp
+try {
+    var customers = payarc.Customers.List(new OptionsData {
+        Limit = 3
+    });
+    Console.WriteLine($"Customers retrieved: {JsonConvert.SerializeObject(customers)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Updating a Customer 
+
+### Example: Update a Customer
+
+#### This example demonstrates how to update an existing customer's information with only their customer ID:
+```csharp
+try {
+    string id = "cus_j*******p";
+
+    var customer = payarc.Customers.Update(id, new CustomerInfoData {
+        Name = "Bai Doncho 3",
+        Description = "Example customer",
+        Phone = 1234567890
+    });
+    Console.WriteLine($"Customer updated: {JsonConvert.SerializeObject(customer)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+### Example: Update an Already Found Customer
+
+#### This example shows how to update a customer object:
+```csharp
+try {
+    $customer = $payarc->customers->retrieve('cus_j*******p');
+    $customer = $customer['update']([
+        "name" => "Bai Doncho 4",
+        "description" => "Senior Example customer",
+        "phone" => "1234567895"
+    ]);
+    echo "Customer updated: " . json_encode($customer) . "\n";
+} catch (Throwable $e) {
+    echo "Error detected: " . $e->getMessage() . "\n";
+}
+```
+
+### Example: Add a New Card to a Customer
+
+This example shows how to add a new card to an existing customer:
+```csharp
+try {
+    var newCard = new CardData {
+        CardSource = "INTERNET",
+        CardNumber = "4012000098765439",
+        ExpMonth = "01",
+        ExpYear = "2025",
+        Cvv = "998",
+        CardHolderName = "Bat Gancho",
+        AddressLine1 = "123 Main Street Apt 44",
+        City = "Greenwich",
+        State = "CT",
+        Zip = "06830",
+        Country = "US"
+    };
+
+    var customerData = new CustomerRequestData {
+        Cards = new List<CardData> { newCard }
+    };
+
+    var customer = payarc.Customers.Update("cus_j*******p", customerData);
+    Console.WriteLine($"Card added: {JsonConvert.SerializeObject(customer)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+### Example: Add a New Bank Account to a Customer
+
+This example shows how to add new bank account to a customer. See full list of bank account attributes in API documentation.
+```csharp
+try {
+    var newBankAccount = new BankData {
+        AccountNumber = "1234567890",
+        RoutingNumber = "110000000",
+        FirstName = "Bat Petio",
+        LastName = "The Tsar",
+        AccountType = "Personal Savings",
+        SecCode = "WEB"
+    };
+
+    var customerData = new CustomerRequestData {
+        BankAccounts = new List<BankData> { newBankAccount }
+    };
+
+    var customer = payarc.Customers.Update("cus_j*******p", customerData);
+    Console.WriteLine($"Bank account added: {JsonConvert.SerializeObject(customer)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Deleting a Customer
+
+### Example: Delete Customer
+
+This example shows how to delete customer. See more details in API documentation.
+```csharp
+  try {
+    var customer = payarc.Customers.Delete("cus_j*******p");                        
+    Console.WriteLine($"Customer deleted: {JsonConvert.SerializeObject(customer)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+<br/>
+
+## Service `payarc.Applications`
+#### The `payarc.Applications` service is designed for Agents and ISVs to manage candidate merchants during new customer acquisition. It allows you to create, retrieve, list, and manage the necessary documents for the onboarding process.
+- **Create** - Adds a new candidate merchant to the database. Refer to the documentation for available attributes, valid values, and required fields.
+- **Retrieve** - Returns details of a specific candidate merchant based on an identifier or an object from the list function.
+- **List** - Retrieves a list of application objects representing potential merchants. Use this function to find the relevant identifier.
+- **Update** - Modifies the attributes of an existing candidate merchant. This function allows updating certain details such as business information, contact details, etc.
+- **Delete** - Removes a candidate merchant's information if no longer needed.
+- **AddDocument** - Attaches a base64-encoded document to an existing candidate merchant. For required document types, contact Payarc. See examples for usage.
+- **DeleteDocument** - Removes a document when it is no longer valid.
+- **ListSubAgents** - Facilitates the creation of a candidate merchant on behalf of another agent.
+- **Submit** - Initiates the contract signing process between Payarc and the client.
 
 ### Service `payarc.Billing`
-The payarc.Billing service is responsible for managing recurring payments. It currently includes the `Plan` service for handling plans and the `Subscription` service for managing plan subscriptions.
+#### The `payarc.Billing` service is responsible for managing recurring payments. It currently includes the `Plan` service for handling plans and the `Subscription` service for managing plan subscriptions.
 
-#### Service `payarc.Billing.Plan` 
-#### This Service contains information specific for each plan like identification details, rules for payment request and additional information. This SERVICE has methods for:
-    create - you can programmatically created new objects to meet client's needs,
-    list - inquiry available plans,
-    retrieve - collect detailed information for a plan,
-    update - modify details of a plan,
-    delete - remove plan when no longer needed,
-    create_subscription: issue a subscription for a customer from a plan.
-Based on plans you can create subscription. Time scheduled job will request and collect payments (charges) according plan schedule from customer.
+### Service `payarc.Billing.Plan` 
+#### The `payarc.Billing.Plan` service provides detailed information about each plan, including identification details, payment request rules, and additional attributes.
+- **Create** - Programmatically create new plan objects to meet client needs.
+- **List** - Retrieve a list of available plans.
+- **Retrieve** - Obtain detailed information about a specific plan.
+- **Update** - Modify details of a plan.
+- **Delete** - Remove a plan when it is no longer needed.
+- **CreateSubscription**: Generate a customer subscription based on a selected plan.
 
-#### Service `payarc.Billing.Subscription`
-This abstraction encapsulate information for subscription the link between customer and plan. it has following methods:
-    list - enumerate subscriptions,
-    cancel - stop and cancel active subscription,
-    update - modify details of a subscription
+> [!NOTE]
+> Based on the defined plans, you can create subscriptions. A scheduled job will automatically process and collect payments (charges) from customers according to the plan's payment schedule.
+
+### Service `payarc.Billing.Subscription`
+#### This abstraction encapsulate information for subscription the link between customer and plan. it has following methods:
+**List** - Retrieve a list of all subscriptions.
+**Cancel** - Stop and cancel an active subscription.
+**Update** - Modify a specific subscription's details.
 
 # Payarc Connect
 The following functionality will pertain only to user who are utilizing the Payarc Connect integration:
