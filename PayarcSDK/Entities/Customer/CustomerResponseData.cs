@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace PayarcSDK.Entities.CustomerService
+namespace PayarcSDK.Entities
 {
     public class CustomerResponseData : BaseResponse {
 		[JsonProperty("object")]
@@ -10,7 +10,7 @@ namespace PayarcSDK.Entities.CustomerService
 		public override string? ObjectId { get; set; }
 
 		[JsonIgnore]
-		public Func<CustomerInfoData?, Task<BaseResponse?>> Update { get; set; }
+		public Func<CustomerRequestData?, Task<BaseResponse?>> Update { get; set; }
 
 		[JsonProperty("customer_id")]
 		public string CustomerId { get; set; }
@@ -109,13 +109,13 @@ namespace PayarcSDK.Entities.CustomerService
 	public class CardsContainer {
 
 		[JsonIgnore]
-		public Func<Dictionary<string, object>?, Task<BaseResponse?>> Create { get; set; }
+		public Func<CustomerRequestData?, CardData?, Task<BaseResponse?>> Create { get; set; }
 	}
 
 	public class BankAccountsContainer {
 
 		[JsonIgnore]
-		public Func<Dictionary<string, object>?, Task<BaseResponse?>> Create { get; set; }
+		public Func<BankData?, Task<BaseResponse?>> Create { get; set; }
 	}
 
 	public class ChargesContainer {

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace PayarcSDK.Models
+namespace PayarcSDK.Entities
 {
     public class CardData {
 		[JsonProperty("card_source")]

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace PayarcSDK.Entities.CustomerService;
+namespace PayarcSDK.Entities;
 
 public class CustomerListResponse : ListBaseResponse {
 	[JsonProperty("customers")]
