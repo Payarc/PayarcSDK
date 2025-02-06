@@ -10,6 +10,9 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 using PayarcSDK.Entities.Billing.Subscriptions;
 using PayarcSDK.Entities.Dispute;
 using PayarcSDK.Entities.SplitCampaign;
+using System.Text.Json.Nodes;
+using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PayarcSDK.Services {
 	public class CommonServices {
@@ -72,6 +75,59 @@ namespace PayarcSDK.Services {
 					var customerResponse = JsonConvert.DeserializeObject<CustomerResponseData>(rawObj) ?? new CustomerResponseData();
 					customerResponse.RawData = rawObj;
 					customerResponse.ObjectId ??= $"cus_{obj["customer_id"]}";
+					if (customerResponse.Card.Data.Count() != 0) {
+						List<BaseResponse?>? cards = new List<BaseResponse?>();
+						customerResponse.Card.Data.ForEach(doc => {
+							var dataCard = JsonSerializer.Deserialize<Dictionary<string, object>>(doc.ToString());
+							var card = TransformJsonRawObject(dataCard, JsonSerializer.Serialize(doc), "Card");
+							cards.Add(card);
+						});
+						var json = JsonConvert.SerializeObject(customerResponse.Card);
+						var jsonObject = JsonNode.Parse(json);
+						var responseCaseFiles = jsonObject?.ToJsonString() ?? "[]";
+						var responseCaseFilesData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseCaseFiles);
+						if (responseCaseFilesData == null || !responseCaseFilesData.TryGetValue("data", out var caseFilesDataValue) ||
+							!(caseFilesDataValue is JsonElement caseFilesDataElement)) {
+							throw new InvalidOperationException("Response data is invalid or missing.");
+						}
+						var caseFilesRawData = caseFilesDataElement.GetRawText();
+						CustomerCardListResponse listResponseCustomerCards = new CustomerCardListResponse {
+							Data = cards,
+							RawData = caseFilesRawData
+						};
+						if (customerResponse.Cards == null) {
+							customerResponse.Cards = new CardsContainer();
+						}
+						customerResponse.Cards.Cards = listResponseCustomerCards;
+					}
+					customerResponse.Card = null;
+					if (customerResponse.BankAccount.Data.Count() != 0) {
+						List<BaseResponse?>? bankAccoounts = new List<BaseResponse?>();
+						customerResponse.BankAccount.Data.ForEach(doc => {
+							var dataBankAcc = JsonSerializer.Deserialize<Dictionary<string, object>>(doc.ToString());
+							var bankAcc = TransformJsonRawObject(dataBankAcc, JsonSerializer.Serialize(doc), "BankAccount");
+							bankAccoounts.Add(bankAcc);
+						});
+						var jsonBankAccounts = JsonConvert.SerializeObject(customerResponse.BankAccount);
+						var jsonObjectBankAccounts = JsonNode.Parse(jsonBankAccounts);
+						var responseBankAccounts = jsonObjectBankAccounts?.ToJsonString() ?? "[]";
+						var responseBankAccountsData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseBankAccounts);
+						if (responseBankAccountsData == null || !responseBankAccountsData.TryGetValue("data", out var caseFilesDataValue) ||
+							!(caseFilesDataValue is JsonElement bankAccountsDataElement)) {
+							throw new InvalidOperationException("Response data is invalid or missing.");
+						}
+
+						var BankAccountsRawData = bankAccountsDataElement.GetRawText();
+						CustomerBankListResponse listResponseCustomerBankAccounts = new CustomerBankListResponse {
+							Data = bankAccoounts,
+							RawData = BankAccountsRawData
+						};
+						if (customerResponse.Bank_Accounts == null) {
+							customerResponse.Bank_Accounts = new BankAccountsContainer();
+						}
+						customerResponse.Bank_Accounts.Bank_Accounts = listResponseCustomerBankAccounts;
+					}
+					customerResponse.BankAccount = null;
 					customerResponse.Update = async (customerData) => await customerService.Update(customerResponse, customerData);
 					if (customerResponse.Cards != null) {
 						customerResponse.Cards.Create = async (customerData, cardData) => await customerService.AddCardToCustomerAsync(customerResponse, cardData, customerData);
@@ -80,6 +136,16 @@ namespace PayarcSDK.Services {
 						customerResponse.Bank_Accounts.Create = async (bankData) => await customerService.AddBankAccountToCustomerAsync(customerResponse, bankData);
 					}
 					response = customerResponse;
+				} else if (type == "Card") {
+					var tokenResponse = JsonConvert.DeserializeObject<Card>(rawObj) ?? new Card();
+					tokenResponse.RawData = rawObj;
+					tokenResponse.ObjectId ??= $"card_{obj["id"]}";
+					response = tokenResponse;
+				} else if (type == "BankAccount") {
+					var bankAccountResponse = JsonConvert.DeserializeObject<BankAccount>(rawObj) ?? new BankAccount();
+					bankAccountResponse.RawData = rawObj;
+					bankAccountResponse.ObjectId ??= $"bnk_{obj["id"]}";
+					response = bankAccountResponse;
 				} else if (type == "Token") {
 					var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(rawObj) ?? new TokenResponse();
 					tokenResponse.RawData = rawObj;

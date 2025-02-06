@@ -280,7 +280,7 @@ namespace PayarcSDK.Services {
 			}
 		}
 
-		private async Task<BaseResponse?> AddBankAccount(string url, BankData bankData, string type = "Customer") {
+		private async Task<BaseResponse?> AddBankAccount(string url, BankData bankData, string type = "BankAccount") {
 			try {
 				var content = new StringContent(bankData.ToJson(), Encoding.UTF8, "application/json");
 				var response = await _httpClient.PostAsync(url, content);
