@@ -166,9 +166,9 @@ namespace PayarcSDK.Sample {
 			//var testService = "billingService";
 			//var testService = "customerService";
 			//var testService = "applicationService";
-			//var testService = "disputeService";
+			var testService = "disputeService";
 			//var testService = "splitCampaignService";
-			var testService = "chargeService";
+			//var testService = "chargeService";
 			//var testService = "payarcConnect";
 			var apiRequester = new ApiRequester(payarc);
 			var apiAgentRequester = new ApiRequester(payarcAgent);
@@ -538,7 +538,7 @@ namespace PayarcSDK.Sample {
 						// await apiRequester.CreateChargeByToken();
 						// await apiRequester.CreateACHChargeByBankAccount();
 						// await apiRequester.CreateACHChargeByBankAccountDetails();
-						await apiRequester.ListCharges();
+						// await apiRequester.ListCharges();
 						// await apiRequester.RefundChargeById();
 						// await apiRequester.RefundChargeByObject();
 						// await apiRequester.RefundACHChargeByObject();
