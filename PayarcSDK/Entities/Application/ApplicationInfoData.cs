@@ -11,7 +11,7 @@ namespace PayarcSDK.Entities
 {
 	public partial class ApplicationInfoData {
 		[JsonProperty("agentId")]
-		public string? agentId { get; set; }
+		public string? AgentId { get; set; }
 
 		[JsonProperty("MerchantCode")]
 		public string? MerchantCode { get; set; }
