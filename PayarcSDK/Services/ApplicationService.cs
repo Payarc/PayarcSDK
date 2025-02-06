@@ -63,7 +63,7 @@ namespace PayarcSDK.Services {
 		}
 
 		private async Task<BaseResponse> AddLeadAsync(ApplicationInfoData applicant) {
-			applican.AgentId = applicant.AgentId.StartsWith("usr_") ? applicant.AgentId.Substring(4) : applicant.AgentId;
+			applicant.AgentId = applicant.AgentId.StartsWith("usr_") ? applicant.AgentId.Substring(4) : applicant.AgentId;
 			return await CreateApplicationAsync("agent-hub/apply/add-lead", applicant);
 		}
 

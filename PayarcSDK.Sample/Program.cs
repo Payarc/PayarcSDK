@@ -164,9 +164,9 @@ namespace PayarcSDK.Sample {
 			}
 
 			//var testService = "billingService";
-			//var testService = "customerService";
+			var testService = "customerService";
 			//var testService = "applicationService";
-			var testService = "disputeService";
+			//var testService = "disputeService";
 			//var testService = "splitCampaignService";
 			//var testService = "chargeService";
 			//var testService = "payarcConnect";

@@ -73,8 +73,12 @@ namespace PayarcSDK.Services {
 					customerResponse.RawData = rawObj;
 					customerResponse.ObjectId ??= $"cus_{obj["customer_id"]}";
 					customerResponse.Update = async (customerData) => await customerService.Update(customerResponse, customerData);
-					customerResponse.Cards.Create = async (customerData, cardData) => await customerService.AddCardToCustomerAsync(customerResponse, cardData, customerData);
-					customerResponse.Bank_Accounts.Create = async (bankData) => await customerService.AddBankAccountToCustomerAsync(customerResponse, bankData);
+					if (customerResponse.Cards != null) {
+						customerResponse.Cards.Create = async (customerData, cardData) => await customerService.AddCardToCustomerAsync(customerResponse, cardData, customerData);
+					}
+					if (customerResponse.Bank_Accounts != null) {
+						customerResponse.Bank_Accounts.Create = async (bankData) => await customerService.AddBankAccountToCustomerAsync(customerResponse, bankData);
+					}
 					response = customerResponse;
 				} else if (type == "Token") {
 					var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(rawObj) ?? new TokenResponse();
