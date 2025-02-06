@@ -11,6 +11,11 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 namespace PayarcSDK.Sample {
 	internal class Program {
 		static async Task Main(string[] args) {
+			var settings = new JsonSerializerSettings {
+				NullValueHandling = NullValueHandling.Ignore,
+				Formatting = Formatting.Indented
+			};
+
 			Payarc payarc = null;
 			Payarc payarcAgent = null;
 			Payarc payarcAgentWithSubAgent = null;
@@ -68,55 +73,53 @@ namespace PayarcSDK.Sample {
 				Console.WriteLine("SDK initialized successfully.");
 			} catch (Exception ex) {
 				Console.WriteLine($"Error: {ex.Message}");
-            }
+			}
 
-            //Temprorary Agent with subAgent Access Token taken from portal
-            var agentWithSubAgentAccessToken = tokens["AgentWithSubAgentToken"]; // "";
+			//Temprorary Agent with subAgent Access Token taken from portal
+			var agentWithSubAgentAccessToken = tokens["AgentWithSubAgentToken"]; // "";
 
-            if (string.IsNullOrEmpty(agentWithSubAgentAccessToken)) {
-                throw new InvalidOperationException("Agent access token is missing in the response.");
-            }
+			if (string.IsNullOrEmpty(agentWithSubAgentAccessToken)) {
+				throw new InvalidOperationException("Agent access token is missing in the response.");
+			}
 
-            try {
-                payarcAgentWithSubAgent = new SdkBuilder()
-                    .Configure(config => {
-                        config.Environment = "sandbox";         // Use sandbox environment
-                        config.ApiVersion = "v1";               // Use version 2 of the API
-                        config.BearerToken = agentWithSubAgentAccessToken;  // Set the Bearer Token
-                    })
-                    .Build();
+			try {
+				payarcAgentWithSubAgent = new SdkBuilder()
+					.Configure(config => {
+						config.Environment = "sandbox";         // Use sandbox environment
+						config.ApiVersion = "v1";               // Use version 2 of the API
+						config.BearerToken = agentWithSubAgentAccessToken;  // Set the Bearer Token
+					})
+					.Build();
 
-                // Use Payarc services
-                Console.WriteLine("SDK initialized successfully.");
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
+				// Use Payarc services
+				Console.WriteLine("SDK initialized successfully.");
+			} catch (Exception ex) {
+				Console.WriteLine($"Error: {ex.Message}");
+			}
 
-            var dicputeCaseAccessToken = tokens["DisputeCaseToken"]; // "";
+			var dicputeCaseAccessToken = tokens["DisputeCaseToken"]; // "";
 
-            if (string.IsNullOrEmpty(dicputeCaseAccessToken)) {
-                throw new InvalidOperationException("Agent access token is missing in the response.");
-            }
+			if (string.IsNullOrEmpty(dicputeCaseAccessToken)) {
+				throw new InvalidOperationException("Agent access token is missing in the response.");
+			}
 
-            try {
-                payarcDisputeCases = new SdkBuilder()
-                    .Configure(config => {
-                        config.Environment = "sandbox";         // Use sandbox environment
-                        config.ApiVersion = "v1";               // Use version 2 of the API
-                        config.BearerToken = dicputeCaseAccessToken;  // Set the Bearer Token
-                    })
-                    .Build();
+			try {
+				payarcDisputeCases = new SdkBuilder()
+					.Configure(config => {
+						config.Environment = "sandbox";         // Use sandbox environment
+						config.ApiVersion = "v1";               // Use version 2 of the API
+						config.BearerToken = dicputeCaseAccessToken;  // Set the Bearer Token
+					})
+					.Build();
 
-                // Use Payarc services
-                Console.WriteLine("SDK initialized successfully.");
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
+				// Use Payarc services
+				Console.WriteLine("SDK initialized successfully.");
+			} catch (Exception ex) {
+				Console.WriteLine($"Error: {ex.Message}");
+			}
 
-            // Payarc Connect 
-            string payarcConnectAccessToken = tokens["PpayarcConnectToken"]; // "";
+			// Payarc Connect 
+			string payarcConnectAccessToken = tokens["PpayarcConnectToken"]; // "";
 
 			if (string.IsNullOrEmpty(payarcConnectAccessToken)) {
 				throw new InvalidOperationException("Payarc Connect access token is missing in the response.");
@@ -164,8 +167,8 @@ namespace PayarcSDK.Sample {
 			//var testService = "customerService";
 			//var testService = "applicationService";
 			//var testService = "disputeService";
-			var testService = "splitCampaignService";
-			//var testService = "chargeService";
+			//var testService = "splitCampaignService";
+			var testService = "chargeService";
 			//var testService = "payarcConnect";
 			var apiRequester = new ApiRequester(payarc);
 			var apiAgentRequester = new ApiRequester(payarcAgent);
@@ -231,21 +234,21 @@ namespace PayarcSDK.Sample {
 
 						var customers = await payarc.Customers.List(listOptions);
 						//Console.WriteLine($"List of Customers: {customers}");
-						Console.WriteLine("Customers Data");
-						for (int i = 0; i < customers?.Data?.Count; i++) {
-							var t = customers.Data[i];
-							Console.WriteLine(t);
-							if (i == customers?.Data?.Count - 1) {
-								customerId = t.ObjectId;
-							}
-						}
-						Console.WriteLine("Pagination Data");
-						Console.WriteLine(customers?.Pagination["total"]);
-						Console.WriteLine(customers?.Pagination["count"]);
-						Console.WriteLine(customers?.Pagination["per_page"]);
-						Console.WriteLine(customers?.Pagination["current_page"]);
-						Console.WriteLine(customers?.Pagination["total_pages"]);
-
+						//Console.WriteLine("Customers Data");
+						//for (int i = 0; i < customers?.Data?.Count; i++) {
+						//	var t = customers.Data[i];
+						//	Console.WriteLine(t);
+						//	if (i == customers?.Data?.Count - 1) {
+						//		customerId = t.ObjectId;
+						//	}
+						//}
+						//Console.WriteLine("Pagination Data");
+						//Console.WriteLine(customers?.Pagination["total"]);
+						//Console.WriteLine(customers?.Pagination["count"]);
+						//Console.WriteLine(customers?.Pagination["per_page"]);
+						//Console.WriteLine(customers?.Pagination["current_page"]);
+						//Console.WriteLine(customers?.Pagination["total_pages"]);
+						Console.WriteLine(JsonConvert.SerializeObject(customers, settings));
 						var testCustomerAction = "createCustomer";
 						//var testCustomerAction = "updateCustomer";
 						//var testCustomerAction = "deleteCustomer";
@@ -326,16 +329,16 @@ namespace PayarcSDK.Sample {
 						switch (testApplicationAction) {
 							case "createApplication":
 								ApplicationInfoData merccandidate = new ApplicationInfoData {
-											Lead = new Lead {
-												Industry = "cbd",
-												MerchantName = "My applications company 2",
-												LegalName = "Best Co in w",
-												ContactFirstName = "Joan",
-												ContactLastName = "Dhow",
-												ContactEmail = "contact+23@mail.com",
-												DiscountRateProgram = "interchange"
-											},
-											Owners = new List<Owner> {
+									Lead = new Lead {
+										Industry = "cbd",
+										MerchantName = "My applications company 2",
+										LegalName = "Best Co in w",
+										ContactFirstName = "Joan",
+										ContactLastName = "Dhow",
+										ContactEmail = "contact+23@mail.com",
+										DiscountRateProgram = "interchange"
+									},
+									Owners = new List<Owner> {
 										new Owner {
 											FirstName = "First2",
 											LastName = "Last2",
@@ -404,25 +407,25 @@ namespace PayarcSDK.Sample {
 								Console.WriteLine($"Deleted Document: {deletedDocument}");
 								break;
 							case "listSubAgent":
-                                OptionsData queryParamsSubAgents = new OptionsData {
-                                    Limit = 10,
-                                    Page = 1
-                                };
-                                var subAgents = await payarcAgentWithSubAgent.Applications.ListSubAgents(queryParamsSubAgents);
-                                Console.WriteLine("Sub Agent Data");
-                                for (int i = 0; i < subAgents?.Data?.Count; i++) {
-                                    var t = subAgents.Data[i];
-                                    Console.WriteLine(t);
-                                }
-                                break;
+								OptionsData queryParamsSubAgents = new OptionsData {
+									Limit = 10,
+									Page = 1
+								};
+								var subAgents = await payarcAgentWithSubAgent.Applications.ListSubAgents(queryParamsSubAgents);
+								Console.WriteLine("Sub Agent Data");
+								for (int i = 0; i < subAgents?.Data?.Count; i++) {
+									var t = subAgents.Data[i];
+									Console.WriteLine(t);
+								}
+								break;
 							default:
 								Console.WriteLine("Nothing to test.");
 								break;
 						}
 						break;
 					case "disputeService":
-                        // List cases
-                        var caseId = "";
+						// List cases
+						var caseId = "";
 
 						var currentDate = DateTime.UtcNow;
 						var tomorrowDate = currentDate.AddDays(1).ToString("yyyy-MM-dd");
@@ -433,7 +436,7 @@ namespace PayarcSDK.Sample {
 							Report_DateLTE = tomorrowDate,
 						};
 
-                        var cases = await payarcDisputeCases.Disputes.List(queryParamsDisputeCases);
+						var cases = await payarcDisputeCases.Disputes.List(queryParamsDisputeCases);
 						Console.WriteLine($"List Cases:");
 						for (int i = 0; i < cases?.Data?.Count; i++) {
 							var t = cases.Data[i];
@@ -535,7 +538,7 @@ namespace PayarcSDK.Sample {
 						// await apiRequester.CreateChargeByToken();
 						// await apiRequester.CreateACHChargeByBankAccount();
 						// await apiRequester.CreateACHChargeByBankAccountDetails();
-						// await apiRequester.ListCharges();
+						await apiRequester.ListCharges();
 						// await apiRequester.RefundChargeById();
 						// await apiRequester.RefundChargeByObject();
 						// await apiRequester.RefundACHChargeByObject();

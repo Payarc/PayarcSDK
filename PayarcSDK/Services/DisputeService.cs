@@ -24,11 +24,6 @@ namespace PayarcSDK.Services {
 			return await RetriveDisputeCaseAsync(disputeId);
 		}
 
-		//public async Task<JObject> AddDocument(string disputeId, JObject documentParams) {
-		//	return await AddDocumentCaseAsync(disputeId, documentParams);
-		//}
-
-		// List disputes with optional filters
 		private async Task<ListBaseResponse> ListCasesAsync(OptionsData options = null) {
 			if (options == null) {
 				var currentDate = DateTime.UtcNow;
@@ -61,47 +56,7 @@ namespace PayarcSDK.Services {
 			return await GetDisputeCasesAsync("cases", query);
 		}
 
-		// Add a document to a dispute case
-		//private async Task<JObject> AddDocumentCaseAsync(string disputeId, JObject documentParams) {
-		//	//if (disputeId.StartsWith("dis_")) {
-		//	//	disputeId = disputeId.Substring(4);
-		//	//}
-
-		//	//// Prepare form-data content
-		//	//var boundary = "----WebKitFormBoundary3OdUODzy6DLxDNt8";
-		//	//var content = new MultipartFormDataContent(boundary);
-
-		//	//if (documentParams.TryGetValue("DocumentDataBase64", out var base64Data)) {
-		//	//	var binaryData = Convert.FromBase64String(base64Data.ToString());
-		//	//	var fileContent = new ByteArrayContent(binaryData);
-
-		//	//	var mimeType = documentParams.Value<string>("mimeType") ?? "application/pdf";
-		//	//	fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
-
-		//	//	content.Add(fileContent, "file", "filename1.png");
-		//	//}
-
-		//	//if (documentParams.TryGetValue("text", out var text)) {
-		//	//	var stringContent = new StringContent(text.ToString());
-		//	//	content.Add(stringContent, "text");
-		//	//}
-
-		//	//// Submit evidence
-		//	//var evidenceResponse = await PostRawAsync($"cases/{disputeId}/evidence", content);
-
-		//	//// Submit case with a message
-		//	//var message = documentParams.Value<string>("message") ?? "Case number#: xxxxxxxx, submitted by SDK";
-		//	//var submitBody = JObject.FromObject(new { message });
-		//	//var submitResponse = await PostAsync($"cases/{disputeId}/submit", submitBody);
-
-		//	//return JObject.FromObject(new {
-		//	//	EvidenceResponse = evidenceResponse,
-		//	//	SubmitResponse = submitResponse
-		//	//});
-
-		//}
-
-		public async Task<string> AddCaseDocumentAsync(string disputeId, DocumentParameters documentParameters/*string documentBase64, string mimeType = "application/pdf", string message = "Case number#: xxxxxxxx, submitted by SDK"*/) {
+		public async Task<string> AddCaseDocumentAsync(string disputeId, DocumentParameters documentParameters) {
 			try {
 				disputeId = disputeId.StartsWith("dis_") ? disputeId.Substring(4) : disputeId;
 
@@ -215,14 +170,14 @@ namespace PayarcSDK.Services {
 				var primaryCase = jsonObject?["primary_case"];
 				var primaryCaseFiles = primaryCase["data"]["file"];
 				var primaryEvidences = primaryCase["data"]["evidence"];
-				var primaryCaseSubmissions = primaryCase["data"]["case_submission"];
+				var primarySubmissions = primaryCase["data"]["case_submission"];
 				primaryCase?["data"]?.AsObject().Remove("file");
 				primaryCase?["data"]?.AsObject().Remove("evidence");
 				primaryCase?["data"]?.AsObject().Remove("case_submission");
 				responseContent = primaryCase?.ToJsonString() ?? "{}";
 				var responseCaseFiles = primaryCaseFiles?.ToJsonString() ?? "[]";
 				var responseEvidences = primaryEvidences?.ToJsonString() ?? "[]";
-				var responseCaseSubmissions = primaryCaseSubmissions?.ToJsonString() ?? "[]";
+				var responseCaseSubmissions = primarySubmissions?.ToJsonString() ?? "[]";
 
 				var responseCaseFilesData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseCaseFiles);
 				if (responseCaseFilesData == null || !responseCaseFilesData.TryGetValue("data", out var caseFilesDataValue) ||
@@ -265,22 +220,22 @@ namespace PayarcSDK.Services {
 				};
 
 				var responseCaseSubmissionsData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseCaseSubmissions);
-				if (responseCaseSubmissionsData == null || !responseCaseSubmissionsData.TryGetValue("data", out var caseSubmissionsDataValue) ||
-					!(caseSubmissionsDataValue is JsonElement caseSubmissionsDataElement)) {
+				if (responseCaseSubmissionsData == null || !responseCaseSubmissionsData.TryGetValue("data", out var submissionsDataValue) ||
+					!(submissionsDataValue is JsonElement caseSubmissionsDataElement)) {
 					throw new InvalidOperationException("Response data is invalid or missing.");
 				}
 
 				var caseSubmissionsRawData = caseSubmissionsDataElement.GetRawText();
 				var jsonCaseSubmissions = caseSubmissionsDataElement.Deserialize<List<Dictionary<string, object>>>();
-				List<BaseResponse?>? disputeCaseSubmissions = new List<BaseResponse?>();
-				if (primaryCaseSubmissions != null) {
+				List<BaseResponse?>? disputeSubmissions = new List<BaseResponse?>();
+				if (primarySubmissions != null) {
 					for (int i = 0; i < jsonCaseSubmissions.Count; i++) {
 						var disputeSubmission = TransformJsonRawObject(jsonCaseSubmissions[i], JsonSerializer.Serialize(jsonCaseSubmissions[i]), "CaseSubmission");
-						disputeCaseSubmissions?.Add(disputeSubmission);
+						disputeSubmissions?.Add(disputeSubmission);
 					}
 				}
-				CaseSubmissionListResponse listResponseCaseSubmissions = new CaseSubmissionListResponse {
-					Data = disputeCaseSubmissions,
+				CaseSubmissionListResponse listResponseSubmissions = new CaseSubmissionListResponse {
+					Data = disputeSubmissions,
 					RawData = caseSubmissionsRawData
 				};
 
@@ -292,7 +247,7 @@ namespace PayarcSDK.Services {
 						var disputeResponse = TransformJsonRawObject(dataDict, dataElement.GetRawText(), type);
 						((DisputeCasesResponseData)disputeResponse).File = listResponseCaseFiles;
 						((DisputeCasesResponseData)disputeResponse).Evidence = listResponseEvidences;
-						((DisputeCasesResponseData)disputeResponse).CaseSubmission = listResponseCaseSubmissions;
+						((DisputeCasesResponseData)disputeResponse).CaseSubmission = listResponseSubmissions;
 						return disputeResponse;
 					}
 				}

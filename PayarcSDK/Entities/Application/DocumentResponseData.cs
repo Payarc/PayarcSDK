@@ -11,6 +11,9 @@ namespace PayarcSDK.Entities
 		[JsonProperty("object")]
 		public string Object { get; set; }
 
+		[JsonIgnore]
+		public Func<string, Task<BaseResponse?>> Delete { get; set; }
+
 		[JsonProperty("id")]
 		public string Id { get; set; }
 

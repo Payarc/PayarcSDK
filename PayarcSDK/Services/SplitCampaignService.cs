@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using AnyOfTypes;
+using Newtonsoft.Json.Linq;
 using PayarcSDK.Entities;
 using PayarcSDK.Entities.SplitCampaign;
 using System.Text;
@@ -20,11 +21,15 @@ namespace PayarcSDK.Services {
 			return await GetAllCampaignsAsync(options);
 		}
 
-		public async Task<BaseResponse> Retrieve(string campaignId) {
+		public async Task<BaseResponse> Retrieve(AnyOf<string?, CampaignResponseData> campaign) {
+			string? campaignId = string.Empty;
+			campaignId = campaign.IsSecond ? campaign.Second.ObjectId : campaign.First;
 			return await ReceiveCampaignDetailsAsync(campaignId);
 		}
 
-		public async Task<BaseResponse> Update(string campaignId, SplitCampaignRequestData updatedData = null) {
+		public async Task<BaseResponse> Update(AnyOf<string?, CampaignResponseData> campaign, SplitCampaignRequestData updatedData = null) {
+			string? campaignId = string.Empty;
+			campaignId = campaign.IsSecond ? campaign.Second.ObjectId : campaign.First;
 			return await UpdateCampaignAsync(campaignId, updatedData);
 		}
 

@@ -7,9 +7,27 @@ using System.Threading.Tasks;
 
 namespace PayarcSDK.Entities
 {
-    public class ApplicationResponseData : BaseResponse {
+	public class ApplicationResponseData : BaseResponse {
 		[JsonProperty("object")]
 		public string Object { get; set; }
+
+		[JsonIgnore]
+		public Func<Task<BaseResponse?>> Retrieve { get; set; }
+
+		[JsonIgnore]
+		public Func<Task<BaseResponse?>> Delete { get; set; }
+
+		[JsonIgnore]
+		public Func<List<MerchantDocument>?, Task<BaseResponse?>> AddDocument { get; set; }
+
+		[JsonIgnore]
+		public Func<Task<BaseResponse?>> Submit { get; set; }
+
+		[JsonIgnore]
+		public Func<ApplicationInfoData?, Task<BaseResponse?>> Update { get; set; }
+
+		[JsonIgnore]
+		public Func<OptionsData?, Task<ListBaseResponse?>> ListSubAgents { get; set; } // Fix for CS7003 and CS8618
 
 		[JsonProperty("id")]
 		public string Id { get; set; }
