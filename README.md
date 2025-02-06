@@ -116,7 +116,7 @@ To create a payment (charge) from a customer, the following minimum information 
 #### This example demonstrates how to create a charge with the minimum required information:
 ```csharp
 try {
-    var charge = payarc.Charges.Create(new ChargeCreateOptions {
+    var charge = await payarc.Charges.Create(new ChargeCreateOptions {
         Amount = 2860,
         Currency = "usd",
         Source = new SourceNestedOptions {
@@ -140,7 +140,7 @@ To create a payment (charge) from a customer, the following minimum information 
 #### This example demonstrates how to create a charge using a token:
 ```csharp
 try {
-    var charge = payarc.Charges.Create(new ChargeCreateOptions {
+    var charge = await payarc.Charges.Create(new ChargeCreateOptions {
         Amount = 1285,
         Currency = "usd",
         Source = new SourceNestedOptions {
@@ -159,7 +159,7 @@ Charges can be generated for a specific credit cards if you have the `CardId` an
 #### This example demonstrates how to create a charge using a card ID:
 ```csharp
 try {
-    var charge = payarc.Charges.Create(new ChargeCreateOptions {
+    var charge = await payarc.Charges.Create(new ChargeCreateOptions {
         Amount = 3985,
         Currency = "usd",
         Source = new SourceNestedOptions {
@@ -179,7 +179,7 @@ Charges can be generated for a specific bank account if you have the `BankAccoun
 #### This example shows how to create an ACH charge using a bank account ID:
 ```csharp
 try {
-    var charge = payarc.Charges.Create(new ChargeCreateOptions {
+    var charge = await payarc.Charges.Create(new ChargeCreateOptions {
         Amount = 3785,
         SecCode = "WEB",
         Currency = "usd",
@@ -199,7 +199,7 @@ Charges can be generated for a bank account if you have the bank account informa
 #### This example shows how to create an ACH charge with new bank account:
 ```csharp
 try {
-    var charge = payarc.Charges.Create(new ChargeCreateOptions {
+    var charge = await payarc.Charges.Create(new ChargeCreateOptions {
         Amount = 3785,
         SecCode = "WEB",
         Currency = "usd",
@@ -224,7 +224,7 @@ try {
 #### This example shows how to retrieve a specific charge by its ID:
 ```csharp
 try {
-    var charge = payarc.Charges.Retrieve("ch_1J*****3");
+    var charge = await payarc.Charges.Retrieve("ch_1J*****3");
     Console.WriteLine($"Charge retrieved {JsonSerializer.Serialize(charge)}");
 } catch (Exception ex) {
     Console.WriteLine($"Error detected: {ex.Message}");
@@ -236,7 +236,7 @@ try {
 #### This example shows how to retrieve a specific ACH charge by its ID:
 ```csharp
 try {
-    var charge = payarc.Charges.Retrieve("ach_1J*****3");
+    var charge = await payarc.Charges.Retrieve("ach_1J*****3");
     Console.WriteLine($"Charge retrieved: {JsonSerializer.Serialize(charge)}");
 } catch (Exception ex) {
     Console.WriteLine($"Error detected: {ex.Message}");
@@ -250,7 +250,7 @@ try {
 #### This example demonstrates how to list all charges without any constraints:
 ```csharp
 try {
-    var charges = payarc.Charges.List(new BaseListOptions {
+    var charges = await payarc.Charges.List(new BaseListOptions {
         Limit = 25,
         Page = 1
     });
@@ -274,7 +274,7 @@ try {
         { "description", "The customer returned the product, did not like it" }
     };
 
-    var charge = payarc.Charges.CreateRefund(id, options);
+    var charge = await payarc.Charges.CreateRefund(id, options);
     Console.WriteLine($"Charge refunded: {JsonConvert.SerializeObject(charge)}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
@@ -331,7 +331,7 @@ var customerData = new Dictionary<string, object> {
 };
 
 try {
-    var customer = payarc.Customers.Create(customerData);
+    var customer = await payarc.Customers.Create(customerData);
     Console.WriteLine($"Customer created: {JsonConvert.SerializeObject(customer)}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
@@ -345,7 +345,7 @@ try {
 #### This example demonstrates how to retrieve a customer given their unique customer ID:
 ```csharp
 try {
-    var customer = payarc.Customers.Retrieve("cus_j*******p");
+    var customer = await payarc.Customers.Retrieve("cus_j*******p");
     Console.WriteLine($"Customer retrieved: {JsonConvert.SerializeObject(customer)}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
@@ -359,7 +359,7 @@ try {
 #### This example demonstrates how to list customers with a specified limit:
 ```csharp
 try {
-    var customers = payarc.Customers.List(new OptionsData {
+    var customers = await payarc.Customers.List(new OptionsData {
         Limit = 3
     });
     Console.WriteLine($"Customers retrieved: {JsonConvert.SerializeObject(customers)}");
@@ -377,7 +377,7 @@ try {
 try {
     string id = "cus_j*******p";
 
-    var customer = payarc.Customers.Update(id, new CustomerInfoData {
+    var customer = await payarc.Customers.Update(id, new CustomerInfoData {
         Name = "Bai Doncho 3",
         Description = "Example customer",
         Phone = 1234567890
@@ -388,26 +388,9 @@ try {
 }
 ```
 
-### Example: Update an Already Found Customer
-
-#### This example shows how to update a customer object:
-```csharp
-try {
-    $customer = $payarc->customers->retrieve('cus_j*******p');
-    $customer = $customer['update']([
-        "name" => "Bai Doncho 4",
-        "description" => "Senior Example customer",
-        "phone" => "1234567895"
-    ]);
-    echo "Customer updated: " . json_encode($customer) . "\n";
-} catch (Throwable $e) {
-    echo "Error detected: " . $e->getMessage() . "\n";
-}
-```
-
 ### Example: Add a New Card to a Customer
 
-This example shows how to add a new card to an existing customer:
+#### This example shows how to add a new card to an existing customer:
 ```csharp
 try {
     var newCard = new CardData {
@@ -428,7 +411,7 @@ try {
         Cards = new List<CardData> { newCard }
     };
 
-    var customer = payarc.Customers.Update("cus_j*******p", customerData);
+    var customer = await payarc.Customers.Update("cus_j*******p", customerData);
     Console.WriteLine($"Card added: {JsonConvert.SerializeObject(customer)}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
@@ -437,7 +420,7 @@ try {
 
 ### Example: Add a New Bank Account to a Customer
 
-This example shows how to add new bank account to a customer. See full list of bank account attributes in API documentation.
+#### This example shows how to add new bank account to a customer. See full list of bank account attributes in API documentation.
 ```csharp
 try {
     var newBankAccount = new BankData {
@@ -453,7 +436,7 @@ try {
         BankAccounts = new List<BankData> { newBankAccount }
     };
 
-    var customer = payarc.Customers.Update("cus_j*******p", customerData);
+    var customer = await payarc.Customers.Update("cus_j*******p", customerData);
     Console.WriteLine($"Bank account added: {JsonConvert.SerializeObject(customer)}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
@@ -464,10 +447,10 @@ try {
 
 ### Example: Delete Customer
 
-This example shows how to delete customer. See more details in API documentation.
+#### This example shows how to delete customer. See more details in API documentation.
 ```csharp
   try {
-    var customer = payarc.Customers.Delete("cus_j*******p");                        
+    var customer = await payarc.Customers.Delete("cus_j*******p");                        
     Console.WriteLine($"Customer deleted: {JsonConvert.SerializeObject(customer)}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
@@ -487,6 +470,100 @@ This example shows how to delete customer. See more details in API documentation
 - **DeleteDocument** - Removes a document when it is no longer valid.
 - **ListSubAgents** - Facilitates the creation of a candidate merchant on behalf of another agent.
 - **Submit** - Initiates the contract signing process between Payarc and the client.
+
+## Creating a Candidate Merchant
+
+### Example: Create a New Candidate Merchant
+When connecting your clients with Payarc, a selection is made based on Payarc's criteria. The process begins by gathering the merchant's information and creating an entry in the database.
+
+#### This example shows you how this process can be intiated:
+```csharp
+ try {
+    var merchantCandidate = new ApplicationInfoData {
+        Lead = new Lead {
+            Industry = "cbd",
+            MerchantName = "Kolio i sie",
+            LegalName = "Best Co in w",
+            ContactFirstName = "Joan",
+            ContactLastName = "Dhow",
+            ContactEmail = "contact+25@mail.com",
+            DiscountRateProgram = "interchange"
+        },
+        Owners = new List<Owner> {
+            new Owner {
+                FirstName = "First",
+                LastName = "Last",
+                Title = "President",
+                OwnershipPct = 100,
+                Address = "Somewhere",
+                City = "City Of Test",
+                SSN = "4546-0034",
+                State = "WY",
+                ZipCode = "10102",
+                BirthDate = "1993-06-24",
+                Email = "nikoj@negointeresuva2.com",
+                PhoneNo = "2346456784"
+            }
+        }
+    };
+
+    var merchant = await payarc.Applications.Create(merchantCandidate);
+    Console.WriteLine($"Merchant candidate created: {JsonConvert.SerializeObject(merchant)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+### Example: Create Candidate Merchant on Behalf of Another Agent
+
+In this example attribute `Lead` is an object representing the business as the attribute `Owners` is and array of objects representing the owners of this business. Note this is the minimum information required. For successful boarding you should provide as much information as you can, for reference see documentation. In some case the logged user has to create application in behalf of some other agent. in this case the `object_id` of this agent must be sent in the object sent to function `payarc->applications->create`. To obtain the list of agent you can use function `list_sub_agents` as it is shown on examples:
+
+```csharp
+try {
+    var subAgent = await payarc.Applications.ListSubAgents(new OptionsData {
+        Limit = 10,
+        Page = 1
+    });
+
+    var agentId = subAgent?.Data?.FirstOrDefault()?.ObjectId ?? null;
+
+    var merchantCandidate = new ApplicationInfoData {
+        Lead = new Lead {
+            Industry = "cbd",
+            MerchantName = "chichovoto",
+            LegalName = "Best Co in w",
+            ContactFirstName = "Lubo",
+            ContactLastName = "Penev",
+            ContactEmail = "penata@chichovoto.com",
+            DiscountRateProgram = "interchange"
+        },
+        Owners = new List<Owner>
+        {
+            new Owner
+            {
+                FirstName = "First",
+                LastName = "Last",
+                Title = "President",
+                OwnershipPct = 100,
+                Address = "Somewhere",
+                City = "City Of Test",
+                SSN = "4546-0034",
+                State = "WY",
+                ZipCode = "10102",
+                BirthDate = "1993-06-24",
+                Email = "nikoj@negointeresuva.com",
+                PhoneNo = "2346456784"
+            }
+        },
+        agentId = agentId
+    };
+
+    var candidate = await payarc.Applications.Create(merchantCandidate);
+    Console.WriteLine($"Merchant candidate created: {JsonConvert.SerializeObject(candidate)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
 
 ### Service `payarc.Billing`
 #### The `payarc.Billing` service is responsible for managing recurring payments. It currently includes the `Plan` service for handling plans and the `Subscription` service for managing plan subscriptions.
