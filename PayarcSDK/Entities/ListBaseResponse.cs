@@ -11,7 +11,8 @@ public abstract class ListBaseResponse
     [JsonProperty("pagination")]
     public virtual Dictionary<string, object>? Pagination { get; set; }
 
-    public string? RawData { get; set; }
+	[JsonIgnore]
+	public string? RawData { get; set; }
         
     public override string ToString()
     {

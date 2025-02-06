@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using AnyOfTypes;
+using Newtonsoft.Json.Linq;
 using PayarcSDK.Entities;
 using PayarcSDK.Entities.SplitCampaign;
 using System.Text;
@@ -20,15 +21,19 @@ namespace PayarcSDK.Services {
 			return await GetAllCampaignsAsync(options);
 		}
 
-		public async Task<BaseResponse> Retrieve(string campaignId) {
+		public async Task<BaseResponse> Retrieve(AnyOf<string?, CampaignResponseData> campaign) {
+			string? campaignId = string.Empty;
+			campaignId = campaign.IsSecond ? campaign.Second.ObjectId : campaign.First;
 			return await ReceiveCampaignDetailsAsync(campaignId);
 		}
 
-		public async Task<BaseResponse> Update(string campaignId, SplitCampaignRequestData updatedData = null) {
+		public async Task<BaseResponse> Update(AnyOf<string?, CampaignResponseData> campaign, SplitCampaignRequestData updatedData = null) {
+			string? campaignId = string.Empty;
+			campaignId = campaign.IsSecond ? campaign.Second.ObjectId : campaign.First;
 			return await UpdateCampaignAsync(campaignId, updatedData);
 		}
 
-		public async Task<ListBaseResponse> listAccounts() {
+		public async Task<ListBaseResponse> ListAccounts() {
 			return await GetAllAccounts("account/my-accounts", null);
 		}
 
@@ -238,7 +243,7 @@ namespace PayarcSDK.Services {
 			}
 		}
 
-		private async Task<ListBaseResponse> GetAllAccounts(string url, string? queryParams, string type = "Campaign") {
+		private async Task<ListBaseResponse> GetAllAccounts(string url, string? queryParams, string type = "MyAccount") {
 			try {
 				if (queryParams != null) {
 					url = $"{url}?{queryParams}";
@@ -247,6 +252,9 @@ namespace PayarcSDK.Services {
 				var response = await _httpClient.GetAsync(url);
 				response.EnsureSuccessStatusCode();
 				var responseBody = await response.Content.ReadAsStringAsync();
+				var evidenceList = JsonSerializer.Deserialize<List<object>>(responseBody);
+				var wrappedObject = new { data = evidenceList };
+				responseBody = JsonSerializer.Serialize(wrappedObject, new JsonSerializerOptions { WriteIndented = true });
 
 				Console.WriteLine($"Response status code: {response.StatusCode}");
 				if (!response.IsSuccessStatusCode) {
@@ -266,17 +274,17 @@ namespace PayarcSDK.Services {
 				}
 
 				var rawData = dataElement.GetRawText();
-				var jsonCampaigns = dataElement.Deserialize<List<Dictionary<string, object>>>();
-				List<BaseResponse?>? campaigns = new List<BaseResponse?>();
-				if (jsonCampaigns != null) {
-					for (int i = 0; i < jsonCampaigns.Count; i++) {
-						var campaign = TransformJsonRawObject(jsonCampaigns[i], JsonSerializer.Serialize(jsonCampaigns[i]), type);
-						campaigns?.Add(campaign);
+				var jsonAccounts = dataElement.Deserialize<List<Dictionary<string, object>>>();
+				List<BaseResponse?>? accounts = new List<BaseResponse?>();
+				if (jsonAccounts != null) {
+					for (int i = 0; i < jsonAccounts.Count; i++) {
+						var account = TransformJsonRawObject(jsonAccounts[i], JsonSerializer.Serialize(jsonAccounts[i]), type);
+						accounts?.Add(account);
 					}
 				}
 
 				return new CampaignListResponse {
-					Data = campaigns,
+					Data = accounts,
 					RawData = rawData
 				};
 			} catch (HttpRequestException ex) {

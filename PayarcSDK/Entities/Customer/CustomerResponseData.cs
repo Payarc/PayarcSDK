@@ -109,13 +109,13 @@ namespace PayarcSDK.Entities
 	public class CardsContainer {
 
 		[JsonIgnore]
-		public Func<Dictionary<string, object>?, Task<BaseResponse?>> Create { get; set; }
+		public Func<CustomerRequestData?, CardData?, Task<BaseResponse?>> Create { get; set; }
 	}
 
 	public class BankAccountsContainer {
 
 		[JsonIgnore]
-		public Func<Dictionary<string, object>?, Task<BaseResponse?>> Create { get; set; }
+		public Func<BankData?, Task<BaseResponse?>> Create { get; set; }
 	}
 
 	public class ChargesContainer {

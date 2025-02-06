@@ -11,6 +11,18 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 namespace PayarcSDK.Sample {
 	internal class Program {
 		static async Task Main(string[] args) {
+			var settings = new JsonSerializerSettings {
+				NullValueHandling = NullValueHandling.Ignore,
+				Formatting = Formatting.Indented
+			};
+
+			Payarc payarc = null;
+			Payarc payarcAgent = null;
+			Payarc payarcAgentWithSubAgent = null;
+			Payarc payarcConnect = null;
+			Payarc payarcDisputeCases = null;
+			Payarc payarcAccountListExisting = null;
+
 			// Get Tokens from appsettings.secrets.json
 			var tokens = SecretManager.LoadTokens("appsettings.secrets.json");
 			var serials = SecretManager.LoadSerials("appsettings.secrets.json");
@@ -25,14 +37,8 @@ namespace PayarcSDK.Sample {
 				throw new InvalidOperationException("Access token is missing in the response.");
 			}
 
-			Payarc payarc = null;
-			Payarc payarcAgent = null;
-            Payarc payarcAgentWithSubAgent = null;
-            Payarc payarcConnect = null;
-			Payarc payarcDisputeCases = null;
-
-            //Temprorary Merchant Access Token taken from portal
-            try {
+			//Temprorary Merchant Access Token taken from portal
+			try {
 				payarc = new SdkBuilder()
 					.Configure(config => {
 						config.Environment = "sandbox";     // Use sandbox environment
@@ -67,55 +73,53 @@ namespace PayarcSDK.Sample {
 				Console.WriteLine("SDK initialized successfully.");
 			} catch (Exception ex) {
 				Console.WriteLine($"Error: {ex.Message}");
-            }
+			}
 
-            //Temprorary Agent with subAgent Access Token taken from portal
-            var agentWithSubAgentAccessToken = tokens["AgentWithSubAgentToken"]; // "";
+			//Temprorary Agent with subAgent Access Token taken from portal
+			var agentWithSubAgentAccessToken = tokens["AgentWithSubAgentToken"]; // "";
 
-            if (string.IsNullOrEmpty(agentWithSubAgentAccessToken)) {
-                throw new InvalidOperationException("Agent access token is missing in the response.");
-            }
+			if (string.IsNullOrEmpty(agentWithSubAgentAccessToken)) {
+				throw new InvalidOperationException("Agent access token is missing in the response.");
+			}
 
-            try {
-                payarcAgentWithSubAgent = new SdkBuilder()
-                    .Configure(config => {
-                        config.Environment = "sandbox";         // Use sandbox environment
-                        config.ApiVersion = "v1";               // Use version 2 of the API
-                        config.BearerToken = agentWithSubAgentAccessToken;  // Set the Bearer Token
-                    })
-                    .Build();
+			try {
+				payarcAgentWithSubAgent = new SdkBuilder()
+					.Configure(config => {
+						config.Environment = "sandbox";         // Use sandbox environment
+						config.ApiVersion = "v1";               // Use version 2 of the API
+						config.BearerToken = agentWithSubAgentAccessToken;  // Set the Bearer Token
+					})
+					.Build();
 
-                // Use Payarc services
-                Console.WriteLine("SDK initialized successfully.");
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
+				// Use Payarc services
+				Console.WriteLine("SDK initialized successfully.");
+			} catch (Exception ex) {
+				Console.WriteLine($"Error: {ex.Message}");
+			}
 
-            var dicputeCaseAccessToken = tokens["DisputeCaseToken"]; // "";
+			var dicputeCaseAccessToken = tokens["DisputeCaseToken"]; // "";
 
-            if (string.IsNullOrEmpty(dicputeCaseAccessToken)) {
-                throw new InvalidOperationException("Agent access token is missing in the response.");
-            }
+			if (string.IsNullOrEmpty(dicputeCaseAccessToken)) {
+				throw new InvalidOperationException("Agent access token is missing in the response.");
+			}
 
-            try {
-                payarcDisputeCases = new SdkBuilder()
-                    .Configure(config => {
-                        config.Environment = "sandbox";         // Use sandbox environment
-                        config.ApiVersion = "v1";               // Use version 2 of the API
-                        config.BearerToken = dicputeCaseAccessToken;  // Set the Bearer Token
-                    })
-                    .Build();
+			try {
+				payarcDisputeCases = new SdkBuilder()
+					.Configure(config => {
+						config.Environment = "sandbox";         // Use sandbox environment
+						config.ApiVersion = "v1";               // Use version 2 of the API
+						config.BearerToken = dicputeCaseAccessToken;  // Set the Bearer Token
+					})
+					.Build();
 
-                // Use Payarc services
-                Console.WriteLine("SDK initialized successfully.");
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
+				// Use Payarc services
+				Console.WriteLine("SDK initialized successfully.");
+			} catch (Exception ex) {
+				Console.WriteLine($"Error: {ex.Message}");
+			}
 
-            // Payarc Connect 
-            string payarcConnectAccessToken = tokens["PpayarcConnectToken"]; // "";
+			// Payarc Connect 
+			string payarcConnectAccessToken = tokens["PpayarcConnectToken"]; // "";
 
 			if (string.IsNullOrEmpty(payarcConnectAccessToken)) {
 				throw new InvalidOperationException("Payarc Connect access token is missing in the response.");
@@ -136,10 +140,33 @@ namespace PayarcSDK.Sample {
 				Console.WriteLine($"Error: {ex.Message}");
 			}
 
+			// Retrieve the access token
+			var AccountListExistingAccessToken = tokens["AccountListExistingToken"]; // "";
+
+			if (string.IsNullOrEmpty(accessToken)) {
+				throw new InvalidOperationException("Access token is missing in the response.");
+			}
+
+			//Temprorary Merchant Access Token taken from portal
+			try {
+				payarcAccountListExisting = new SdkBuilder()
+					.Configure(config => {
+						config.Environment = "sandbox";     // Use sandbox environment
+						config.ApiVersion = "v1";           // Use version 2 of the API
+						config.BearerToken = AccountListExistingAccessToken;   // Set the Bearer Token
+					})
+					.Build();
+
+				// Use Payarc services
+				Console.WriteLine("SDK initialized successfully.");
+			} catch (Exception ex) {
+				Console.WriteLine($"Error: {ex.Message}");
+			}
+
 			//var testService = "billingService";
-			//var testService = "customerService";
+			var testService = "customerService";
 			//var testService = "applicationService";
-			var testService = "disputeService";
+			//var testService = "disputeService";
 			//var testService = "splitCampaignService";
 			//var testService = "chargeService";
 			//var testService = "payarcConnect";
@@ -207,21 +234,21 @@ namespace PayarcSDK.Sample {
 
 						var customers = await payarc.Customers.List(listOptions);
 						//Console.WriteLine($"List of Customers: {customers}");
-						Console.WriteLine("Customers Data");
-						for (int i = 0; i < customers?.Data?.Count; i++) {
-							var t = customers.Data[i];
-							Console.WriteLine(t);
-							if (i == customers?.Data?.Count - 1) {
-								customerId = t.ObjectId;
-							}
-						}
-						Console.WriteLine("Pagination Data");
-						Console.WriteLine(customers?.Pagination["total"]);
-						Console.WriteLine(customers?.Pagination["count"]);
-						Console.WriteLine(customers?.Pagination["per_page"]);
-						Console.WriteLine(customers?.Pagination["current_page"]);
-						Console.WriteLine(customers?.Pagination["total_pages"]);
-
+						//Console.WriteLine("Customers Data");
+						//for (int i = 0; i < customers?.Data?.Count; i++) {
+						//	var t = customers.Data[i];
+						//	Console.WriteLine(t);
+						//	if (i == customers?.Data?.Count - 1) {
+						//		customerId = t.ObjectId;
+						//	}
+						//}
+						//Console.WriteLine("Pagination Data");
+						//Console.WriteLine(customers?.Pagination["total"]);
+						//Console.WriteLine(customers?.Pagination["count"]);
+						//Console.WriteLine(customers?.Pagination["per_page"]);
+						//Console.WriteLine(customers?.Pagination["current_page"]);
+						//Console.WriteLine(customers?.Pagination["total_pages"]);
+						Console.WriteLine(JsonConvert.SerializeObject(customers, settings));
 						var testCustomerAction = "createCustomer";
 						//var testCustomerAction = "updateCustomer";
 						//var testCustomerAction = "deleteCustomer";
@@ -302,16 +329,16 @@ namespace PayarcSDK.Sample {
 						switch (testApplicationAction) {
 							case "createApplication":
 								ApplicationInfoData merccandidate = new ApplicationInfoData {
-											Lead = new Lead {
-												Industry = "cbd",
-												MerchantName = "My applications company 2",
-												LegalName = "Best Co in w",
-												ContactFirstName = "Joan",
-												ContactLastName = "Dhow",
-												ContactEmail = "contact+23@mail.com",
-												DiscountRateProgram = "interchange"
-											},
-											Owners = new List<Owner> {
+									Lead = new Lead {
+										Industry = "cbd",
+										MerchantName = "My applications company 2",
+										LegalName = "Best Co in w",
+										ContactFirstName = "Joan",
+										ContactLastName = "Dhow",
+										ContactEmail = "contact+23@mail.com",
+										DiscountRateProgram = "interchange"
+									},
+									Owners = new List<Owner> {
 										new Owner {
 											FirstName = "First2",
 											LastName = "Last2",
@@ -380,25 +407,25 @@ namespace PayarcSDK.Sample {
 								Console.WriteLine($"Deleted Document: {deletedDocument}");
 								break;
 							case "listSubAgent":
-                                OptionsData queryParamsSubAgents = new OptionsData {
-                                    Limit = 10,
-                                    Page = 1
-                                };
-                                var subAgents = await payarcAgentWithSubAgent.Applications.ListSubAgents(queryParamsSubAgents);
-                                Console.WriteLine("Sub Agent Data");
-                                for (int i = 0; i < subAgents?.Data?.Count; i++) {
-                                    var t = subAgents.Data[i];
-                                    Console.WriteLine(t);
-                                }
-                                break;
+								OptionsData queryParamsSubAgents = new OptionsData {
+									Limit = 10,
+									Page = 1
+								};
+								var subAgents = await payarcAgentWithSubAgent.Applications.ListSubAgents(queryParamsSubAgents);
+								Console.WriteLine("Sub Agent Data");
+								for (int i = 0; i < subAgents?.Data?.Count; i++) {
+									var t = subAgents.Data[i];
+									Console.WriteLine(t);
+								}
+								break;
 							default:
 								Console.WriteLine("Nothing to test.");
 								break;
 						}
 						break;
 					case "disputeService":
-                        // List cases
-                        var caseId = "";
+						// List cases
+						var caseId = "";
 
 						var currentDate = DateTime.UtcNow;
 						var tomorrowDate = currentDate.AddDays(1).ToString("yyyy-MM-dd");
@@ -409,7 +436,7 @@ namespace PayarcSDK.Sample {
 							Report_DateLTE = tomorrowDate,
 						};
 
-                        var cases = await payarcDisputeCases.Disputes.List(queryParamsDisputeCases);
+						var cases = await payarcDisputeCases.Disputes.List(queryParamsDisputeCases);
 						Console.WriteLine($"List Cases:");
 						for (int i = 0; i < cases?.Data?.Count; i++) {
 							var t = cases.Data[i];
@@ -430,13 +457,6 @@ namespace PayarcSDK.Sample {
 							Text = "Additional evidence for the dispute.",
 							Message = "Submitting dispute case with evidence."
 						};
-						//var documentParams = new JObject
-						//{
-						//	{ "DocumentDataBase64", "iVBORw0KGgoAAAANSUhEUgAAAIUAAABsCAYAAABEkXF2AAAABHNCSVQICAgIfAhkiAAAAupJREFUeJzt3cFuEkEcx/E/001qUQ+E4NF48GB4BRM9+i59AE16ANlE4wv4Mp5MjI8gZ+ONEMJBAzaWwZsVf2VnstPZpfb7STh06ewu5JuFnSzQ8d5vDfiLa3sHcHiIAoIoIIgCgiggitwbWM/f2vniTe7NoIZ7Dz9Y0X0qy7NHYfbLtn6dfzOoYXPlUl4+IIgCooGXj10ngzM77p81vVmY2Y9vL+xi9Tn4f41HYVZYx3Wb3yws9oWBlw8IooAgCgiigCAKCKKAIAoIooAgCoikGU3nqpvy3qesPvv6+/2+LZfLpHUcsrrPD0cKCKKAIAoIooAgCgiigCAKCOecs7q3iJXbZDLZWVaWZfR4733lLbfZbBbchzZvvV4vy+PmSAFBFBBEAUEUEEQBQRQQRAFR5DzfD81FxMxVpMg9l3HT938fjhQQRAFBFBBEAUEUEEQBQRQQRe5z7SptnYejGkcKCKKAIAoIooAgCgiigCAKiKQoYj6bMB6Pd8aMRqPoz22kfCalzfmXm45nDoIoIIgCgiggiAKCKCCIAiJrFKnfTxHS9vdX5P7+ibZwpIAgCgiigCAKCKKAIAoIooDomNl2352hc+WY3+NYzyf2c345V3EyGNmdwevo8anbr3Lbfu/j+9fndrH69Ofv+48+WtF9JuM4UkAQBQRRQBAFBFFAEAUEUUBUfo9m6jUPzjl7eWr26vRyWVmW9u59GT2+Suo1B4vFImn8/4ojBQRRQBAFBFFAEAUEUUAQBUTHe7/3eorUeYrQ9RSprmP/UtZ/6OP/xfUUqI0oIIgCgiggiqY36Ddz25x/uZZ1PXmcNj60H6H1H/p4sV1F/VvjZx84HJx9IFrl733wexy3U/b3FO7ogR0dD7OsezqdVt4/HFZvNzQ+t9T9C40P6ty9erElfEKsbblnDHNrekYzFu8pIIgCgiggiAKCKCAqzz5Ccr+7T3133fb1DG0//ro4UkAQBQRRQBAFBFFAEAXEb3wL3JblytFeAAAAAElFTkSuQmCC" },
-						//	{ "mimeType", "application/pdf" },
-						//	{ "text", "Additional evidence for the dispute." },
-						//	{ "message", "Submitting dispute case with evidence." }
-						//};
 						var result = await payarcDisputeCases.Disputes.AddCaseDocumentAsync(caseId, documentParams);
 						Console.WriteLine($"Add Document Result: {result}");
 						var evidenceAddedCase = await payarcDisputeCases.Disputes.Retrieve(caseId);
@@ -463,8 +483,8 @@ namespace PayarcSDK.Sample {
 						}
 
 						//var testCampaignAction = "createCampaign";
-						var testCampaignAction = "updateCampaign";
-						//var testCampaignAction = "listAccounts";
+						//var testCampaignAction = "updateCampaign";
+						var testCampaignAction = "getListAccounts";
 
 						switch (testCampaignAction) {
 							case "createCampaign":
@@ -496,12 +516,16 @@ namespace PayarcSDK.Sample {
 								Console.WriteLine($"Updated Campaign: {updatedCampaign}");
 								break;
 							case "getListAccounts":
-								// Example: Get all accounts
-							//	var allAccounts = await payarc.SplitCampaignService.ListAccounts();
-							//	Console.WriteLine($"All Accounts: {allAccounts}");
-							//	break;
-							//default:
-							//	Console.WriteLine("Nothing to test.");
+								//Example: Get all accounts
+								var allAccounts = await payarcAccountListExisting.SplitCampaigns.ListAccounts();
+								Console.WriteLine($"All Accounts:");
+								for (int i = 0; i < allAccounts?.Data?.Count; i++) {
+									var t = allAccounts.Data[i];
+									Console.WriteLine(t);
+								}
+								break;
+							default:
+								Console.WriteLine("Nothing to test.");
 								break;
 						}
 						break;

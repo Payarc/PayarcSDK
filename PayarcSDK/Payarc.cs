@@ -6,7 +6,7 @@ namespace PayarcSDK {
         public ApplicationService Applications { get; }
         public DisputeService Disputes { get; }
         public SplitCampaignService SplitCampaigns { get; }
-        public CustomerService Customers{ get; }
+        public CustomerService Customers { get; }
         public ChargeService Charges { get; }
         public BillingService Billing { get; }
         public PayarcConnectService PayarcConnect { get; }

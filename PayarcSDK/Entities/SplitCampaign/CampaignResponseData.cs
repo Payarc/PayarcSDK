@@ -12,6 +12,12 @@ namespace PayarcSDK.Entities
 		[JsonProperty("object")]
 		public string Object { get; set; }
 
+		[JsonIgnore]
+		public Func<SplitCampaignRequestData?, Task<BaseResponse?>> Update { get; set; }
+
+		[JsonIgnore]
+		public Func<Task<BaseResponse?>> Retrieve { get; set; }
+
 		[JsonProperty("id")]
 		public string Id { get; set; }
 

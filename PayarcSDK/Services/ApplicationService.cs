@@ -22,29 +22,39 @@ namespace PayarcSDK.Services {
 			return await ListApplyAppsAsync(options);
 		}
 
-		public async Task<BaseResponse> Retrieve(string applicantId) {
+		public async Task<BaseResponse> Retrieve(AnyOf<string?, ApplicationResponseData> applicant) {
+			string? applicantId = string.Empty;
+			applicantId = applicant.IsSecond ? applicant.Second.ObjectId : applicant.First;
 			return await RetrieveApplicantAsync(applicantId);
 		}
 
-		public async Task<BaseResponse> Update(AnyOf<string?, ApplicationResponseData> application, ApplicationInfoData newData) {
+		public async Task<BaseResponse> Update(AnyOf<string?, ApplicationResponseData> applicant, ApplicationInfoData newData) {
 			string? applicantId = string.Empty;
-			applicantId = application.IsSecond ? application.Second.ObjectId : application.First;
+			applicantId = applicant.IsSecond ? applicant.Second.ObjectId : applicant.First;
 			return await UpdateApplicantAsync(applicantId, newData);
 		}
 
-		public async Task<BaseResponse> Delete(string applicantId) {
+		public async Task<BaseResponse> Delete(AnyOf<string?, ApplicationResponseData> applicant) {
+			string? applicantId = string.Empty;
+			applicantId = applicant.IsSecond ? applicant.Second.ObjectId : applicant.First;
 			return await DeleteApplicantAsync(applicantId);
 		}
 
-		public async Task<BaseResponse> AddDocument(string applicantId, List<MerchantDocument> merchantDocuments) {
+		public async Task<BaseResponse> AddDocument(AnyOf<string?, ApplicationResponseData> applicant, List<MerchantDocument> merchantDocuments) {
+			string? applicantId = string.Empty;
+			applicantId = applicant.IsSecond ? applicant.Second.ObjectId : applicant.First;
 			return await AddApplicantDocumentAsync(applicantId, merchantDocuments);
 		}
 
-		public async Task<BaseResponse> Submit(string applicantId) {
+		public async Task<BaseResponse> Submit(AnyOf<string?, ApplicationResponseData> applicant) {
+			string? applicantId = string.Empty;
+			applicantId = applicant.IsSecond ? applicant.Second.ObjectId : applicant.First;
 			return await SubmitApplicantForSignatureAsync(applicantId);
 		}
 
-		public async Task<BaseResponse> DeleteDocument(string applicantId, string documentId) {
+		public async Task<BaseResponse> DeleteDocument(string applicantId, AnyOf<string?, DocumentResponseData> document) {
+			string? documentId = string.Empty;
+			documentId = document.IsSecond ? document.Second.ObjectId : document.First;
 			return await DeleteApplicantDocumentAsync(applicantId, documentId);
 		}
 
@@ -53,7 +63,7 @@ namespace PayarcSDK.Services {
 		}
 
 		private async Task<BaseResponse> AddLeadAsync(ApplicationInfoData applicant) {
-			applicant.agentId = applicant.agentId.StartsWith("usr_") ? applicant.agentId.Substring(4) : applicant.agentId;
+			applicant.AgentId = applicant.AgentId.StartsWith("usr_") ? applicant.AgentId.Substring(4) : applicant.AgentId;
 			return await CreateApplicationAsync("agent-hub/apply/add-lead", applicant);
 		}
 
