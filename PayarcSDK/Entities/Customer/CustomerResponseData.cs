@@ -81,10 +81,8 @@ namespace PayarcSDK.Entities
 		[JsonProperty("charge")]
 		public ChargeContainer? Charge { get; set; }
 
-		[JsonIgnore]
 		public CardsContainer? Cards { get; set; }
 
-		[JsonIgnore]
 		public BankAccountsContainer? Bank_Accounts { get; set; }
 
 		[JsonIgnore]
@@ -107,12 +105,16 @@ namespace PayarcSDK.Entities
 	}
 
 	public class CardsContainer {
+		[JsonProperty("cards")]
+		public ListBaseResponse? Cards { get; set; }
 
 		[JsonIgnore]
 		public Func<CustomerRequestData?, CardData?, Task<BaseResponse?>> Create { get; set; }
 	}
 
 	public class BankAccountsContainer {
+		[JsonProperty("bank_accounts")]
+		public ListBaseResponse? Bank_Accounts { get; set; }
 
 		[JsonIgnore]
 		public Func<BankData?, Task<BaseResponse?>> Create { get; set; }
