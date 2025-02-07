@@ -91,12 +91,13 @@ The Payarc SDK is build around the `Payarc` object. From this object you can acc
 - **Billing**  
     - **Plan** - Manage plans  
     - **Subscription** - Manage plan subscriptions
+- **Disputes** - Manage disputes
 
 > [!NOTE]
 > The `Payarc` object referenced in the below examples will be created as `payarc`, you can name it whatever you'd like though.
 
 ## Service `payarc.Charges`
-#### The `payarc.Charges` service facilitates the management of payments within the system, providing the following functions:
+### The `payarc.Charges` service facilitates the management of payments within the system, providing the following functions:
 - **Create** - Initiates a payment intent or charge with various configurable parameters. Refer to the examples for specific use cases.
 - **Retrieve** - Fetches a JSON object `charge` containing detailed information about a specific charge.
 - **List** - Returns an object containing two attributes:  `charges` and `pagination`. The `charges` attribute is a list of JSON objects, each providing detailed information about individual charges. The `pagination` attribute contains deatails for navigating through the list of charges.
@@ -173,7 +174,7 @@ try {
 }
 ```
 
-### Example: Create a Charge by Bank account ID
+### Example: Create a Charge by Bank Account ID
 Charges can be generated for a specific bank account if you have the `BankAccountId`, which is the bank account of the customer.
 
 #### This example shows how to create an ACH charge using a bank account ID:
@@ -193,7 +194,7 @@ try {
 }
 ```
 
-### Example: Create a Charge with a bank account
+### Example: Create a Charge With a Bank Account
 Charges can be generated for a bank account if you have the bank account information. Details for the bank account are in the `Source` attribute.
 
 #### This example shows how to create an ACH charge with new bank account:
@@ -284,7 +285,7 @@ try {
 <br/>
 
 ## Service `payarc.Customers`
-#### The `payarc.Customers` service manages your customers' personal information, including addresses and payment methods such as credit cards and bank accounts. This data is securely stored for future transactions.
+### The `payarc.Customers` service manages your customers' personal information, including addresses and payment methods such as credit cards and bank accounts. This data is securely stored for future transactions.
 - **Create** - Creates a customer object in the database and generates a unique identifier for future reference and inquiries. See examples and documentation for more details.
 - **Retrieve** - Retrieves detailed information about a specific customer from the database.
 - **List** - Searches through previously created customers, allowing filtering based on specific criteria. See examples and documentation for more details.
@@ -340,7 +341,7 @@ try {
 
 ## Retrieving a Customer
 
-### Example: Retrieve a Customer by their ID:
+### Example: Retrieve a Customer by Their ID:
 
 #### This example demonstrates how to retrieve a customer given their unique customer ID:
 ```csharp
@@ -445,7 +446,7 @@ try {
 
 ## Deleting a Customer
 
-### Example: Delete Customer
+### Example: Delete a Customer
 
 #### This example shows how to delete customer. See more details in API documentation.
 ```csharp
@@ -460,7 +461,7 @@ try {
 <br/>
 
 ## Service `payarc.Applications`
-#### The `payarc.Applications` service is designed for Agents and ISVs to manage candidate merchants during new customer acquisition. It allows you to create, retrieve, list, and manage the necessary documents for the onboarding process.
+### The `payarc.Applications` service is designed for Agents and ISVs to manage candidate merchants during new customer acquisition. It allows you to create, retrieve, list, and manage the necessary documents for the onboarding process.
 - **Create** - Adds a new candidate merchant to the database. Refer to the documentation for available attributes, valid values, and required fields.
 - **Retrieve** - Returns details of a specific candidate merchant based on an identifier or an object from the list function.
 - **List** - Retrieves a list of application objects representing potential merchants. Use this function to find the relevant identifier.
@@ -476,7 +477,7 @@ try {
 ### Example: Create a New Candidate Merchant
 When connecting your clients with Payarc, a selection is made based on Payarc's criteria. The process begins by gathering the merchant's information and creating an entry in the database.
 
-#### This example shows you how this process can be intiated:
+#### This example shows how this process can be intiated:
 ```csharp
  try {
     var merchantCandidate = new ApplicationInfoData {
@@ -583,7 +584,7 @@ try {
 
 ## Listing Candidate Merchants
 
-### Example: List All Candidate Merchants For an Agent
+### Example: List All Candidate Merchants for an Agent
 
 #### This example shows how to list all candidate merchants for a specified agent:
 ```csharp
@@ -727,11 +728,45 @@ try {
 }   
 ```
 
-### Service `payarc.Billing`
-#### The `payarc.Billing` service is responsible for managing recurring payments. It currently includes the `Plan` service for handling plans and the `Subscription` service for managing plan subscriptions.
+## Submitting a Candidate Merchant
 
-### Service `payarc.Billing.Plan` 
-#### The `payarc.Billing.Plan` service provides detailed information about each plan, including identification details, payment request rules, and additional attributes.
+### Example: Submitting an Application for Signature
+For agents or ISVs, the process is finalized when the contract between Payarc and the client is sent for signature. Once all required documents and data have been gathered, the submit method for the candidate merchant must be invoked
+
+#### This example shows how to submit a candidate merchant application using the ID:
+```csharp
+try {
+    string id = "app_1J*****3";
+
+    var applicant = await payarc.Applications.Submit(id);
+    Console.WriteLine($"Applicant submitted for signature: {JsonConvert.SerializeObject(applicant)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+<br/>
+
+## Service `payarc.SplitCampaigns`
+### The `payarc.SplitCampaigns` service allows an ISV to create and manage campaigns to handle the financial details of your processing merchants. It provides the following functionality:
+- **Create** - Creates a campaign.
+- **Retrieve** - Retrieves the details of a campaign.
+- **List** - List all campaigns available for your agent.
+- **ListAccounts** - List all merchant accounts.
+- **Update** - Modifies attributes of an existing campaign.
+
+<br/>
+
+## Service `payarc.Billing`
+### The `payarc.Billing` service manages recurring payments, including plan creation and subscription handling. It consists of two key components:
+- `payarc.Billing.Plan` - Manages subscription plans, including creation, updates, and deletion.
+- `payarc.Billing.Subscription` - Handles customer subscriptions linked to plans.
+
+> [!NOTE]
+> Based on the defined plans, you can create subscriptions. A scheduled job will automatically process and collect payments (charges) from customers according to the plan's payment schedule.
+
+## Service `payarc.Billing.Plan`
+### The `payarc.Billing.Plan` service provides detailed information about each plan, including identification details, payment request rules, and additional attributes.
 - **Create** - Programmatically create new plan objects to meet client needs.
 - **List** - Retrieve a list of available plans.
 - **Retrieve** - Obtain detailed information about a specific plan.
@@ -739,14 +774,342 @@ try {
 - **Delete** - Remove a plan when it is no longer needed.
 - **CreateSubscription**: Generate a customer subscription based on a selected plan.
 
-> [!NOTE]
-> Based on the defined plans, you can create subscriptions. A scheduled job will automatically process and collect payments (charges) from customers according to the plan's payment schedule.
+## Recurrent Payments Setup
+Recurrent payments, also known as subscription billing, are essential for any service-based business that requires regular, automated billing of customers. By setting up recurrent payments through our SDK, you can offer your customers the ability to easily manage subscription plans, ensuring timely and consistent revenue streams. This setup involves creating subscription plans, managing customer subscriptions, and handling automated billing cycles. Below, we outline the steps necessary to integrate recurrent payments into your application using our SDK.
 
-### Service `payarc.Billing.Subscription`
-#### This abstraction encapsulate information for subscription the link between customer and plan. it has following methods:
-**List** - Retrieve a list of all subscriptions.
-**Cancel** - Stop and cancel an active subscription.
-**Update** - Modify a specific subscription's details.
+## Creating a Billing Plan
+The first step in setting up recurrent payments is to create subscription plans. These plans define the billing frequency, pricing, and any trial periods or discounts. Using our SDK, you can create multiple subscription plans to cater to different customer needs.
+
+### Example: Create a Billing Plan
+
+#### This example shows how to create a billing plan:
+```csharp
+try {
+    var data = new PlanCreateOptions {
+        Name = "Monthly Billing Regular",
+        Amount = 999,
+        Interval = "month",
+        StatementDescriptor = "2025 Merchant Services"
+    };
+
+    var plan = await payarc.Billing.Plan.Create(data);
+    Console.WriteLine($"Plan created: {JsonConvert.SerializeObject(plan)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+In the above example, a new plan is created. The `Name` attribute should contain a client-friendly name for the plan. The `Amount` attribute represents the charge amount in cents. The `Interval` attribute defines how frequently the charge request will occur. The `StatementDescriptor` attribute provides a description that will appear as the reason prodivded to the customer for the payment request. For additional attributes and details, refer to the API documentation.
+
+## Listing Subscription Plans
+
+### Example: List All Subscription Plans
+
+#### This example shows how to list all subscrption plans:
+```csharp
+try {                
+    var plans = await payarc.Billing.Plan.List();
+    Console.WriteLine($"Plans retrieved: {JsonConvert.SerializeObject(plans)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+### Example: List Subscription Plans With a Filter
+
+#### This example shows how to list all subscription plans that match a search query:
+```csharp
+try {                
+    var plans = await payarc.Billing.Plan.List(new PlanListOptions {
+        Search = "Iron"
+    });
+    Console.WriteLine($"Plans retrieved: {JsonConvert.SerializeObject(plans)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Retrieving a Subscription Plan
+
+### Example: Retrieve a Subscription Plan with an ID
+
+#### This example shows how to retrieve a given subscription plan using its ID:
+```csharp
+try {
+    string id = "plan_3aln*******8y8";
+
+    var plan = await payarc.Billing.Plan.Retrieve(id);
+    Console.WriteLine($"Plan retrieved: {JsonConvert.SerializeObject(plan)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Updating a Subscription Plan
+Once a plan is created, you may need to update its details. The SDK allows you to modify a `Plan` object directly or reference it by its ID.
+
+### Example: Updating the Most Recently Created Subscription Plan
+
+#### This example shows how to update a subscription plan without knowing its ID. Instead, you retrieve a list of plans and update the most recently created one:
+```csharp
+try {
+    var plans = await payarc.Billing.Plan.List();
+    var plan = plans?.Data?.FirstOrDefault();
+
+    if (plan != null) {
+        string id = plan.ObjectId;
+
+        var updatedPlan = await payarc.Billing.Plan.Update(id, new UpdatePlanOptions { 
+            Name = "Updated Plan Name" 
+        });
+        Console.WriteLine($"Plan updated: {JsonConvert.SerializeObject(updatedPlan)}");
+    }
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+### Example: Updating a Subscription Plan With an ID:
+
+#### This example shows how to update a subsription plan when you know its ID. This method is much easier and therefore the preferred way to update a plan:
+```csharp
+try {
+    string id = "plan_3aln*******8y8";
+
+    var updatedPlan = await payarc.Billing.Plan.Update(id, new UpdatePlanOptions { 
+        Name = "Updated Plan Name" 
+    });
+    Console.WriteLine($"Plan updated: {JsonConvert.SerializeObject(updatedPlan)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Deleting a Subcription Plan
+
+### Example: Delete a Subscription Plan with an ID
+
+#### This example shows how to delete a given subcription plan using its ID:
+```csharp
+try {
+    string id = "plan_3aln*******8y8";
+
+    var plan = await payarc.Billing.Plan.Delete(id);
+    Console.WriteLine($"Plan deleted: {JsonConvert.SerializeObject(plan)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Creating a Subscription to a Plan
+Once you have created subscription plans, the next step is to manage customer subscriptions. This involves subscribing customers to the plans they choose and managing their billing information. Our SDK makes it easy to handle these tasks.
+
+### Example: Search for a Plan and Subscribing a Customer
+
+#### This example shows how to search for a specific subscription plan, retrieve its ID, and subscribe a customer to that plan using the plan's ID and the customer's ID:
+```csharp
+try {
+    var plans = await payarc.Billing.Plan.List(new PlanListOptions { Search = "Iron" });
+    var planId = plans?.Data?.FirstOrDefault()?.ObjectId;
+
+    if (!string.IsNullOrEmpty(planId)) {
+        var subscriber = new SubscriptionCreateOptions {
+            CustomerId = "cus_*******AMNNVnjA"
+        };
+
+        var subscription = await payarc.Billing.Plan.CreateSubscription(planId, subscriber);
+        Console.WriteLine($"Subscription created: {JsonConvert.SerializeObject(subscription)}");
+    }
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+### Example: Add a Customer to a Subscription Plan Using the Plan ID
+
+#### This example shows how to add a customer to a subscription plan when the plan ID and customer ID is known:
+```csharp
+try {
+    string id = "plan_3aln*******8y8";
+
+    var subscriber = new SubscriptionCreateOptions {
+        CustomerId = "cus_*******AMNNVnjA"
+    };
+
+    var subscription = await payarc.Billing.Plan.CreateSubscription(id, subscriber);
+    Console.WriteLine($"Subscription created: {JsonConvert.SerializeObject(subscription)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+<br/>
+
+## Service `payarc.Billing.Subscription`
+### The `payarc.Billing.Subscription` service manages subscriptions, linking customers to their chosen plans. It provides the following methods:
+- **List** - Retrieve a list of all subscriptions.
+- **Update** - Modify a specific subscription's details.
+- **Cancel** - Stop and cancel an active subscription.
+
+## Listing Subscriptions 
+
+### Example: List All Subscriptions to Plans
+
+#### This example shows how to list all existing subscriptions to plans:
+```csharp
+try {
+    var subscriptions = await payarc.Billing.Subscription.List();
+    Console.WriteLine($"Subscriptions: {JsonConvert.SerializeObject(subscriptions)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+### Example: List All Subscriptions to a Specific Plan with its ID
+
+#### This example shows how to list all subscriptions to a specific plan using its plan ID:
+```csharp
+try {
+    var subscriptions = await payarc.Billing.Subscription.List(new SubscriptionListOptions {
+        PlanId = "plan_7****f"
+    });
+    Console.WriteLine($"Subscriptions: {JsonConvert.SerializeObject(subscriptions)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+### Example: List All Subscriptions to a Plan with a Limit
+
+#### This example shows how to list all subscriptions to a plan, using a limit:
+```csharp
+try {
+    var subscriptions = await payarc.Billing.Subscription.List(new SubscriptionListOptions {
+        Limit = 75,
+        Page = 1
+    });
+    Console.WriteLine($"Subscriptions: {JsonConvert.SerializeObject(subscriptions)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Updating a Subscription 
+
+### Example: Update a Subscription with its ID
+
+#### This example shows how to update a subscription using the subscription's ID:
+```csharp
+try {
+    string id = "sub_7****f";
+
+    var subscription = await payarc.Billing.Subscription.Update(id, new UpdateSubscriptionOptions {
+        Description = "New Subscription Description",
+        
+    });
+    Console.WriteLine($"Subscription updated: {JsonConvert.SerializeObject(subscription)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Canceling a Subscription 
+
+### Example: Cancel a Subscription with its ID
+
+#### This example shows how to cancel a subscription using the subscription's ID:
+```csharp
+try {
+    string id = "sub_7****f";
+
+    var subscription = await payarc.Billing.Subscription.Cancel(id);
+    Console.WriteLine($"Subscription canceled: {JsonConvert.SerializeObject(subscription)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Service `payarc.Disputes`
+### The `payarc.Disputes` service provides functionality for managing disputes. It provides the following methods:
+- **List** - Retrieve a list of all disputes, parameters can be used for filtering.
+- **Retrieve** - Modify a specific dispute's details.
+- **AddDocument** - Add documents to support your claim in a given dispute.
+
+## Understanding the Dispute Process and Managing Chargebacks
+
+A dispute in payment processing arises when a cardholder questions the validity of a transaction appearing on their statement. This often leads to a chargeback, where the transaction amount is reversed from the merchant's account and refunded to the cardholder.
+
+The process typically begins when a cardholder identifies a transaction they believe to be incorrect or unauthorized. This could be due to fraudulent activity, billing errors, or dissatisfaction with a purchase. The cardholder then contacts their issuing bank to dispute the transaction, providing details on why they believe it is invalid.
+
+The issuing bank investigates the dispute by gathering information from the cardholder and reviewing transaction details. The bank then communicates the dispute to the acquiring bank (the merchant's bank) through the card network (in this case, Payarc). The merchant is required to provide evidence to validate the transaction, such as receipts, shipping information, or communication with the customer.
+
+Based on the evidence from both the cardholder and the merchant, the issuing bank makes a decision. If the dispute is resolved in favor of the cardholder, a chargeback occurs, deducting the transaction amount from the merchant's account and crediting it back to the cardholder. If the decision favors the merchant, the transaction stands.
+
+This documentation will guide you through using the Payarc SDK to manage charges and customers. For any further questions, please refer to the Payarc API documentation or reach out to support.
+
+## Listing Disputes
+The SDK allows you to retrieve a list of disputes. You can specify query parameters to filter the results based on your needs. If no parameters are provided, the function will return all disputes from the past month.
+
+### Example: List All Disputes
+
+#### This example shows how to list all disputes in the past month:
+```csharp
+try {				
+    var disputes = await payarc.Disputes.List();
+    Console.WriteLine($"Cases: {JsonConvert.SerializeObject(disputes)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Retrieving Disputes
+
+### Example: Retrieve a Specific Dispute by its ID
+
+#### This example shows how to retrieve the details of a dispute by its dispute ID:
+```csharp
+try {
+    string id = "dis_7****f";
+
+    var dispute = await payarc.Disputes.Retrieve(id);
+    Console.WriteLine($"Case: {JsonConvert.SerializeObject(dispute)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Adding Documents to a Dispute
+To resolve the dispute in your favor, the merchant is required to provide evidence supporting the validity of the transaction. This may include receipts, shipping information, or communication with the customer. The SDK provides a function, `AddDocument`, that allows you to submit files and messages to demonstrate your right to retain the funds for the transaction.
+
+The first parameter of this function is the dispute identifier for which the evidence is being provided. The second parameter is an object with the following attributes:
+
+- `DocumentDataBase64`: Base64-encoded representation of the files being used as evidence.
+- `Text`: A brief description of the evidence.
+- `MimeType`: The file type of the provided document.
+- `Message`: A description of the case being submitted.
+
+For more details on the parameters and their attributes, please refer to the documentation.
+
+### Example: Add a Document to a Dispute Given the ID
+
+#### This example shows how to add a document to a dispute given the dispute's ID:
+```csharp
+try {
+    var document = new DocumentParameters {
+        DocumentDataBase64 =    "JVBERi0xLjEKJcKlwrHDqwoKMSAwIG9iagogIDw8IC9UeXBlIC9DYXRhbG9nCiAgICAgL1BhZ2VzIDIgMCBSCiAgPj4KZW5kb2JqCgoyIDAgb2JqCiAgPDwgL1R5cGUgL1BhZ2VzCiAgICAgL0tpZHMgWzMgMCBSXQogICAgIC9Db3VudCAxCiAgICAgL01lZGlhQm94IFswIDAgMzAwIDE0NF0KICA+PgplbmRvYmoKCjMgMCBvYmoKICA8PCAgL1R5cGUgL1BhZ2UKICAgICAgL1BhcmVudCAyIDAgUgogICAgICAvUmVzb3VyY2VzCiAgICAgICA8PCAvRm9udAogICAgICAgICAgIDw8IC9GMQogICAgICAgICAgICAgICA8PCAvVHlwZSAvRm9udAogICAgICAgICAgICAgICAgICAvU3VidHlwZSAvVHlwZTEKICAgICAgICAgICAgICAgICAgL0Jhc2VGb250IC9UaW1lcy1Sb21hbgogICAgICAgICAgICAgICA+PgogICAgICAgICAgID4+CiAgICAgICA+PgogICAgICAvQ29udGVudHMgNCAwIFIKICA+PgplbmRvYmoKCjQgMCBvYmoKICA8PCAvTGVuZ3RoIDU1ID4+CnN0cmVhbQogIEJUCiAgICAvRjEgMTggVGYKICAgIDAgMCBUZAogICAgKEhlbGxvIFdvcmxkKSBUagogIEVUCmVuZHN0cmVhbQplbmRvYmoKCnhyZWYKMCA1CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxOCAwMDAwMCBuIAowMDAwMDAwMDc3IDAwMDAwIG4gCjAwMDAwMDAxNzggMDAwMDAgbiAKMDAwMDAwMDQ1NyAwMDAwMCBuIAp0cmFpbGVyCiAgPDwgIC9Sb290IDEgMCBSCiAgICAgIC9TaXplIDUKICA+PgpzdGFydHhyZWYKNTY1CiUlRU9GCg==",
+        Text = "Test Document Evidence",
+        MimeType = "application/pdf",
+        Message = "Test Message for Dispute"
+    };
+
+    var dispute = await payarc.Disputes.AddDocument("dis_MV***********AW0", document);
+    Console.WriteLine($"Document added: {JsonConvert.SerializeObject(dispute)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+<br/>
 
 # Payarc Connect
 The following functionality will pertain only to user who are utilizing the Payarc Connect integration:
