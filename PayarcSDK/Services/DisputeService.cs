@@ -60,7 +60,7 @@ namespace PayarcSDK.Services {
 			return await GetDisputeCasesAsync("cases", query);
 		}
 
-		public async Task<string> AddCaseDocumentAsync(string disputeId, DocumentParameters documentParameters) {
+		private async Task<string> AddCaseDocumentAsync(string disputeId, DocumentParameters documentParameters) {
 			try {
 				disputeId = disputeId.StartsWith("dis_") ? disputeId.Substring(4) : disputeId;
 
