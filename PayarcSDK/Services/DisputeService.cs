@@ -24,6 +24,10 @@ namespace PayarcSDK.Services {
 			return await RetriveDisputeCaseAsync(disputeId);
 		}
 
+		public async Task<string> AddDocument(string disputeId, DocumentParameters documentParameters) {
+			return await AddCaseDocumentAsync(disputeId, documentParameters);
+		}
+
 		private async Task<ListBaseResponse> ListCasesAsync(OptionsData options = null) {
 			if (options == null) {
 				var currentDate = DateTime.UtcNow;
