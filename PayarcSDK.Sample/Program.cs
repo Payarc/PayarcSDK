@@ -533,13 +533,13 @@ namespace PayarcSDK.Sample {
 					case "chargeService":
 						// await apiRequester.CreateChargeExample();
 						// await apiRequester.CreateChargeExample();
-						// await apiRequester.GetChargeById();
+						 await apiRequester.GetChargeById();
 						// await apiRequester.CreateChargeByCardIdExample();
 						// await apiRequester.CreateChargeByCustomerIdExample();
 						// await apiRequester.CreateChargeByToken();
 						// await apiRequester.CreateACHChargeByBankAccount();
 						// await apiRequester.CreateACHChargeByBankAccountDetails();
-						 await apiRequester.ListCharges();
+						// await apiRequester.ListCharges();
 						// await apiRequester.RefundChargeById();
 						// await apiRequester.RefundChargeByObject();
 						// await apiRequester.RefundACHChargeByObject();
