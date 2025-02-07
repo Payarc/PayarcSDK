@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Newtonsoft.Json;
 using PayarcSDK.Entities;
 using PayarcSDK.Entities.Billing.Subscriptions;
 
@@ -10,6 +11,7 @@ public class ApiRequester {
 	public ApiRequester(Payarc payarc) {
 		_payarc = payarc;
 	}
+
 	public async Task CreateChargeExample() {
 		try {
 			var options = new ChargeCreateOptions {
@@ -30,8 +32,8 @@ public class ApiRequester {
 			Console.WriteLine("Charge Data");
 			Console.WriteLine(charge);
 			Console.WriteLine("Raw Data");
-			var json = JsonSerializer.Deserialize<JsonDocument>(charge?.RawData);
-			Console.WriteLine(json.RootElement.GetProperty("id"));
+			//var json = JsonSerializer.Deserialize<JsonDocument>(charge?.RawData);
+			//Console.WriteLine(json.RootElement.GetProperty("id"));
 		} catch (Exception ex) {
 			Console.WriteLine(ex.Message);
 		}
@@ -107,10 +109,10 @@ public class ApiRequester {
 	public async Task CreateACHChargeByBankAccount() {
 		try {
 			var options = new ChargeCreateOptions {
-				Amount = 3345,
-				SecCode = "WEB",
+				Amount = 99,
+				SecCode = "TEL",
 				Source = new SourceNestedOptions {
-					BankAccountId = "bnk_dJ356Dkj6ekjaELe" // customer bank account
+					BankAccountId = "bnk_j5elE6KLjDdKDaJ4" // customer bank account
 				},
 				Currency = "usd"
 			};
@@ -126,14 +128,14 @@ public class ApiRequester {
 	public async Task CreateACHChargeByBankAccountDetails() {
 		try {
 			var options = new ChargeCreateOptions {
-				Amount = 2345,
-				SecCode = "WEB",
+				Amount = 99,
+				SecCode = "TEL",
 				Source = new SourceNestedOptions {
-					AccountNumber = "123432575352",
-					RoutingNumber = "123345349",
-					FirstName = "Boris",
-					LastName = "III",
-					AccountType = "Personal Savings"
+					AccountNumber = "123432876",
+					RoutingNumber = "021000021",
+					FirstName = "Test2",
+					LastName = "Account",
+					AccountType = "Personal Checking"
 
 				},
 				Currency = "usd"
@@ -184,17 +186,22 @@ public class ApiRequester {
 				Page = 1,
 			};
 			var responseData = await _payarc.Charges.List(options);
-			Console.WriteLine("Charges Data");
-			for (int i = 0; i < responseData?.Data?.Count; i++) {
-				var t = responseData.Data[i];
-				Console.WriteLine(responseData.Data[i]);
-			}
-			Console.WriteLine("Pagination Data");
-			Console.WriteLine(responseData?.Pagination["total"]);
-			Console.WriteLine(responseData?.Pagination["count"]);
-			Console.WriteLine(responseData?.Pagination["per_page"]);
-			Console.WriteLine(responseData?.Pagination["current_page"]);
-			Console.WriteLine(responseData?.Pagination["total_pages"]);
+			Console.WriteLine(JsonConvert.SerializeObject(responseData, new JsonSerializerSettings {
+				NullValueHandling = NullValueHandling.Ignore,
+				Formatting = Formatting.Indented
+			}));
+
+			//Console.WriteLine("Charges Data");
+			//for (int i = 0; i < responseData?.Data?.Count; i++) {
+			//	var t = responseData.Data[i];
+			//	Console.WriteLine(responseData.Data[i]);
+			//}
+			//Console.WriteLine("Pagination Data");
+			//Console.WriteLine(responseData?.Pagination["total"]);
+			//Console.WriteLine(responseData?.Pagination["count"]);
+			//Console.WriteLine(responseData?.Pagination["per_page"]);
+			//Console.WriteLine(responseData?.Pagination["current_page"]);
+			//Console.WriteLine(responseData?.Pagination["total_pages"]);
 			// Console.WriteLine("Raw Data");
 			// Console.WriteLine(responseData?.RawData);
 		} catch (Exception e) {

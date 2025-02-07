@@ -164,11 +164,11 @@ namespace PayarcSDK.Sample {
 			}
 
 			//var testService = "billingService";
-			var testService = "customerService";
+			//var testService = "customerService";
 			//var testService = "applicationService";
 			//var testService = "disputeService";
 			//var testService = "splitCampaignService";
-			//var testService = "chargeService";
+			var testService = "chargeService";
 			//var testService = "payarcConnect";
 			var apiRequester = new ApiRequester(payarc);
 			var apiAgentRequester = new ApiRequester(payarcAgent);
@@ -208,8 +208,8 @@ namespace PayarcSDK.Sample {
 						});
 
 						bankData.Add(new BankData {
-							AccountNumber = "1234567890",
-							RoutingNumber = "123456789",
+							AccountNumber = "123432876",
+							RoutingNumber = "021000021",
 							FirstName = "Test",
 							LastName = "Account",
 							AccountType = "Personal Checking",
@@ -218,7 +218,7 @@ namespace PayarcSDK.Sample {
 
 						bankData.Add(new BankData {
 							AccountNumber = "1234567890",
-							RoutingNumber = "123456789",
+							RoutingNumber = "021000021",
 							FirstName = "Test2",
 							LastName = "Account2",
 							AccountType = "Personal Checking",
@@ -458,7 +458,7 @@ namespace PayarcSDK.Sample {
 							Text = "Additional evidence for the dispute.",
 							Message = "Submitting dispute case with evidence."
 						};
-						var result = await payarcDisputeCases.Disputes.AddCaseDocumentAsync(caseId, documentParams);
+						var result = await payarcDisputeCases.Disputes.AddDocument(caseId, documentParams);
 						Console.WriteLine($"Add Document Result: {result}");
 						var evidenceAddedCase = await payarcDisputeCases.Disputes.Retrieve(caseId);
 						Console.WriteLine($"Evidence Added Case: {evidenceAddedCase}");
@@ -539,7 +539,7 @@ namespace PayarcSDK.Sample {
 						// await apiRequester.CreateChargeByToken();
 						// await apiRequester.CreateACHChargeByBankAccount();
 						// await apiRequester.CreateACHChargeByBankAccountDetails();
-						// await apiRequester.ListCharges();
+						 await apiRequester.ListCharges();
 						// await apiRequester.RefundChargeById();
 						// await apiRequester.RefundChargeByObject();
 						// await apiRequester.RefundACHChargeByObject();
