@@ -366,7 +366,8 @@ namespace PayarcSDK.Sample {
 								// Update a Application
 								ApplicationInfoData newApplicationData = new ApplicationInfoData {
 									Lead = new Lead {
-										MerchantName = "Updated"
+										MerchantName = "Updated",
+										
 									}
 								};
 								var updatedApplication = await payarcAgent.Applications.Update(applicationId, newApplicationData);
@@ -441,7 +442,7 @@ namespace PayarcSDK.Sample {
 						for (int i = 0; i < cases?.Data?.Count; i++) {
 							var t = cases.Data[i];
 							Console.WriteLine(t);
-							if (i == cases?.Data?.Count - 2) {
+							if (i == cases?.Data?.Count - 1) {
 								caseId = t.ObjectId;
 							}
 						}
