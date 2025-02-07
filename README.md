@@ -100,7 +100,7 @@ The Payarc SDK is build around the `Payarc` object. From this object you can acc
 ### The `payarc.Charges` service facilitates the management of payments within the system, providing the following functions:
 - **Create** - Initiates a payment intent or charge with various configurable parameters. Refer to the examples for specific use cases.
 - **Retrieve** - Fetches a JSON object `charge` containing detailed information about a specific charge.
-- **List** - Returns an object containing two attributes:  `charges` and `pagination`. The `charges` attribute is a list of JSON objects, each providing detailed information about individual charges. The `pagination` attribute contains deatails for navigating through the list of charges.
+- **List** - Returns an object containing two attributes:  `charges` and `pagination`. The `charges` attribute is a list of JSON objects, each providing detailed information about individual charges. The `pagination` attribute contains details for navigating through the list of charges.
 - **CreateRefund** - Processes a refund for an existing charge.
 
 ## Creating a Charge
