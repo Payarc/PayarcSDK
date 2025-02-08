@@ -40,7 +40,7 @@ public class ApiRequester {
 	}
 	public async Task GetChargeById() {
 		try {
-			var charge = await _payarc.Charges.Retrieve("ch_obLyORByLLbRWOWn");
+			var charge = await _payarc.Charges.Retrieve("ach_g9dDE7GD90AG08eA");
 			Console.WriteLine("Get charge By Id Data");
 			Console.WriteLine(charge);
 			Console.WriteLine("Raw Data");
@@ -151,18 +151,35 @@ public class ApiRequester {
 	}
 	public async Task RefundChargeById() {
 		try {
-			string charge = "ch_nbDBOMWRyyBRbORX";
+			string charge = "ach_g9dDE7GD90AG08eA";
 			var refund = await _payarc.Charges.CreateRefund(charge, null);
 			Console.WriteLine("Refund Data");
 			Console.WriteLine(refund);
 		} catch (Exception ex) {
 			Console.WriteLine(ex.Message);
 		}
+
+		//	try {
+		string id = "ch_DoBnOnyRnyXyWOyW";
+		var options = new Dictionary<string, object> {
+			{ "reason", "requested_by_customer" },
+			{ "description", "The customer returned the product, did not like it" }
+		};
+
+		//		var charge = await _payarc.Charges.CreateRefund(id, options);
+		//		Console.WriteLine($"Charge refunded: {JsonConvert.SerializeObject(charge)}");
+		//	} catch (Exception e) {
+		//		Console.WriteLine($"Error detected: {e.Message}");
+		//	}
 	}
 	public async Task RefundChargeByObject() {
 		try {
-			var charge = await _payarc.Charges.Retrieve("ch_DMWbOLWbyyoRLOBX") as ChargeResponseData;
-			var refund = await charge.CreateRefund(null) as ChargeResponseData;
+			var charge = await _payarc.Charges.Retrieve("ach_g9dDE7GD90AG08eA") as ChargeResponseData;
+			var options = new Dictionary<string, object> {
+			{ "reason", "requested_by_customer" },
+			{ "description", "The customer returned the product, did not like it" }
+		};
+			var refund = await charge.CreateRefund(options) as ChargeResponseData;
 			Console.WriteLine("Refund Data");
 			Console.WriteLine(refund);
 		} catch (Exception e) {
@@ -171,7 +188,7 @@ public class ApiRequester {
 	}
 	public async Task RefundACHChargeByObject() {
 		try {
-			var charge = await _payarc.Charges.Retrieve("ach_g9dDE7GDdeDG08eA") as AchChargeResponseData;
+			var charge = await _payarc.Charges.Retrieve("ach_7DEgd9G7aE9Ga8Ae") as AchChargeResponseData;
 			var refund = await charge.CreateRefund(null) as AchChargeResponseData;
 			Console.WriteLine("Refund Data");
 			Console.WriteLine(refund);

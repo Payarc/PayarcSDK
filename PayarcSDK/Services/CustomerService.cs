@@ -26,7 +26,7 @@ namespace PayarcSDK.Services {
 			return await RetrieveCustomerAsync(customerId);
 		}
 
-		public async Task<ListBaseResponse> List(OptionsData options) {
+		public async Task<ListBaseResponse> List(OptionsData? options = null) {
 			return await ListCustomersAsync(options);
 		}
 
@@ -106,13 +106,12 @@ namespace PayarcSDK.Services {
 					await AddCardToCustomerAsync(customerId, cardData, customerData);
 				}
 			}
-
+			customerData.TokenId = null;
 			if (customerData.BankAccounts.Count() != 0) {
 				foreach (BankData bankData in customerData.BankAccounts) {
 					await AddBankAccountToCustomerAsync(customerId, bankData);
 				}
 			}
-
 			return await UpdateCustomer($"customers/{customerId}", customerData);
 		}
 
@@ -134,7 +133,7 @@ namespace PayarcSDK.Services {
 			return await AddBankAccount("bankaccounts", bankData);
 		}
 
-		private async Task<ListBaseResponse> ListCustomersAsync(OptionsData? options) {
+		private async Task<ListBaseResponse> ListCustomersAsync(OptionsData? options = null) {
 			try {
 				var parameters = new Dictionary<string, object>
 				{

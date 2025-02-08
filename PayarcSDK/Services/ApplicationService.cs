@@ -18,7 +18,7 @@ namespace PayarcSDK.Services {
 			return await AddLeadAsync(applicant);
 		}
 
-		public async Task<ListBaseResponse> List(OptionsData options) {
+		public async Task<ListBaseResponse> List(OptionsData? options = null) {
 			return await ListApplyAppsAsync(options);
 		}
 
