@@ -733,7 +733,7 @@ try {
 ### Example: Submitting an Application for Signature
 For agents or ISVs, the process is finalized when the contract between Payarc and the client is sent for signature. Once all required documents and data have been gathered, the submit method for the candidate merchant must be invoked
 
-#### This example shows how to submit a candidate merchant application using the ID:
+#### This example shows how to submit a candidate merchant application using the application ID:
 ```csharp
 try {
     string id = "app_1J*****3";
@@ -752,8 +752,34 @@ try {
 - **Create** - Creates a campaign.
 - **Retrieve** - Retrieves the details of a campaign.
 - **List** - List all campaigns available for your agent.
-- **ListAccounts** - List all merchant accounts.
-- **Update** - Modifies attributes of an existing campaign.
+- **ListAccounts** - List all processing merchant accounts under your agent.
+- **Update** - Modifies the attributes of an existing campaign.
+
+## Creating a Split Campaign
+
+### Example: Create a New Split Campaign
+
+#### This example shows how to create a new split campaign:
+```csharp
+try {
+    var campaign = await payarc.SplitCampaigns.Create(new SplitCampaignRequestData {
+        Name = "Mega Bonus",
+        Description = "Compliment for my favorite customers",
+        BaseCharge = 63.33,
+        PercCharge = "5.7",
+        IsDefault = "0",
+        Accounts = []
+    });
+
+    Console.WriteLine($"Campaign created: {JsonConvert.SerializeObject(campaign)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Retrieving a Split Campaign
+
+### 
 
 <br/>
 
@@ -1090,7 +1116,7 @@ The first parameter of this function is the dispute identifier for which the evi
 
 For more details on the parameters and their attributes, please refer to the documentation.
 
-### Example: Add a Document to a Dispute Given the ID
+### Example: Add a Document to a Dispute Given the Dispute ID
 
 #### This example shows how to add a document to a dispute given the dispute's ID:
 ```csharp
