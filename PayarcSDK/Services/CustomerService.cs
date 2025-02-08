@@ -106,13 +106,12 @@ namespace PayarcSDK.Services {
 					await AddCardToCustomerAsync(customerId, cardData, customerData);
 				}
 			}
-
+			customerData.TokenId = null;
 			if (customerData.BankAccounts.Count() != 0) {
 				foreach (BankData bankData in customerData.BankAccounts) {
 					await AddBankAccountToCustomerAsync(customerId, bankData);
 				}
 			}
-			customerData.TokenId = null;
 			return await UpdateCustomer($"customers/{customerId}", customerData);
 		}
 
