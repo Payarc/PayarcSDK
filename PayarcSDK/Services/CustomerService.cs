@@ -112,7 +112,7 @@ namespace PayarcSDK.Services {
 					await AddBankAccountToCustomerAsync(customerId, bankData);
 				}
 			}
-
+			customerData.TokenId = null;
 			return await UpdateCustomer($"customers/{customerId}", customerData);
 		}
 
