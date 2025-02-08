@@ -164,11 +164,11 @@ namespace PayarcSDK.Sample {
 			}
 
 			//var testService = "billingService";
-			//var testService = "customerService";
+			var testService = "customerService";
 			//var testService = "applicationService";
 			//var testService = "disputeService";
 			//var testService = "splitCampaignService";
-			var testService = "chargeService";
+			//var testService = "chargeService";
 			//var testService = "payarcConnect";
 			var apiRequester = new ApiRequester(payarc);
 			var apiAgentRequester = new ApiRequester(payarcAgent);
@@ -248,17 +248,18 @@ namespace PayarcSDK.Sample {
 						//Console.WriteLine(customers?.Pagination["per_page"]);
 						//Console.WriteLine(customers?.Pagination["current_page"]);
 						//Console.WriteLine(customers?.Pagination["total_pages"]);
+						customerId = customers.Data[customers.Data.Count - 1].ObjectId;
 						Console.WriteLine(JsonConvert.SerializeObject(customers, settings));
-						var testCustomerAction = "createCustomer";
-						//var testCustomerAction = "updateCustomer";
+						//var testCustomerAction = "createCustomer";
+						var testCustomerAction = "updateCustomer";
 						//var testCustomerAction = "deleteCustomer";
 
 						switch (testCustomerAction) {
 							case "createCustomer":
 								// Create a new customer
 								CustomerRequestData newCustomerData = new CustomerRequestData {
-									Name = "Shah Test11",
-									Email = "shah@test11.com",
+									Name = "Shah Test12",
+									Email = "shah@test12.com",
 									Phone = 1234567890
 								};
 
@@ -274,8 +275,8 @@ namespace PayarcSDK.Sample {
 							case "updateCustomer":
 								// Update a customer
 								CustomerRequestData customerData = new CustomerRequestData {
-									Name = "Shah Test9",
-									Email = "shahupdate2@sdk.com",
+									Name = "Shah Test4",
+									Email = "shahupdate22@sdk.com",
 									Phone = 2222222222
 								};
 								customerData.Cards = cardData;
@@ -533,14 +534,14 @@ namespace PayarcSDK.Sample {
 					case "chargeService":
 						// await apiRequester.CreateChargeExample();
 						// await apiRequester.CreateChargeExample();
-						 await apiRequester.GetChargeById();
+						// await apiRequester.GetChargeById();
 						// await apiRequester.CreateChargeByCardIdExample();
 						// await apiRequester.CreateChargeByCustomerIdExample();
 						// await apiRequester.CreateChargeByToken();
 						// await apiRequester.CreateACHChargeByBankAccount();
 						// await apiRequester.CreateACHChargeByBankAccountDetails();
 						// await apiRequester.ListCharges();
-						// await apiRequester.RefundChargeById();
+						 await apiRequester.RefundChargeById();
 						// await apiRequester.RefundChargeByObject();
 						// await apiRequester.RefundACHChargeByObject();
 						break;
