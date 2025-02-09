@@ -101,13 +101,15 @@ namespace PayarcSDK.Services {
 
 		private async Task<BaseResponse> UpdateCustomerAsync(string customerId, CustomerRequestData customerData) {
 			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
+			customerData.Cards = customerData.Cards ?? new List<CardData>();
 			if (customerData.Cards.Count() != 0) {
 				foreach (CardData cardData in customerData.Cards) {
 					await AddCardToCustomerAsync(customerId, cardData, customerData);
 				}
 			}
 			customerData.TokenId = null;
-			if (customerData.BankAccounts.Count() != 0) {
+			customerData.BankAccounts = customerData.BankAccounts ?? new List<BankData>();
+			if (customerData.BankAccounts?.Count() != 0) {
 				foreach (BankData bankData in customerData.BankAccounts) {
 					await AddBankAccountToCustomerAsync(customerId, bankData);
 				}
@@ -115,14 +117,16 @@ namespace PayarcSDK.Services {
 			return await UpdateCustomer($"customers/{customerId}", customerData);
 		}
 
-		public async Task<BaseResponse> AddCardToCustomerAsync(AnyOf<string?, CustomerResponseData> customer, CardData cardData, CustomerRequestData customerData) {
+		public async Task<BaseResponse> AddCardToCustomerAsync(AnyOf<string?, CustomerResponseData> customer, CardData cardData, CustomerRequestData? customerData = null) {
 			string? customerId = string.Empty;
 			customerId = customer.IsSecond ? customer.Second.ObjectId : customer.First;
 			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
-			BaseResponse cardToken = await CreateCardToken("tokens", cardData);
-			var tokenId = cardToken.ObjectId;
+			TokenResponse cardToken = await CreateCardToken("tokens", cardData) as TokenResponse;			
+			var tokenId = cardToken.ObjectId; 
+			customerData = customerData ?? new CustomerRequestData();
 			customerData.TokenId = tokenId.StartsWith("tok_") ? tokenId.Substring(4) : tokenId;
-			return await UpdateCustomer($"customers/{customerId}", customerData);
+			var attachedCards = await UpdateCustomer($"customers/{customerId}", customerData);
+			return cardToken.Card.Data;
 		}
 
 		public async Task<BaseResponse> AddBankAccountToCustomerAsync(AnyOf<string?, CustomerResponseData> customer, BankData bankData) {
@@ -130,7 +134,7 @@ namespace PayarcSDK.Services {
 			customerId = customer.IsSecond ? customer.Second.ObjectId : customer.First;
 			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
 			bankData.CustomerId = customerId;
-			return await AddBankAccount("bankaccounts", bankData);
+			return await AddBankAccount("bankaccounts", bankData) as BankAccount;
 		}
 
 		private async Task<ListBaseResponse> ListCustomersAsync(OptionsData? options = null) {

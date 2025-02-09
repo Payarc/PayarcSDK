@@ -130,7 +130,7 @@ namespace PayarcSDK.Services {
 					customerResponse.BankAccount = null;
 					customerResponse.Update = async (customerData) => await customerService.Update(customerResponse, customerData);
 					if (customerResponse.Cards != null) {
-						customerResponse.Cards.Create = async (customerData, cardData) => await customerService.AddCardToCustomerAsync(customerResponse, cardData, customerData);
+						customerResponse.Cards.Create = async (cardData) => await customerService.AddCardToCustomerAsync(customerResponse, cardData);
 					}
 					if (customerResponse.Bank_Accounts != null) {
 						customerResponse.Bank_Accounts.Create = async (bankData) => await customerService.AddBankAccountToCustomerAsync(customerResponse, bankData);

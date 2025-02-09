@@ -228,8 +228,8 @@ namespace PayarcSDK.Sample {
 						// List customers
 
 						var listOptions = new OptionsData() {
-							Limit = 10,
-							Page = 1,
+							Limit = 3,
+							//Page = 1,
 						};
 
 						var customers = await payarc.Customers.List(listOptions);
@@ -248,29 +248,67 @@ namespace PayarcSDK.Sample {
 						//Console.WriteLine(customers?.Pagination["per_page"]);
 						//Console.WriteLine(customers?.Pagination["current_page"]);
 						//Console.WriteLine(customers?.Pagination["total_pages"]);
-						customerId = customers.Data[customers.Data.Count - 1].ObjectId;
+						customerId = customers.Data[0].ObjectId;
 						Console.WriteLine(JsonConvert.SerializeObject(customers, settings));
-						//var testCustomerAction = "createCustomer";
-						var testCustomerAction = "updateCustomer";
+						var testCustomerAction = "createCustomer";
+						//var testCustomerAction = "updateCustomer";
 						//var testCustomerAction = "deleteCustomer";
 
 						switch (testCustomerAction) {
 							case "createCustomer":
 								// Create a new customer
-								CustomerRequestData newCustomerData = new CustomerRequestData {
-									Name = "Shah Test12",
-									Email = "shah@test12.com",
-									Phone = 1234567890
-								};
+								//CustomerRequestData newCustomerData = new CustomerRequestData {
+								//	Name = "Shah Test12",
+								//	Email = "shah@test12.com",
+								//	Phone = 1234567890
+								//};
 
-								newCustomerData.Cards = cardData;
-								newCustomerData.BankAccounts = bankData;
-								BaseResponse createdCustomer = await payarc.Customers.Create(newCustomerData);
-								Console.WriteLine($"Created Customer: {createdCustomer}");
-								// Retrieve a customer
-								customerId = createdCustomer.ObjectId;
-								BaseResponse customer = await payarc.Customers.Retrieve(customerId);
+								//newCustomerData.Cards = cardData;
+								//newCustomerData.BankAccounts = bankData;
+								//BaseResponse createdCustomer = await payarc.Customers.Create(newCustomerData);
+								//Console.WriteLine($"Created Customer: {createdCustomer}");
+								//// Retrieve a customer
+								//customerId = createdCustomer.ObjectId;
+								customerId = "cus_jDPAnVxAPMKKVpKM";
+								CustomerResponseData customer = await payarc.Customers.Retrieve(customerId) as CustomerResponseData;
 								Console.WriteLine($"Retrieved Customer: {customer}");
+
+
+								//CustomerRequestData updateCustomerData = new CustomerRequestData {
+								//	Name = "Shah Test4444",
+								//	Email = "shahupdate4444@sdk.com",
+								//	Phone = 4444444444
+								//};
+								//var updatedCustomerRes = await customer.Update(updateCustomerData);
+								//Console.WriteLine($"Updated Customer: {updatedCustomerRes}");
+
+
+								//var updatedCustomerRes = await customer.Cards.Create(new CardData {
+								//	CardSource = "INTERNET",
+								//	CardNumber = "4111111111111111",
+								//	ExpMonth = "02",
+								//	ExpYear = "2027",
+								//	Cvv = "999",
+								//	CardHolderName = "John Doe",
+								//	AddressLine1 = "411 West Putnam Avenue",
+								//	City = "New York",
+								//	State = "NY",
+								//	Zip = "06830",
+								//	Country = "US"
+								//});
+								//Console.WriteLine($"Updated Customer: {JsonConvert.SerializeObject(updatedCustomerRes, settings)}");
+
+
+
+								var updatedCustomerRes = await customer.Bank_Accounts.Create(new BankData {
+									AccountNumber = "1234567890",
+									RoutingNumber = "021000021",
+									FirstName = "Test2",
+									LastName = "Account2",
+									AccountType = "Personal Checking",
+									SecCode = "TEL"
+								});
+								Console.WriteLine($"Updated Customer: {JsonConvert.SerializeObject(updatedCustomerRes, settings)}");
 								break;
 							case "updateCustomer":
 								// Update a customer
