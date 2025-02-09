@@ -445,10 +445,11 @@ namespace PayarcSDK.Sample {
 								//BaseResponse testApplication = await payarcAgent.Applications.Retrieve(applicationId);
 								//Console.WriteLine($"Retrieved Application: {testApplication}");
 								//ApplicationResponseData applicationData = testApplication as ApplicationResponseData;
-								var applicationData = await applicant.Retrieve() as ApplicationResponseData;
+								//var applicationData = await applicant.Retrieve() as ApplicationResponseData;
 								//var documentId = applicationData.Documents?.FirstOrDefault().ObjectId;
-								var deletedDocument = await applicationData.Documents.FirstOrDefault().Delete();
-								//var deletedDocument = await payarcAgent.Applications.DeleteDocument(applicationId, documentId);
+								//var deletedDocument = await applicationData.Documents.FirstOrDefault().Delete();
+								var documentId = "doc_63alndgynn7p49y8";
+								var deletedDocument = await payarcAgent.Applications.DeleteDocument(documentId);
 								Console.WriteLine($"Deleted Document: {deletedDocument}");
 								break;
 							case "listSubAgent":

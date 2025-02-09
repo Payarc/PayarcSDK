@@ -52,13 +52,19 @@ namespace PayarcSDK.Services {
 			return await AddApplicantDocumentAsync(applicantId, merchantDocumentsData);
 		}
 
+		public async Task<BaseResponse> DeleteDocument(string? documentId) {
+			return await DeleteApplicantDocumentAsync(null, documentId);
+		}
+
 		public async Task<BaseResponse> Submit(AnyOf<string?, ApplicationResponseData> applicant) {
 			string? applicantId = string.Empty;
 			applicantId = applicant.IsSecond ? applicant.Second.ObjectId : applicant.First;
 			return await SubmitApplicantForSignatureAsync(applicantId);
 		}
 
-		public async Task<BaseResponse> DeleteDocument(string applicantId, AnyOf<string?, DocumentResponseData> document) {
+		public async Task<BaseResponse> DeleteDocumentLink(AnyOf<string?, ApplicationResponseData> applicant, AnyOf<string?, DocumentResponseData> document) {
+			string? applicantId = string.Empty;
+			applicantId = applicant.IsSecond ? applicant.Second.ObjectId : applicant.First;
 			string? documentId = string.Empty;
 			documentId = document.IsSecond ? document.Second.ObjectId : document.First;
 			return await DeleteApplicantDocumentAsync(applicantId, documentId);
@@ -171,18 +177,19 @@ namespace PayarcSDK.Services {
             }
         }
 
-		private async Task<BaseResponse> DeleteApplicantDocumentAsync(string applicantId, string documentId) {
-			applicantId = applicantId.StartsWith("appl_") ? applicantId.Substring(5) : applicantId;
+		private async Task<BaseResponse> DeleteApplicantDocumentAsync(string? applicantId, string documentId) {
 			documentId = documentId.StartsWith("doc_") ? documentId.Substring(4) : documentId;
 			DocumentData documentData = new DocumentData() {
-				MerchantCode = applicantId,
-				MerchantDocuments = new List<MerchantDocument> {
+				MerchantDocuments = new List<MerchantDocument>() {
 					new MerchantDocument {
 						DocumentCode = documentId
 					}
 				}
 			};
-
+			if (applicantId != null) {
+				applicantId = applicantId.StartsWith("appl_") ? applicantId.Substring(5) : applicantId;
+				documentData.MerchantCode = applicantId;
+			}
 			return await DeleteDocumentAsync("agent-hub/apply/delete-documents", documentData);
 		}
 

@@ -158,6 +158,7 @@ namespace PayarcSDK.Services {
 					applicationResponse.ObjectId ??= $"appl_{obj["id"]}";
 					applicationResponse.Documents?.ForEach(doc => {
 						doc.ObjectId = $"doc_{doc.Id}";
+						doc.Delete = async () => await applicationService.DeleteDocumentLink(applicationResponse, doc.Id);
 					});
 					applicationResponse.Retrieve = async () => await applicationService.Retrieve(applicationResponse);
 					applicationResponse.Delete = async () => await applicationService.Delete(applicationResponse);
@@ -192,7 +193,7 @@ namespace PayarcSDK.Services {
 					var documentResponse = JsonConvert.DeserializeObject<DocumentResponseData>(rawObj) ?? new DocumentResponseData();
 					documentResponse.RawData = rawObj;
 					documentResponse.ObjectId ??= $"doc_{obj["id"]}";
-					documentResponse.Delete = async (applicantId) => await applicationService.DeleteDocument(applicantId, documentResponse);
+					//documentResponse.Delete = async (applicantId) => await applicationService.DeleteDocument(applicantId, documentResponse);
 					response = documentResponse;
 				} else if (type == "User") {
                     var documentResponse = JsonConvert.DeserializeObject<SubAgentResponseData>(rawObj) ?? new SubAgentResponseData();
