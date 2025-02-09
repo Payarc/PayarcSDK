@@ -9,25 +9,25 @@ namespace PayarcSDK.Entities
 {
     public class SplitCampaignRequestData {
 		[JsonProperty("name")]
-		public string Name { get; set; }
+		public string? Name { get; set; }
 
 		[JsonProperty("base_charge")]
-		public double BaseCharge { get; set; }
+		public double? BaseCharge { get; set; }
 
 		[JsonProperty("perc_charge")]
-		public string PercCharge { get; set; }
+		public string? PercCharge { get; set; }
 
 		[JsonProperty("description")]
-		public string Description { get; set; }
+		public string? Description { get; set; }
 
 		[JsonProperty("notes")]
-		public string Notes { get; set; }
+		public string? Notes { get; set; }
 
 		[JsonProperty("is_default")]
-		public string IsDefault { get; set; }
+		public string? IsDefault { get; set; }
 
 		[JsonProperty("accounts")]
-		public string[] Accounts { get; set; }
+		public string[]? Accounts { get; set; }
 
 		public string ToJson() {
 			var settings = new JsonSerializerSettings {

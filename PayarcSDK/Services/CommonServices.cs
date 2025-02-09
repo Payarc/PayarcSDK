@@ -207,34 +207,34 @@ namespace PayarcSDK.Services {
 					disputeCaseResponse.ObjectId ??= $"dis_{obj["id"]}";
 					response = disputeCaseResponse;
 				} else if (type == "CaseFile") {
-					var disputeCaseResponse = JsonConvert.DeserializeObject<DisputeCaseFileData>(rawObj) ?? new DisputeCaseFileData();
-					disputeCaseResponse.RawData = rawObj;
-					disputeCaseResponse.ObjectId ??= $"cfl_{obj["id"]}";
-					response = disputeCaseResponse;
+					var disputeCaseFileResponse = JsonConvert.DeserializeObject<DisputeCaseFileData>(rawObj) ?? new DisputeCaseFileData();
+					disputeCaseFileResponse.RawData = rawObj;
+					disputeCaseFileResponse.ObjectId ??= $"cfl_{obj["id"]}";
+					response = disputeCaseFileResponse;
 				} else if (type == "Evidence") {
-					var disputeCaseResponse = JsonConvert.DeserializeObject<DisputeEvidenceData>(rawObj) ?? new DisputeEvidenceData();
-					disputeCaseResponse.RawData = rawObj;
-					disputeCaseResponse.ObjectId ??= $"evd_{obj["id"]}";
-					response = disputeCaseResponse;
+					var disputeEvidenceResponse = JsonConvert.DeserializeObject<DisputeEvidenceData>(rawObj) ?? new DisputeEvidenceData();
+					disputeEvidenceResponse.RawData = rawObj;
+					disputeEvidenceResponse.ObjectId ??= $"evd_{obj["id"]}";
+					response = disputeEvidenceResponse;
 				} else if (type == "CaseSubmission") {
-					var disputeCaseResponse = JsonConvert.DeserializeObject<DisputeCaseSubmissionData>(rawObj) ?? new DisputeCaseSubmissionData();
-					disputeCaseResponse.RawData = rawObj;
-					disputeCaseResponse.ObjectId ??= $"sbm_{obj["id"]}";
-					response = disputeCaseResponse;
+					var disputeCaseSubmissionResponse = JsonConvert.DeserializeObject<DisputeCaseSubmissionData>(rawObj) ?? new DisputeCaseSubmissionData();
+					disputeCaseSubmissionResponse.RawData = rawObj;
+					disputeCaseSubmissionResponse.ObjectId ??= $"sbm_{obj["id"]}";
+					response = disputeCaseSubmissionResponse;
 				} else if (type == "Campaign") {
 					var campaignService = new SplitCampaignService(_httpClient);
-					var disputeCaseResponse = JsonConvert.DeserializeObject<CampaignResponseData>(rawObj) ?? new CampaignResponseData();
-					disputeCaseResponse.RawData = rawObj;
-					disputeCaseResponse.ObjectId ??= $"cmp_{obj["id"]}";
-					disputeCaseResponse.Update = async (newData) => await campaignService.Update(disputeCaseResponse, newData);
-					disputeCaseResponse.Retrieve = async () => await campaignService.Retrieve(disputeCaseResponse);
-					response = disputeCaseResponse;
+					var campaignResponse = JsonConvert.DeserializeObject<CampaignResponseData>(rawObj) ?? new CampaignResponseData();
+					campaignResponse.RawData = rawObj;
+					campaignResponse.ObjectId ??= $"cmp_{obj["id"]}";
+					campaignResponse.Update = async (newData) => await campaignService.Update(campaignResponse, newData);
+					campaignResponse.Retrieve = async () => await campaignService.Retrieve(campaignResponse);
+					response = campaignResponse;
 				} else if (type == "MyAccount") {
-					var disputeCaseResponse = JsonConvert.DeserializeObject<MyAccountResponseData>(rawObj) ?? new MyAccountResponseData();
-					disputeCaseResponse.RawData = rawObj;
-					disputeCaseResponse.Object = "MyAccount";
-					disputeCaseResponse.ObjectId ??= $"macc_{obj["id"]}";
-					response = disputeCaseResponse;
+					var myAccountResponse = JsonConvert.DeserializeObject<MyAccountResponseData>(rawObj) ?? new MyAccountResponseData();
+					myAccountResponse.RawData = rawObj;
+					myAccountResponse.Object = "MyAccount";
+					myAccountResponse.ObjectId ??= $"macc_{obj["id"]}";
+					response = myAccountResponse;
 				}
 			}
 			return response;

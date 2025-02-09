@@ -165,9 +165,9 @@ namespace PayarcSDK.Sample {
 
 			//var testService = "billingService";
 			//var testService = "customerService";
-			var testService = "applicationService";
+			//var testService = "applicationService";
 			//var testService = "disputeService";
-			//var testService = "splitCampaignService";
+			var testService = "splitCampaignService";
 			//var testService = "chargeService";
 			//var testService = "payarcConnect";
 			var apiRequester = new ApiRequester(payarc);
@@ -516,63 +516,73 @@ namespace PayarcSDK.Sample {
 						var campaignId = "";
 						// List campaign
 
-						var listCampaignOptions = new BaseListOptions() {
-							Limit = 10,
-							Page = 1,
-						};
+						//var listCampaignOptions = new BaseListOptions() {
+						//	Limit = 10,
+						//	Page = 1,
+						//};
 
-						var campaigns = await payarcAgent.SplitCampaigns.List(listCampaignOptions);
+						//var campaigns = await payarcAgent.SplitCampaigns.List();
 						//Console.WriteLine($"List of Customers: {customers}");
-						Console.WriteLine("Campaigns List");
-						for (int i = 0; i < campaigns?.Data?.Count; i++) {
-							var t = campaigns.Data[i];
-							Console.WriteLine(t);
-							if (i == campaigns?.Data?.Count - 1) {
-								campaignId = t.ObjectId;
-							}
-						}
+						//Console.WriteLine("Campaigns List");
+						//for (int i = 0; i < campaigns?.Data?.Count; i++) {
+						//	var t = campaigns.Data[i];
+						//	Console.WriteLine(t);
+						//	if (i == campaigns?.Data?.Count - 1) {
+						//		campaignId = t.ObjectId;
+						//	}
+						//}
+						//campaignId = campaigns.Data[0].ObjectId;
+						//Console.WriteLine($"List Cases:: {JsonConvert.SerializeObject(campaigns, settings)}");
 
 						//var testCampaignAction = "createCampaign";
-						//var testCampaignAction = "updateCampaign";
-						var testCampaignAction = "getListAccounts";
-
+						var testCampaignAction = "updateCampaign";
+						//var testCampaignAction = "getListAccounts";
+						campaignId = "cmp_6dl8k079079ymxw4";
 						switch (testCampaignAction) {
 							case "createCampaign":
 								// Example: Create a new campaign
-								SplitCampaignRequestData newCampaign = new SplitCampaignRequestData {
-									Name = "Mega bonus Shah2",
-									Description = "Compliment for my favorite customers",
-									Notes = "Only for VIPs",
-									BaseCharge = 33.33,
-									PercCharge = "7.77",
-									IsDefault = "0",
-									Accounts = new string[] { }
-								};
+								//SplitCampaignRequestData newCampaign = new SplitCampaignRequestData {
+								//	Name = "Mega bonus Shah2",
+								//	Description = "Compliment for my favorite customers",
+								//	Notes = "Only for VIPs",
+								//	BaseCharge = 33.33,
+								//	PercCharge = "7.77",
+								//	IsDefault = "0",
+								//	Accounts = new string[] { }
+								//};
 
-								var createdCampaign = await payarcAgent.SplitCampaigns.Create(newCampaign);
-								Console.WriteLine($"Campaign Created: {createdCampaign}");
+								//var createdCampaign = await payarcAgent.SplitCampaigns.Create(newCampaign);
+								//Console.WriteLine($"Campaign Created: {createdCampaign}");
+
 
 								// Retrieve a campaign
-								campaignId = createdCampaign.ObjectId;
+								//campaignId = createdCampaign.ObjectId;
 								BaseResponse campaign = await payarcAgent.SplitCampaigns.Retrieve(campaignId);
 								Console.WriteLine($"Retrieved Campaign: {campaign}");
 								break;
 							case "updateCampaign":
 								// Update a campaign
-								SplitCampaignRequestData updatedData = new SplitCampaignRequestData {
-									Name = "Shah Update"
-								};
-								var updatedCampaign = await payarcAgent.SplitCampaigns.Update(campaignId, updatedData);
+								//SplitCampaignRequestData updatedData = new SplitCampaignRequestData {
+								//	Notes = "New version of notes"
+								//};
+								//var updatedCampaign = await payarcAgent.SplitCampaigns.Update(campaignId, updatedData);
+
+
+								CampaignResponseData campaignResponse = await payarcAgent.SplitCampaigns.Retrieve(campaignId) as CampaignResponseData;
+								var updatedCampaign = await campaignResponse.Update(new SplitCampaignRequestData {
+									Notes = "Internal modifications"
+								});
 								Console.WriteLine($"Updated Campaign: {updatedCampaign}");
 								break;
 							case "getListAccounts":
 								//Example: Get all accounts
 								var allAccounts = await payarcAccountListExisting.SplitCampaigns.ListAccounts();
-								Console.WriteLine($"All Accounts:");
-								for (int i = 0; i < allAccounts?.Data?.Count; i++) {
-									var t = allAccounts.Data[i];
-									Console.WriteLine(t);
-								}
+								//Console.WriteLine($"All Accounts:");
+								//for (int i = 0; i < allAccounts?.Data?.Count; i++) {
+								//	var t = allAccounts.Data[i];
+								//	Console.WriteLine(t);
+								//}
+								Console.WriteLine($"All Accounts: {JsonConvert.SerializeObject(allAccounts, settings)}");
 								break;
 							default:
 								Console.WriteLine("Nothing to test.");
