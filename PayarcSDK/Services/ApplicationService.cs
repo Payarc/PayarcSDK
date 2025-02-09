@@ -40,10 +40,16 @@ namespace PayarcSDK.Services {
 			return await DeleteApplicantAsync(applicantId);
 		}
 
-		public async Task<BaseResponse> AddDocument(AnyOf<string?, ApplicationResponseData> applicant, List<MerchantDocument> merchantDocuments) {
+		public async Task<BaseResponse> AddDocument(AnyOf<string?, ApplicationResponseData> applicant, AnyOf<MerchantDocument?, List<MerchantDocument>> merchantDocuments) {
 			string? applicantId = string.Empty;
 			applicantId = applicant.IsSecond ? applicant.Second.ObjectId : applicant.First;
-			return await AddApplicantDocumentAsync(applicantId, merchantDocuments);
+			List<MerchantDocument> merchantDocumentsData = new List<MerchantDocument>();
+			if (merchantDocuments.IsFirst) {
+				merchantDocumentsData.Add(merchantDocuments.First);
+			} else {
+				merchantDocumentsData = merchantDocuments.Second;
+			}
+			return await AddApplicantDocumentAsync(applicantId, merchantDocumentsData);
 		}
 
 		public async Task<BaseResponse> Submit(AnyOf<string?, ApplicationResponseData> applicant) {

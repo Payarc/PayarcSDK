@@ -18,7 +18,7 @@ namespace PayarcSDK.Entities
 		public Func<Task<BaseResponse?>> Delete { get; set; }
 
 		[JsonIgnore]
-		public Func<List<MerchantDocument>?, Task<BaseResponse?>> AddDocument { get; set; }
+		public Func<MerchantDocument?, Task<BaseResponse?>> AddDocument { get; set; }
 
 		[JsonIgnore]
 		public Func<Task<BaseResponse?>> Submit { get; set; }

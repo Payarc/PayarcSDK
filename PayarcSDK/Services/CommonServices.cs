@@ -161,7 +161,7 @@ namespace PayarcSDK.Services {
 					});
 					applicationResponse.Retrieve = async () => await applicationService.Retrieve(applicationResponse);
 					applicationResponse.Delete = async () => await applicationService.Delete(applicationResponse);
-					applicationResponse.AddDocument = async (applicationData) => await applicationService.AddDocument(applicationResponse, applicationData);
+					applicationResponse.AddDocument = async (merchantDocuments) => await applicationService.AddDocument(applicationResponse, merchantDocuments);
 					applicationResponse.Submit = async () => await applicationService.Submit(applicationResponse);
 					applicationResponse.Update = async (applicationData) => await applicationService.Update(applicationResponse, applicationData);
 					applicationResponse.ListSubAgents = async (optionsData) => await applicationService.ListSubAgents(optionsData);
