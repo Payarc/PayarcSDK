@@ -196,12 +196,13 @@ namespace PayarcSDK.Services {
 		private async Task<BaseResponse> SubmitApplicantForSignatureAsync(string applicantId) {
 			applicantId = applicantId.StartsWith("appl_") ? applicantId.Substring(5) : applicantId;
 
-			var requestBody = new JObject
-			{
-				{ "MerchantCode", applicantId }
-			};
+			//var requestBody = new JObject
+			//{
+			//	{ "MerchantCode", applicantId }
+			//};
 
 			ApplicationInfoData applicationInfoData = new ApplicationInfoData();
+			applicationInfoData.MerchantCode = applicantId;
 
 			return await SubmitForSignatureAsync("agent-hub/apply/submit-for-signature", applicationInfoData);
 		}
