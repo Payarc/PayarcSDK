@@ -164,8 +164,8 @@ namespace PayarcSDK.Sample {
 			}
 
 			//var testService = "billingService";
-			var testService = "customerService";
-			//var testService = "applicationService";
+			//var testService = "customerService";
+			var testService = "applicationService";
 			//var testService = "disputeService";
 			//var testService = "splitCampaignService";
 			//var testService = "chargeService";
@@ -227,7 +227,7 @@ namespace PayarcSDK.Sample {
 
 						// List customers
 
-						var listOptions = new OptionsData() {
+						var listOptions = new BaseListOptions() {
 							Limit = 3,
 							//Page = 1,
 						};
@@ -335,35 +335,28 @@ namespace PayarcSDK.Sample {
 					case "applicationService":
 						var applicationId = "";
 
-						OptionsData queryParamsApplications = new OptionsData {
-							Limit = 10,
-							Page = 1
-						};
+						//OptionsData queryParamsApplications = new OptionsData {
+						//	Limit = 10,
+						//	Page = 1
+						//};
 
-						var applications = await payarcAgent.Applications.List(queryParamsApplications);
+						var applications = await payarcAgent.Applications.List();
 						Console.WriteLine("Customers Data");
-						for (int i = 0; i < applications?.Data?.Count; i++) {
-							var t = applications.Data[i];
-							Console.WriteLine(t);
-							if (i == applications?.Data?.Count - 1) {
-								applicationId = t.ObjectId;
-							}
-						}
-						Console.WriteLine("Pagination Data");
-						Console.WriteLine(applications?.Pagination["total"]);
-						Console.WriteLine(applications?.Pagination["count"]);
-						Console.WriteLine(applications?.Pagination["per_page"]);
-						Console.WriteLine(applications?.Pagination["current_page"]);
-						Console.WriteLine(applications?.Pagination["total_pages"]);
+						Console.WriteLine(JsonConvert.SerializeObject(applications, settings));
+
+						applicationId = applications.Data[applications.Data.Count - 1].ObjectId;
+						var application = applications.Data[applications.Data.Count - 1] as ApplicationResponseData;
+						ApplicationResponseData applicant = await application.Retrieve() as ApplicationResponseData;
+						Console.WriteLine($"Documents: {JsonConvert.SerializeObject(applicant, settings)}");
 
 						//var testApplicationAction = "createApplication";
-						//var testApplicationAction = "retrievApplication";
+						var testApplicationAction = "retrieveApplication";
 						//var testApplicationAction = "updateApplication";
 						//var testApplicationAction = "deleteApplication";
 						//var testApplicationAction = "addDocument";
 						//var testApplicationAction = "submitDocument";
 						//var testApplicationAction = "deleteDocument";
-						var testApplicationAction = "listSubAgent";
+						//var testApplicationAction = "listSubAgent";
 
 						switch (testApplicationAction) {
 							case "createApplication":
@@ -394,12 +387,17 @@ namespace PayarcSDK.Sample {
 										}
 									}
 								};
+								var listSubAgents = await payarcAgentWithSubAgent.Applications.ListSubAgents();
+								merccandidate.AgentId = listSubAgents.Data[0].ObjectId;
 								BaseResponse createdApplication = await payarcAgent.Applications.Create(merccandidate);
-								Console.WriteLine($"Created Application: {createdApplication}");
+								Console.WriteLine($"Created Application: {JsonConvert.SerializeObject(createdApplication, settings)}");
 								break;
-							case "retrievApplication":
+							case "retrieveApplication":
+								//applicationId = "appl_dpjlrewlnrgvz583";
 								BaseResponse retrievedApplication = await payarcAgent.Applications.Retrieve(applicationId);
 								Console.WriteLine($"Retrieved Application: {retrievedApplication}");
+
+
 								break;
 							case "updateApplication":
 								// Update a Application
@@ -447,7 +445,7 @@ namespace PayarcSDK.Sample {
 								Console.WriteLine($"Deleted Document: {deletedDocument}");
 								break;
 							case "listSubAgent":
-								OptionsData queryParamsSubAgents = new OptionsData {
+								BaseListOptions queryParamsSubAgents = new BaseListOptions {
 									Limit = 10,
 									Page = 1
 								};
@@ -471,20 +469,23 @@ namespace PayarcSDK.Sample {
 						var tomorrowDate = currentDate.AddDays(1).ToString("yyyy-MM-dd");
 						var lastMonthDate = currentDate.AddMonths(-60).ToString("yyyy-MM-dd");
 
-						OptionsData queryParamsDisputeCases = new OptionsData {
+						BaseListOptions queryParamsDisputeCases = new BaseListOptions {
 							Report_DateGTE = lastMonthDate,
 							Report_DateLTE = tomorrowDate,
 						};
 
 						var cases = await payarcDisputeCases.Disputes.List(queryParamsDisputeCases);
 						Console.WriteLine($"List Cases:");
-						for (int i = 0; i < cases?.Data?.Count; i++) {
-							var t = cases.Data[i];
-							Console.WriteLine(t);
-							if (i == cases?.Data?.Count - 1) {
-								caseId = t.ObjectId;
-							}
-						}
+						//for (int i = 0; i < cases?.Data?.Count; i++) {
+						//	var t = cases.Data[i];
+						//	Console.WriteLine(t);
+						//	if (i == cases?.Data?.Count - 1) {
+						//		caseId = t.ObjectId;
+						//	}
+						//}
+						caseId = cases.Data[0].ObjectId;
+						Console.WriteLine($"List Cases:: {JsonConvert.SerializeObject(cases, settings)}");
+
 
 						// Get a specific case
 						var specificCase = await payarcDisputeCases.Disputes.Retrieve(caseId);
@@ -498,7 +499,8 @@ namespace PayarcSDK.Sample {
 							Message = "Submitting dispute case with evidence."
 						};
 						var result = await payarcDisputeCases.Disputes.AddDocument(caseId, documentParams);
-						Console.WriteLine($"Add Document Result: {result}");
+						var jsonResult = JObject.Parse(result);
+						Console.WriteLine($"Add Document Result: {JsonConvert.SerializeObject(jsonResult, settings)}");
 						var evidenceAddedCase = await payarcDisputeCases.Disputes.Retrieve(caseId);
 						Console.WriteLine($"Evidence Added Case: {evidenceAddedCase}");
 						break;
@@ -506,7 +508,7 @@ namespace PayarcSDK.Sample {
 						var campaignId = "";
 						// List campaign
 
-						var listCampaignOptions = new OptionsData() {
+						var listCampaignOptions = new BaseListOptions() {
 							Limit = 10,
 							Page = 1,
 						};

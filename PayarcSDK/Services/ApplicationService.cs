@@ -18,7 +18,7 @@ namespace PayarcSDK.Services {
 			return await AddLeadAsync(applicant);
 		}
 
-		public async Task<ListBaseResponse> List(OptionsData? options = null) {
+		public async Task<ListBaseResponse> List(BaseListOptions? options = null) {
 			return await ListApplyAppsAsync(options);
 		}
 
@@ -58,23 +58,25 @@ namespace PayarcSDK.Services {
 			return await DeleteApplicantDocumentAsync(applicantId, documentId);
 		}
 
-		public async Task<ListBaseResponse> ListSubAgents(OptionsData options) {
+		public async Task<ListBaseResponse> ListSubAgents(BaseListOptions? options = null) {
 			return await ListSubAgentsAsync(options);
 		}
 
 		private async Task<BaseResponse> AddLeadAsync(ApplicationInfoData applicant) {
-			applicant.AgentId = applicant.AgentId.StartsWith("usr_") ? applicant.AgentId.Substring(4) : applicant.AgentId;
+			if (applicant.AgentId != null) {
+				applicant.AgentId = applicant.AgentId.StartsWith("usr_") ? applicant.AgentId.Substring(4) : applicant.AgentId;
+			}
 			return await CreateApplicationAsync("agent-hub/apply/add-lead", applicant);
 		}
 
-		private async Task<ListBaseResponse> ListApplyAppsAsync(OptionsData options = null) {
+		private async Task<ListBaseResponse> ListApplyAppsAsync(BaseListOptions options = null) {
 			try {
 				var parameters = new Dictionary<string, object>
 				{
-					{ "limit", options.Limit ?? 25 },
-					{ "page", options.Page ?? 1 }
+					{ "limit", options?.Limit ?? 25 },
+					{ "page", options?.Page ?? 1 }
 				};
-				if (!string.IsNullOrEmpty(options.Search)) {
+				if (!string.IsNullOrEmpty(options?.Search)) {
 					var searchArray = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(options.Search);
 					if (searchArray != null) {
 						foreach (var searchItem in searchArray) {
@@ -137,14 +139,14 @@ namespace PayarcSDK.Services {
 			return await AddDocumentAsync("agent-hub/apply/add-documents", documentData);
 		}
 
-		private async Task<ListBaseResponse> ListSubAgentsAsync(OptionsData options = null) {
+		private async Task<ListBaseResponse> ListSubAgentsAsync(BaseListOptions? options = null) {
             try {
                 var parameters = new Dictionary<string, object>
                 {
-                    { "limit", options.Limit ?? 25 },
-                    { "page", options.Page ?? 1 }
+                    { "limit", options?.Limit ?? 25 },
+                    { "page", options?.Page ?? 1 }
                 };
-                if (!string.IsNullOrEmpty(options.Search)) {
+                if (!string.IsNullOrEmpty(options?.Search)) {
                     var searchArray = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(options.Search);
                     if (searchArray != null) {
                         foreach (var searchItem in searchArray) {
@@ -430,7 +432,7 @@ namespace PayarcSDK.Services {
 					throw new InvalidOperationException("Response data is invalid or missing.");
 				}
 
-				var rawData = dataElement.GetRawText();
+				var rawData = responseContent;
 				return TransformJsonRawObject(responseData, rawData, type);
 			} catch (HttpRequestException ex) {
 				Console.WriteLine($"HTTP error processing charge: {ex.Message}");

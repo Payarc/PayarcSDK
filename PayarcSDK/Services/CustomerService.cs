@@ -26,7 +26,7 @@ namespace PayarcSDK.Services {
 			return await RetrieveCustomerAsync(customerId);
 		}
 
-		public async Task<ListBaseResponse> List(OptionsData? options = null) {
+		public async Task<ListBaseResponse> List(BaseListOptions? options = null) {
 			return await ListCustomersAsync(options);
 		}
 
@@ -137,14 +137,14 @@ namespace PayarcSDK.Services {
 			return await AddBankAccount("bankaccounts", bankData) as BankAccount;
 		}
 
-		private async Task<ListBaseResponse> ListCustomersAsync(OptionsData? options = null) {
+		private async Task<ListBaseResponse> ListCustomersAsync(BaseListOptions? options = null) {
 			try {
 				var parameters = new Dictionary<string, object>
 				{
-					{ "limit", options.Limit ?? 25 },
-					{ "page", options.Page ?? 1 }
+					{ "limit", options?.Limit ?? 25 },
+					{ "page", options?.Page ?? 1 }
 				};
-				if (!string.IsNullOrEmpty(options.Search)) {
+				if (!string.IsNullOrEmpty(options?.Search)) {
 					var searchArray = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(options.Search);
 					if (searchArray != null) {
 						foreach (var searchItem in searchArray) {

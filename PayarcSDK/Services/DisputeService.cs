@@ -16,7 +16,7 @@ namespace PayarcSDK.Services {
 			_httpClient = httpClient;
 		}
 
-		public async Task<ListBaseResponse> List(OptionsData options = null) {
+		public async Task<ListBaseResponse> List(BaseListOptions options = null) {
 			return await ListCasesAsync(options);
 		}
 
@@ -28,24 +28,23 @@ namespace PayarcSDK.Services {
 			return await AddCaseDocumentAsync(disputeId, documentParameters);
 		}
 
-		private async Task<ListBaseResponse> ListCasesAsync(OptionsData options = null) {
+		private async Task<ListBaseResponse> ListCasesAsync(BaseListOptions options = null) {
+			var currentDate = DateTime.UtcNow;
+			var tomorrowDate = currentDate.AddDays(1).ToString("yyyy-MM-dd");
+			var lastMonthDate = currentDate.AddMonths(-1).ToString("yyyy-MM-dd");
 			if (options == null) {
-				var currentDate = DateTime.UtcNow;
-				var tomorrowDate = currentDate.AddDays(1).ToString("yyyy-MM-dd");
-				var lastMonthDate = currentDate.AddMonths(-1).ToString("yyyy-MM-dd");
-
-				options = new OptionsData {
+				options = new BaseListOptions {
 					Report_DateGTE = lastMonthDate,
 					Report_DateLTE = tomorrowDate,
 				};
 			}
 
 			var parameters = new Dictionary<string, object> {
-				{ "report_date[gte]", options.Report_DateGTE },
-				{ "report_date[lte]", options.Report_DateLTE }
+				{ "report_date[gte]", options.Report_DateGTE ?? lastMonthDate},
+				{ "report_date[lte]", options.Report_DateLTE ?? tomorrowDate}
 			};
 
-			if (!string.IsNullOrEmpty(options.Search)) {
+			if (!string.IsNullOrEmpty(options?.Search)) {
 				var searchArray = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(options.Search);
 				if (searchArray != null) {
 					foreach (var searchItem in searchArray) {
