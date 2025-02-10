@@ -1,8 +1,9 @@
 using Newtonsoft.Json;
+using PayarcSDK.Entities.Billing;
 
 namespace PayarcSDK.Entities;
 
-public class PlanRequestPayload
+public class PlanRequestPayload : BaseRequestPayload
 {
     [JsonProperty("amount")]
     public int? Amount { get; set; }
@@ -37,16 +38,4 @@ public class PlanRequestPayload
     [JsonProperty("surcharge_applicable")]
     public int? SurchargeApplicable { get; set; }
     
-    [JsonIgnore]
-    public Dictionary<string, object>? Parameters { get; set; }
-    public string ToJson()
-    {
-        var settings = new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            Formatting = Formatting.Indented
-        };
-    
-        return JsonConvert.SerializeObject(this, settings);
-    }
 }
