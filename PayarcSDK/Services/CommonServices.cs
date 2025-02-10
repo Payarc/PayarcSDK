@@ -130,7 +130,7 @@ namespace PayarcSDK.Services {
 					customerResponse.BankAccount = null;
 					customerResponse.Update = async (customerData) => await customerService.Update(customerResponse, customerData);
 					if (customerResponse.Cards != null) {
-						customerResponse.Cards.Create = async (customerData, cardData) => await customerService.AddCardToCustomerAsync(customerResponse, cardData, customerData);
+						customerResponse.Cards.Create = async (cardData) => await customerService.AddCardToCustomerAsync(customerResponse, cardData);
 					}
 					if (customerResponse.Bank_Accounts != null) {
 						customerResponse.Bank_Accounts.Create = async (bankData) => await customerService.AddBankAccountToCustomerAsync(customerResponse, bankData);
@@ -158,10 +158,11 @@ namespace PayarcSDK.Services {
 					applicationResponse.ObjectId ??= $"appl_{obj["id"]}";
 					applicationResponse.Documents?.ForEach(doc => {
 						doc.ObjectId = $"doc_{doc.Id}";
+						doc.Delete = async () => await applicationService.DeleteDocumentLink(applicationResponse, doc.Id);
 					});
 					applicationResponse.Retrieve = async () => await applicationService.Retrieve(applicationResponse);
 					applicationResponse.Delete = async () => await applicationService.Delete(applicationResponse);
-					applicationResponse.AddDocument = async (applicationData) => await applicationService.AddDocument(applicationResponse, applicationData);
+					applicationResponse.AddDocument = async (merchantDocuments) => await applicationService.AddDocument(applicationResponse, merchantDocuments);
 					applicationResponse.Submit = async () => await applicationService.Submit(applicationResponse);
 					applicationResponse.Update = async (applicationData) => await applicationService.Update(applicationResponse, applicationData);
 					applicationResponse.ListSubAgents = async (optionsData) => await applicationService.ListSubAgents(optionsData);
@@ -192,7 +193,7 @@ namespace PayarcSDK.Services {
 					var documentResponse = JsonConvert.DeserializeObject<DocumentResponseData>(rawObj) ?? new DocumentResponseData();
 					documentResponse.RawData = rawObj;
 					documentResponse.ObjectId ??= $"doc_{obj["id"]}";
-					documentResponse.Delete = async (applicantId) => await applicationService.DeleteDocument(applicantId, documentResponse);
+					//documentResponse.Delete = async (applicantId) => await applicationService.DeleteDocument(applicantId, documentResponse);
 					response = documentResponse;
 				} else if (type == "User") {
                     var documentResponse = JsonConvert.DeserializeObject<SubAgentResponseData>(rawObj) ?? new SubAgentResponseData();
@@ -206,34 +207,34 @@ namespace PayarcSDK.Services {
 					disputeCaseResponse.ObjectId ??= $"dis_{obj["id"]}";
 					response = disputeCaseResponse;
 				} else if (type == "CaseFile") {
-					var disputeCaseResponse = JsonConvert.DeserializeObject<DisputeCaseFileData>(rawObj) ?? new DisputeCaseFileData();
-					disputeCaseResponse.RawData = rawObj;
-					disputeCaseResponse.ObjectId ??= $"cfl_{obj["id"]}";
-					response = disputeCaseResponse;
+					var disputeCaseFileResponse = JsonConvert.DeserializeObject<DisputeCaseFileData>(rawObj) ?? new DisputeCaseFileData();
+					disputeCaseFileResponse.RawData = rawObj;
+					disputeCaseFileResponse.ObjectId ??= $"cfl_{obj["id"]}";
+					response = disputeCaseFileResponse;
 				} else if (type == "Evidence") {
-					var disputeCaseResponse = JsonConvert.DeserializeObject<DisputeEvidenceData>(rawObj) ?? new DisputeEvidenceData();
-					disputeCaseResponse.RawData = rawObj;
-					disputeCaseResponse.ObjectId ??= $"evd_{obj["id"]}";
-					response = disputeCaseResponse;
+					var disputeEvidenceResponse = JsonConvert.DeserializeObject<DisputeEvidenceData>(rawObj) ?? new DisputeEvidenceData();
+					disputeEvidenceResponse.RawData = rawObj;
+					disputeEvidenceResponse.ObjectId ??= $"evd_{obj["id"]}";
+					response = disputeEvidenceResponse;
 				} else if (type == "CaseSubmission") {
-					var disputeCaseResponse = JsonConvert.DeserializeObject<DisputeCaseSubmissionData>(rawObj) ?? new DisputeCaseSubmissionData();
-					disputeCaseResponse.RawData = rawObj;
-					disputeCaseResponse.ObjectId ??= $"sbm_{obj["id"]}";
-					response = disputeCaseResponse;
+					var disputeCaseSubmissionResponse = JsonConvert.DeserializeObject<DisputeCaseSubmissionData>(rawObj) ?? new DisputeCaseSubmissionData();
+					disputeCaseSubmissionResponse.RawData = rawObj;
+					disputeCaseSubmissionResponse.ObjectId ??= $"sbm_{obj["id"]}";
+					response = disputeCaseSubmissionResponse;
 				} else if (type == "Campaign") {
 					var campaignService = new SplitCampaignService(_httpClient);
-					var disputeCaseResponse = JsonConvert.DeserializeObject<CampaignResponseData>(rawObj) ?? new CampaignResponseData();
-					disputeCaseResponse.RawData = rawObj;
-					disputeCaseResponse.ObjectId ??= $"cmp_{obj["id"]}";
-					disputeCaseResponse.Update = async (newData) => await campaignService.Update(disputeCaseResponse, newData);
-					disputeCaseResponse.Retrieve = async () => await campaignService.Retrieve(disputeCaseResponse);
-					response = disputeCaseResponse;
+					var campaignResponse = JsonConvert.DeserializeObject<CampaignResponseData>(rawObj) ?? new CampaignResponseData();
+					campaignResponse.RawData = rawObj;
+					campaignResponse.ObjectId ??= $"cmp_{obj["id"]}";
+					campaignResponse.Update = async (newData) => await campaignService.Update(campaignResponse, newData);
+					campaignResponse.Retrieve = async () => await campaignService.Retrieve(campaignResponse);
+					response = campaignResponse;
 				} else if (type == "MyAccount") {
-					var disputeCaseResponse = JsonConvert.DeserializeObject<MyAccountResponseData>(rawObj) ?? new MyAccountResponseData();
-					disputeCaseResponse.RawData = rawObj;
-					disputeCaseResponse.Object = "MyAccount";
-					disputeCaseResponse.ObjectId ??= $"macc_{obj["id"]}";
-					response = disputeCaseResponse;
+					var myAccountResponse = JsonConvert.DeserializeObject<MyAccountResponseData>(rawObj) ?? new MyAccountResponseData();
+					myAccountResponse.RawData = rawObj;
+					myAccountResponse.Object = "MyAccount";
+					myAccountResponse.ObjectId ??= $"macc_{obj["id"]}";
+					response = myAccountResponse;
 				}
 			}
 			return response;

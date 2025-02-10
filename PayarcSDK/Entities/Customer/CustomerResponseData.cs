@@ -54,6 +54,9 @@ namespace PayarcSDK.Entities
 		[JsonProperty("phone")]
 		public string? Phone { get; set; }
 
+		[JsonProperty("token_id")]
+		public string? TokenId { get; set; }
+
 		[JsonProperty("country")]
 		public string? Country { get; set; }
 
@@ -109,7 +112,7 @@ namespace PayarcSDK.Entities
 		public ListBaseResponse? Cards { get; set; }
 
 		[JsonIgnore]
-		public Func<CustomerRequestData?, CardData?, Task<BaseResponse?>> Create { get; set; }
+		public Func<CardData?, Task<BaseResponse?>> Create { get; set; }
 	}
 
 	public class BankAccountsContainer {

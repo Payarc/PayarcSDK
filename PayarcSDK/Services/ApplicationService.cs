@@ -18,7 +18,7 @@ namespace PayarcSDK.Services {
 			return await AddLeadAsync(applicant);
 		}
 
-		public async Task<ListBaseResponse> List(OptionsData? options = null) {
+		public async Task<ListBaseResponse> List(BaseListOptions? options = null) {
 			return await ListApplyAppsAsync(options);
 		}
 
@@ -40,10 +40,20 @@ namespace PayarcSDK.Services {
 			return await DeleteApplicantAsync(applicantId);
 		}
 
-		public async Task<BaseResponse> AddDocument(AnyOf<string?, ApplicationResponseData> applicant, List<MerchantDocument> merchantDocuments) {
+		public async Task<BaseResponse> AddDocument(AnyOf<string?, ApplicationResponseData> applicant, AnyOf<MerchantDocument?, List<MerchantDocument>> merchantDocuments) {
 			string? applicantId = string.Empty;
 			applicantId = applicant.IsSecond ? applicant.Second.ObjectId : applicant.First;
-			return await AddApplicantDocumentAsync(applicantId, merchantDocuments);
+			List<MerchantDocument> merchantDocumentsData = new List<MerchantDocument>();
+			if (merchantDocuments.IsFirst) {
+				merchantDocumentsData.Add(merchantDocuments.First);
+			} else {
+				merchantDocumentsData = merchantDocuments.Second;
+			}
+			return await AddApplicantDocumentAsync(applicantId, merchantDocumentsData);
+		}
+
+		public async Task<BaseResponse> DeleteDocument(string? documentId) {
+			return await DeleteApplicantDocumentAsync(null, documentId);
 		}
 
 		public async Task<BaseResponse> Submit(AnyOf<string?, ApplicationResponseData> applicant) {
@@ -52,29 +62,33 @@ namespace PayarcSDK.Services {
 			return await SubmitApplicantForSignatureAsync(applicantId);
 		}
 
-		public async Task<BaseResponse> DeleteDocument(string applicantId, AnyOf<string?, DocumentResponseData> document) {
+		public async Task<BaseResponse> DeleteDocumentLink(AnyOf<string?, ApplicationResponseData> applicant, AnyOf<string?, DocumentResponseData> document) {
+			string? applicantId = string.Empty;
+			applicantId = applicant.IsSecond ? applicant.Second.ObjectId : applicant.First;
 			string? documentId = string.Empty;
 			documentId = document.IsSecond ? document.Second.ObjectId : document.First;
 			return await DeleteApplicantDocumentAsync(applicantId, documentId);
 		}
 
-		public async Task<ListBaseResponse> ListSubAgents(OptionsData options) {
+		public async Task<ListBaseResponse> ListSubAgents(BaseListOptions? options = null) {
 			return await ListSubAgentsAsync(options);
 		}
 
 		private async Task<BaseResponse> AddLeadAsync(ApplicationInfoData applicant) {
-			applicant.AgentId = applicant.AgentId.StartsWith("usr_") ? applicant.AgentId.Substring(4) : applicant.AgentId;
+			if (applicant.AgentId != null) {
+				applicant.AgentId = applicant.AgentId.StartsWith("usr_") ? applicant.AgentId.Substring(4) : applicant.AgentId;
+			}
 			return await CreateApplicationAsync("agent-hub/apply/add-lead", applicant);
 		}
 
-		private async Task<ListBaseResponse> ListApplyAppsAsync(OptionsData options = null) {
+		private async Task<ListBaseResponse> ListApplyAppsAsync(BaseListOptions options = null) {
 			try {
 				var parameters = new Dictionary<string, object>
 				{
-					{ "limit", options.Limit ?? 25 },
-					{ "page", options.Page ?? 1 }
+					{ "limit", options?.Limit ?? 25 },
+					{ "page", options?.Page ?? 1 }
 				};
-				if (!string.IsNullOrEmpty(options.Search)) {
+				if (!string.IsNullOrEmpty(options?.Search)) {
 					var searchArray = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(options.Search);
 					if (searchArray != null) {
 						foreach (var searchItem in searchArray) {
@@ -137,14 +151,14 @@ namespace PayarcSDK.Services {
 			return await AddDocumentAsync("agent-hub/apply/add-documents", documentData);
 		}
 
-		private async Task<ListBaseResponse> ListSubAgentsAsync(OptionsData options = null) {
+		private async Task<ListBaseResponse> ListSubAgentsAsync(BaseListOptions? options = null) {
             try {
                 var parameters = new Dictionary<string, object>
                 {
-                    { "limit", options.Limit ?? 25 },
-                    { "page", options.Page ?? 1 }
+                    { "limit", options?.Limit ?? 25 },
+                    { "page", options?.Page ?? 1 }
                 };
-                if (!string.IsNullOrEmpty(options.Search)) {
+                if (!string.IsNullOrEmpty(options?.Search)) {
                     var searchArray = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(options.Search);
                     if (searchArray != null) {
                         foreach (var searchItem in searchArray) {
@@ -163,30 +177,32 @@ namespace PayarcSDK.Services {
             }
         }
 
-		private async Task<BaseResponse> DeleteApplicantDocumentAsync(string applicantId, string documentId) {
-			applicantId = applicantId.StartsWith("appl_") ? applicantId.Substring(5) : applicantId;
+		private async Task<BaseResponse> DeleteApplicantDocumentAsync(string? applicantId, string documentId) {
 			documentId = documentId.StartsWith("doc_") ? documentId.Substring(4) : documentId;
 			DocumentData documentData = new DocumentData() {
-				MerchantCode = applicantId,
-				MerchantDocuments = new List<MerchantDocument> {
+				MerchantDocuments = new List<MerchantDocument>() {
 					new MerchantDocument {
 						DocumentCode = documentId
 					}
 				}
 			};
-
+			if (applicantId != null) {
+				applicantId = applicantId.StartsWith("appl_") ? applicantId.Substring(5) : applicantId;
+				documentData.MerchantCode = applicantId;
+			}
 			return await DeleteDocumentAsync("agent-hub/apply/delete-documents", documentData);
 		}
 
 		private async Task<BaseResponse> SubmitApplicantForSignatureAsync(string applicantId) {
 			applicantId = applicantId.StartsWith("appl_") ? applicantId.Substring(5) : applicantId;
 
-			var requestBody = new JObject
-			{
-				{ "MerchantCode", applicantId }
-			};
+			//var requestBody = new JObject
+			//{
+			//	{ "MerchantCode", applicantId }
+			//};
 
 			ApplicationInfoData applicationInfoData = new ApplicationInfoData();
+			applicationInfoData.MerchantCode = applicantId;
 
 			return await SubmitForSignatureAsync("agent-hub/apply/submit-for-signature", applicationInfoData);
 		}
@@ -430,7 +446,7 @@ namespace PayarcSDK.Services {
 					throw new InvalidOperationException("Response data is invalid or missing.");
 				}
 
-				var rawData = dataElement.GetRawText();
+				var rawData = responseContent;
 				return TransformJsonRawObject(responseData, rawData, type);
 			} catch (HttpRequestException ex) {
 				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
