@@ -18,7 +18,7 @@ The Payarc SDK allows developers to integrate Payarc's payment processing capabi
 You can install the Payarc SDK package using the .NET CLI with the following command:
 
 ```sh
-dotnet add package <placeholder_package_name> 
+dotnet add package payarc-sdk 
 ```
 
 ## Usage
@@ -51,7 +51,6 @@ To access **candidate merchant** features, you need an **Agent Identification To
     PAYARC_ENV=''
     PAYARC_KEY=''
     AGENT_KEY=''
-    PAYARC_VERSION=''
     ```
 
 3. Install the [dotenv.net](https://www.nuget.org/packages/dotenv.net) package
