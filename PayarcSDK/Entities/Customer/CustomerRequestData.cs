@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
-using PayarcSDK.Models;
+using PayarcSDK.Entities;
 
-namespace PayarcSDK.Entities.CustomerService
+namespace PayarcSDK.Entities
 {
-    public class CustomerInfoData {
+    public class CustomerRequestData {
 		[JsonProperty("email")]
 		public string Email { get; set; }
 
@@ -38,7 +38,7 @@ namespace PayarcSDK.Entities.CustomerService
 		public int? Zip { get; set; }
 
 		[JsonProperty("phone")]
-		public long Phone { get; set; }
+		public long? Phone { get; set; }
 
 		[JsonProperty("token_id")]
 		public string TokenId { get; set; }

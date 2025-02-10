@@ -12,6 +12,7 @@ public abstract class BaseResponse
     
     [JsonProperty("id")]
     public virtual string? Id { get; set; }
+
     [JsonIgnore]
     public string? RawData { get; set; }
         

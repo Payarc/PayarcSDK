@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace PayarcSDK.Entities.CustomerService
+namespace PayarcSDK.Entities
 {
     public class CustomerResponseData : BaseResponse {
 		[JsonProperty("object")]
@@ -10,7 +10,7 @@ namespace PayarcSDK.Entities.CustomerService
 		public override string? ObjectId { get; set; }
 
 		[JsonIgnore]
-		public Func<CustomerInfoData?, Task<BaseResponse?>> Update { get; set; }
+		public Func<CustomerRequestData?, Task<BaseResponse?>> Update { get; set; }
 
 		[JsonProperty("customer_id")]
 		public string CustomerId { get; set; }
@@ -54,6 +54,9 @@ namespace PayarcSDK.Entities.CustomerService
 		[JsonProperty("phone")]
 		public string? Phone { get; set; }
 
+		[JsonProperty("token_id")]
+		public string? TokenId { get; set; }
+
 		[JsonProperty("country")]
 		public string? Country { get; set; }
 
@@ -81,10 +84,8 @@ namespace PayarcSDK.Entities.CustomerService
 		[JsonProperty("charge")]
 		public ChargeContainer? Charge { get; set; }
 
-		[JsonIgnore]
 		public CardsContainer? Cards { get; set; }
 
-		[JsonIgnore]
 		public BankAccountsContainer? Bank_Accounts { get; set; }
 
 		[JsonIgnore]
@@ -107,15 +108,19 @@ namespace PayarcSDK.Entities.CustomerService
 	}
 
 	public class CardsContainer {
+		[JsonProperty("cards")]
+		public ListBaseResponse? Cards { get; set; }
 
 		[JsonIgnore]
-		public Func<Dictionary<string, object>?, Task<BaseResponse?>> Create { get; set; }
+		public Func<CardData?, Task<BaseResponse?>> Create { get; set; }
 	}
 
 	public class BankAccountsContainer {
+		[JsonProperty("bank_accounts")]
+		public ListBaseResponse? Bank_Accounts { get; set; }
 
 		[JsonIgnore]
-		public Func<Dictionary<string, object>?, Task<BaseResponse?>> Create { get; set; }
+		public Func<BankData?, Task<BaseResponse?>> Create { get; set; }
 	}
 
 	public class ChargesContainer {

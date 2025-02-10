@@ -5,12 +5,10 @@ using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PayarcSDK.Entities;
-using PayarcSDK.Models;
 using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using PayarcSDK.Services;
 using AnyOfTypes;
-using PayarcSDK.Entities.CustomerService;
 
 namespace PayarcSDK.Services {
 	public class CustomerService : CommonServices {
@@ -20,7 +18,7 @@ namespace PayarcSDK.Services {
 			_httpClient = httpClient;
 		}
 
-		public async Task<BaseResponse> Create(CustomerInfoData customerData) {
+		public async Task<BaseResponse> Create(CustomerRequestData customerData) {
 			return await CreateCustomerAsync(customerData);
 		}
 
@@ -28,12 +26,12 @@ namespace PayarcSDK.Services {
 			return await RetrieveCustomerAsync(customerId);
 		}
 
-		public async Task<ListBaseResponse> List(OptionsData options) {
+		public async Task<ListBaseResponse> List(BaseListOptions? options = null) {
 			return await ListCustomersAsync(options);
 		}
 
 		public async Task<BaseResponse> Update(AnyOf<string?, CustomerResponseData> customer,
-			CustomerInfoData? customerData = null) {
+			CustomerRequestData? customerData = null) {
 			string? customerId = string.Empty;
 			customerId = customer.IsSecond ? customer.Second.ObjectId : customer.First;
 			return await UpdateCustomerAsync(customerId, customerData);
@@ -43,7 +41,7 @@ namespace PayarcSDK.Services {
 			return await DeleteCustomerAsync(customerId);
 		}
 
-		private async Task<BaseResponse> CreateCustomerAsync(CustomerInfoData customerData) {
+		private async Task<BaseResponse> CreateCustomerAsync(CustomerRequestData customerData) {
 			var createdCustomer =  await CreateCustomer("customers", customerData);
 			var customerId = createdCustomer.ObjectId;
 			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
@@ -63,8 +61,9 @@ namespace PayarcSDK.Services {
 			return createdCustomer;
 		}
 
-		private async Task<BaseResponse?> RetrieveCustomerAsync(string customerId) {
+		private async Task<BaseResponse?> RetrieveCustomerAsync(string customerId, string type = "Customer") {
 			try {
+				customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
 				var url = $"customers/{customerId}";
 				var response = await _httpClient.GetAsync(url);
 				response.EnsureSuccessStatusCode();
@@ -84,7 +83,7 @@ namespace PayarcSDK.Services {
 				if (data != null && data.TryGetValue("data", out var dataValue) && dataValue is JsonElement dataElement) {
 					var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
 					if (dataDict != null) {
-						return TransformJsonRawObject(dataDict, dataElement.GetRawText());
+						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), type);
 					}
 				}
 				throw new InvalidOperationException("Response data is invalid or missing.");
@@ -100,42 +99,52 @@ namespace PayarcSDK.Services {
 			}
 		}
 
-		private async Task<BaseResponse> UpdateCustomerAsync(string customerId, CustomerInfoData customerData) {
+		private async Task<BaseResponse> UpdateCustomerAsync(string customerId, CustomerRequestData customerData) {
+			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
+			customerData.Cards = customerData.Cards ?? new List<CardData>();
 			if (customerData.Cards.Count() != 0) {
 				foreach (CardData cardData in customerData.Cards) {
 					await AddCardToCustomerAsync(customerId, cardData, customerData);
 				}
 			}
-
-			if (customerData.BankAccounts.Count() != 0) {
+			customerData.TokenId = null;
+			customerData.BankAccounts = customerData.BankAccounts ?? new List<BankData>();
+			if (customerData.BankAccounts?.Count() != 0) {
 				foreach (BankData bankData in customerData.BankAccounts) {
 					await AddBankAccountToCustomerAsync(customerId, bankData);
 				}
 			}
-
 			return await UpdateCustomer($"customers/{customerId}", customerData);
 		}
 
-		private async Task<BaseResponse> AddCardToCustomerAsync(string customerId, CardData cardData, CustomerInfoData customerData) {
-			BaseResponse cardToken = await CreateCardToken("tokens", cardData);
-			var tokenId = cardToken.ObjectId;
+		public async Task<BaseResponse> AddCardToCustomerAsync(AnyOf<string?, CustomerResponseData> customer, CardData cardData, CustomerRequestData? customerData = null) {
+			string? customerId = string.Empty;
+			customerId = customer.IsSecond ? customer.Second.ObjectId : customer.First;
+			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
+			TokenResponse cardToken = await CreateCardToken("tokens", cardData) as TokenResponse;			
+			var tokenId = cardToken.ObjectId; 
+			customerData = customerData ?? new CustomerRequestData();
 			customerData.TokenId = tokenId.StartsWith("tok_") ? tokenId.Substring(4) : tokenId;
-			return await UpdateCustomer($"customers/{customerId}", customerData);
+			var attachedCards = await UpdateCustomer($"customers/{customerId}", customerData);
+			return cardToken.Card.Data;
 		}
 
-		private async Task<BaseResponse> AddBankAccountToCustomerAsync(string customerId, BankData bankData) {
+		public async Task<BaseResponse> AddBankAccountToCustomerAsync(AnyOf<string?, CustomerResponseData> customer, BankData bankData) {
+			string? customerId = string.Empty;
+			customerId = customer.IsSecond ? customer.Second.ObjectId : customer.First;
+			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
 			bankData.CustomerId = customerId;
-			return await AddBankAccount("bankaccounts", bankData);
+			return await AddBankAccount("bankaccounts", bankData) as BankAccount;
 		}
 
-		private async Task<ListBaseResponse> ListCustomersAsync(OptionsData options) {
+		private async Task<ListBaseResponse> ListCustomersAsync(BaseListOptions? options = null) {
 			try {
 				var parameters = new Dictionary<string, object>
 				{
-					{ "limit", options.Limit ?? 25 },
-					{ "page", options.Page ?? 1 }
+					{ "limit", options?.Limit ?? 25 },
+					{ "page", options?.Page ?? 1 }
 				};
-				if (!string.IsNullOrEmpty(options.Search)) {
+				if (!string.IsNullOrEmpty(options?.Search)) {
 					var searchArray = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(options.Search);
 					if (searchArray != null) {
 						foreach (var searchItem in searchArray) {
@@ -154,12 +163,13 @@ namespace PayarcSDK.Services {
 		}
 
 		private async Task<bool> DeleteCustomerAsync(string customerId) {
+			customerId = customerId.StartsWith("cus_") ? customerId.Substring(4) : customerId;
 			await DeleteAsync($"customers/{customerId}");
 			return true;
 		}
 
 		// Generic HTTP request methods
-		private async Task<BaseResponse?> CreateCustomer(string url, CustomerInfoData customerData) {
+		private async Task<BaseResponse?> CreateCustomer(string url, CustomerRequestData customerData, string type = "Customer") {
 			try {
 				var content = new StringContent(customerData.ToJson(), Encoding.UTF8, "application/json");
 				var response = await _httpClient.PostAsync(url, content);
@@ -180,7 +190,7 @@ namespace PayarcSDK.Services {
 				if (data != null && data.TryGetValue("data", out var dataValue) && dataValue is JsonElement dataElement) {
 					var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
 					if (dataDict != null) {
-						return TransformJsonRawObject(dataDict, dataElement.GetRawText());
+						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), type);
 					}
 				}
 				throw new InvalidOperationException("Response data is invalid or missing.");
@@ -196,7 +206,7 @@ namespace PayarcSDK.Services {
 			}
 		}
 
-		private async Task<BaseResponse?> UpdateCustomer(string url, CustomerInfoData customerData) {
+		private async Task<BaseResponse?> UpdateCustomer(string url, CustomerRequestData customerData, string type = "Customer") {
 			try {
 				Console.WriteLine($"Customer Data: {customerData.ToJson()}");
 				var content = new StringContent(customerData.ToJson(), Encoding.UTF8, "application/json");
@@ -219,7 +229,7 @@ namespace PayarcSDK.Services {
 				if (data != null && data.TryGetValue("data", out var dataValue) && dataValue is JsonElement dataElement) {
 					var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
 					if (dataDict != null) {
-						return TransformJsonRawObject(dataDict, dataElement.GetRawText());
+						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), type);
 					}
 				}
 				throw new InvalidOperationException("Response data is invalid or missing.");
@@ -235,7 +245,7 @@ namespace PayarcSDK.Services {
 			}
 		}
 
-		private async Task<BaseResponse?> CreateCardToken(string url, CardData cardData) {
+		private async Task<BaseResponse?> CreateCardToken(string url, CardData cardData, string type = "Token") {
 			try {
 				Console.WriteLine($"Card Data: {cardData.ToJson()}");
 				var content = new StringContent(cardData.ToJson(), Encoding.UTF8, "application/json");
@@ -257,7 +267,7 @@ namespace PayarcSDK.Services {
 				if (data != null && data.TryGetValue("data", out var dataValue) && dataValue is JsonElement dataElement) {
 					var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
 					if (dataDict != null) {
-						return TransformJsonRawObject(dataDict, dataElement.GetRawText());
+						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), type);
 					}
 				}
 				throw new InvalidOperationException("Response data is invalid or missing.");
@@ -273,7 +283,7 @@ namespace PayarcSDK.Services {
 			}
 		}
 
-		private async Task<BaseResponse?> AddBankAccount(string url, BankData bankData) {
+		private async Task<BaseResponse?> AddBankAccount(string url, BankData bankData, string type = "BankAccount") {
 			try {
 				var content = new StringContent(bankData.ToJson(), Encoding.UTF8, "application/json");
 				var response = await _httpClient.PostAsync(url, content);
@@ -294,7 +304,7 @@ namespace PayarcSDK.Services {
 				if (data != null && data.TryGetValue("data", out var dataValue) && dataValue is JsonElement dataElement) {
 					var dataDict = JsonSerializer.Deserialize<Dictionary<string, object>>(dataElement.GetRawText());
 					if (dataDict != null) {
-						return TransformJsonRawObject(dataDict, dataElement.GetRawText());
+						return TransformJsonRawObject(dataDict, dataElement.GetRawText(), type);
 					}
 				}
 				throw new InvalidOperationException("Response data is invalid or missing.");
@@ -310,7 +320,7 @@ namespace PayarcSDK.Services {
 			}
 		}
 
-		private async Task<ListBaseResponse> GetCustomersAsync(string url, string? queryParams) {
+		private async Task<ListBaseResponse> GetCustomersAsync(string url, string? queryParams, string type = "Customer") {
 			try {
 				if (queryParams != null) {
 					url = $"{url}?{queryParams}";
@@ -342,7 +352,7 @@ namespace PayarcSDK.Services {
 				List<BaseResponse?>? customers = new List<BaseResponse?>();
 				if (jsonCustomers != null) {
 					for (int i = 0; i < jsonCustomers.Count; i++) {
-						var customer = TransformJsonRawObject(jsonCustomers[i], JsonSerializer.Serialize(jsonCustomers[i]));
+						var customer = TransformJsonRawObject(jsonCustomers[i], JsonSerializer.Serialize(jsonCustomers[i]), type);
 						customers?.Add(customer);
 					}
 				}
