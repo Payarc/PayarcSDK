@@ -1,4 +1,4 @@
-# Payarc SDK for C#
+ # Payarc SDK for C#
 
 The Payarc SDK allows developers to integrate Payarc's payment processing capabilities into their applications with ease. This SDK provides a comprehensive set of APIs to handle transactions, customer management, and candidate merchant management.
 
@@ -251,10 +251,7 @@ try {
 #### This example demonstrates how to list all charges without any constraints:
 ```csharp
 try {
-    var charges = await payarc.Charges.List(new BaseListOptions {
-        Limit = 25,
-        Page = 1
-    });
+    var charges = await payarc.Charges.List();
     Console.WriteLine($"Charges list: {JsonSerializer.Serialize(charges)}");
 } catch (Exception ex) {
     Console.WriteLine($"Error detected: {ex.Message}");
@@ -589,10 +586,7 @@ try {
 #### This example shows how to list all candidate merchants for a specified agent:
 ```csharp
 try {				
-    var applications = await payarc.Applications.List(new OptionsData { 
-        Limit = 25,
-        Page = 1
-    });
+    var applications = await payarc.Applications.List();
     Console.WriteLine($"Applications retrieved: {JsonConvert.SerializeObject(applications)}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
@@ -751,9 +745,9 @@ try {
 ### The `payarc.SplitCampaigns` service allows an ISV to create and manage campaigns to handle the financial details of your processing merchants. It provides the following functionality:
 - **Create** - Creates a campaign.
 - **Retrieve** - Retrieves the details of a campaign.
+- **Update** - Modifies the attributes of an existing campaign.
 - **List** - List all campaigns available for your agent.
 - **ListAccounts** - List all processing merchant accounts under your agent.
-- **Update** - Modifies the attributes of an existing campaign.
 
 ## Creating a Split Campaign
 
@@ -779,7 +773,67 @@ try {
 
 ## Retrieving a Split Campaign
 
-### 
+### Example: Retrieve a Split Campaign By its ID
+
+#### This example shows how to retreive a split campaign using its ID:
+```csharp
+try {
+    string id = "cmp_o3**********86n5";
+
+    var campaign = payarc.SplitCampaigns.Retrieve(id);
+    Console.WriteLine($"Campaign retrieved: {JsonConvert.SerializeObject(campaign)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Updating a Split Campaign
+
+### Example: Update a Split Campaign by its ID
+
+#### This example shows you to update a split campaing using its ID:
+```csharp
+try {
+    string id = "cmp_o3**********86n5";
+
+    var payload = new SplitCampaignRequestData {
+        Notes = "Update to Campaign Notes"
+    };
+
+    var campaign = payarc.SplitCampaigns.Update(id, payload);
+    Console.WriteLine($"Campaign updated: {JsonConvert.SerializeObject(campaign)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Listing Split Campaigns
+
+### Example: List All Split Campaigns For Your Agent
+
+#### This example shows how to list all split campaigns for your agent:
+```csharp
+try {				
+    var campaigns = payarc.SplitCampaigns.List();
+    Console.WriteLine($"Campaigns retrieved: {JsonConvert.SerializeObject(campaigns)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Listing All Accounts
+
+### Example: List All Processing Merchants
+
+#### This example shows how to list all processing merchants under your agent.
+```csharp
+try {				
+    var merchants = payarc.SplitCampaigns.ListAccounts();
+    Console.WriteLine($"Merchants retrieved: {JsonConvert.SerializeObject(merchants)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
 
 <br/>
 
@@ -1054,6 +1108,8 @@ try {
     Console.WriteLine($"Error detected: {e.Message}");
 }
 ```
+
+<br/>
 
 ## Service `payarc.Disputes`
 ### The `payarc.Disputes` service provides functionality for managing disputes. It provides the following methods:
