@@ -4,7 +4,31 @@
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageId>Payarc.$(AssemblyName)</PackageId>
+    <Title>Payarc SDK</Title>
+    <Authors>$(AssemblyName), Shahsuvar, Spas, RobPass</Authors>
+    <Company>Payarc</Company>
+    <Description>The Payarc SDK allows developers to integrate Payarc's payment processing capabilities into their applications with ease. This SDK provides a comprehensive set of APIs to handle transactions, customer management, and candidate merchant management.</Description>
+    <PackageProjectUrl>https://payarc.com/partner/developers/</PackageProjectUrl>
+    <PackageIcon></PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Payarc/PayarcSDK</RepositoryUrl>
+    <RunAnalyzersDuringBuild>True</RunAnalyzersDuringBuild>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+    <RepositoryType></RepositoryType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AnyOf" Version="0.5.0" />
