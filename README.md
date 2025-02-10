@@ -33,7 +33,8 @@ Each environment has unique API keys and endpoints:
 - **`payarcConnect`** – Production environment for Payarc Connect.  
 - **`payarcConnectDev`** – Development/testing for Payarc Connect.
 
-> ⚠️ Keep your API key **secure** and **never expose it** to clients. This information should remain on your server.
+> [!WARNING]
+> Keep your API key **secure** and **never expose it** to clients. This information should remain on your server.
 
 ### Managing API Credentials  
 The examples provided use [dotenv.net](https://www.nuget.org/packages/dotenv.net) to store API credentials securely and load them in the constructor. However, this is **not mandatory**—you may use any configuration method that fits your setup.  
