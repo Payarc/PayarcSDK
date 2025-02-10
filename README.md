@@ -701,7 +701,7 @@ try {
 }
 ```
 
-> [!INFO]
+> [!TIP]
 > This example demonstrates how to retrieve an application, access its associated documents, and delete the first available document. However, depending on your use case, you may need to refine the selection criteria—for instance, by choosing a specific applicant instead of the first one or choosing which document to be deleted. The SDK provides flexibility to adjust these parameters to meet your needs.
 
 ## Listing Subagents
