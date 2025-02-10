@@ -17,7 +17,7 @@ namespace PayarcSDK.Services {
 			return await CreateCampaignAsync(campaignData);
 		}
 
-		public async Task<ListBaseResponse> List(OptionsData options) {
+		public async Task<ListBaseResponse> List(OptionsData? options = null) {
 			return await GetAllCampaignsAsync(options);
 		}
 
@@ -43,7 +43,7 @@ namespace PayarcSDK.Services {
 		}
 
 		// Retrieve all campaigns.
-		private async Task<ListBaseResponse> GetAllCampaignsAsync(OptionsData options) {
+		private async Task<ListBaseResponse> GetAllCampaignsAsync(OptionsData? options = null) {
 			try {
 				var parameters = new Dictionary<string, object>
 				{

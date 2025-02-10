@@ -40,7 +40,7 @@ public class ApiRequester {
 	}
 	public async Task GetChargeById() {
 		try {
-			var charge = await _payarc.Charges.Retrieve("ch_obLyORByLLbRWOWn");
+			var charge = await _payarc.Charges.Retrieve("ach_g9dDE7GD90AG08eA");
 			Console.WriteLine("Get charge By Id Data");
 			Console.WriteLine(charge);
 			Console.WriteLine("Raw Data");

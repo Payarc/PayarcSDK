@@ -16,7 +16,7 @@ namespace PayarcSDK.Services {
 			_httpClient = httpClient;
 		}
 
-		public async Task<ListBaseResponse> List(OptionsData options) {
+		public async Task<ListBaseResponse> List(OptionsData options = null) {
 			return await ListCasesAsync(options);
 		}
 

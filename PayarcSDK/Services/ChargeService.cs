@@ -99,7 +99,7 @@ namespace PayarcSDK.Services
             }
         }
 
-        public async Task<ListBaseResponse?> List(BaseListOptions options)
+        public async Task<ListBaseResponse?> List(BaseListOptions? options = null)
         {
             try
             {
