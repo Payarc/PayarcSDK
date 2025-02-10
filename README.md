@@ -5,7 +5,6 @@ The Payarc SDK allows developers to integrate Payarc's payment processing capabi
 ## Table of Contents
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Dependencies](#dependencies)
 - [Usage](#usage)
 - [API Reference](#api-reference)
 - [Examples](#examples)
