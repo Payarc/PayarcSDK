@@ -356,7 +356,7 @@ try {
 #### This example demonstrates how to list customers with a specified limit:
 ```csharp
 try {
-    var customers = await payarc.Customers.List(new OptionsData {
+    var customers = await payarc.Customers.List(new BaseListOptions {
         Limit = 3
     });
     Console.WriteLine($"Customers retrieved: {JsonConvert.SerializeObject(customers)}");
@@ -517,7 +517,7 @@ The `Lead` attribute represents the business, while the `Owners` attribute is an
 #### In some cases, a logged-in user may need to create an application on behalf of another agent. In such instances, the `ObjectId` of the agent must be included in the request sent to the `payarc.Applications.Create` function. To retrieve a list of agents, use the `ListSubAgents` function, as demonstrated in the examples below:
 ```csharp
 try {
-    var subAgent = await payarc.Applications.ListSubAgents(new OptionsData {
+    var subAgent = await payarc.Applications.ListSubAgents(new BaseListOptions {
         Limit = 10,
         Page = 1
     });
@@ -570,7 +570,7 @@ To continue with onboarding process you might need to provide additional informa
 #### This examples shows how to retrieve a candidate merchant using their ID:
 ```csharp
 try {
-    string id = "app_1J*****3";
+    string id = "appl_1J*****3";
     var merchant = await payarc.Applications.Retrieve(id);
     Console.WriteLine($"Merchant candidate retrieved: {JsonConvert.SerializeObject(merchant)}");
 } catch (Exception e) {
@@ -599,7 +599,7 @@ try {
 #### This example shows how to update specific properties of a candidate merchant
 ```csharp
 try {
-    string id = "app_1J*****3";
+    string id = "appl_1J*****3";
     
     var payload = new ApplicationInfoData {
         MerchantBankAccountNo = "999999999",
@@ -621,7 +621,7 @@ try {
 #### This example shows how to delete a candidate merchant using their specific ID:
 ```csharp
 try {
-    string id = "app_1J*****3";
+    string id = "appl_1J*****3";
 
     var deletedCandidate = await payarc.Applications.Delete(id);
     Console.WriteLine($"Candidate merchant deleted: {JsonConvert.SerializeObject(deletedCandidate)}");
@@ -638,7 +638,7 @@ try {
 
 ```csharp
 try {
-    string id = "app_1J*****3";
+    string id = "appl_1J*****3";
 
     var document = new List<MerchantDocument> {
         new MerchantDocument {
@@ -663,7 +663,7 @@ try {
 #### This example shows how to delete a document from a candidate merchant application using that candidate merchant's ID and the ID of the document you want to delete:
 ```csharp
 try {
-    string applicantId = "app_1J*****3";
+    string applicantId = "appl_1J*****3";
     string documentId = "doc_1J*****3";
 
     var deletedDoc = await payarc.Applications.DeleteDocument(applicantId, documentId);
@@ -673,36 +673,36 @@ try {
 }
 ```
 
-<!-- ### Example: Deleting A Document From a Candidate Merchant By Fetching the Newest Merchant Candidate and Deleting The Last Added Document
+### Example: Deleting A Document From a Candidate Merchant By Fetching the Newest Merchant Candidate and Deleting The Last Added Document
 
 #### This example shows how to delete a document by listing all of the candidate merchants, retrieving the newest one added to the system, and then deleting the first document associated with that merchant candidate:
-
 ```csharp
 try {
-    var response = await payarc.Applications.List(new OptionsData {
-        Limit = 25,
-        Page = 1
-    });
+    var response = await payarc.Applications.List();
 
-    string applicantId = response?.Data?.FirstOrDefault()?.ObjectId ?? null;
-
-    if (applicantId != null) {
-        var details = await payarc.Applications.Retrieve(applicantId);
-        string documentId = details?.ObjectId ?? null; // fix this line here
-
-        if (documentId != null) {
-            var deletedDoc = await payarc.Applications.DeleteDocument(applicantId, documentId);
-            Console.WriteLine($"Document deleted: {JsonConvert.SerializeObject(deletedDoc)}");
-        } else {
-            Console.WriteLine("No document to delete.");
-        }
-    } else {
+    var applicant = response?.Data?.FirstOrDefault() as ApplicationResponseData;
+    if (applicant == null) {
         Console.WriteLine("No candidate merchants found.");
+        return;
     }
+
+    var details = await applicant.Retrieve() as ApplicationResponseData;
+    var document = details?.Documents?.FirstOrDefault();
+    if (document == null) {
+        Console.WriteLine("No document to delete.");
+        return;
+    }
+
+    var deletedDoc = await document.Delete() as DocumentResponseData;
+    Console.WriteLine($"Document deleted: {JsonConvert.SerializeObject(deletedDoc)}");
+
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
 }
-``` -->
+```
+
+> [!TIP]
+> This example demonstrates how to retrieve an application, access its associated documents, and delete the first available document. However, depending on your use case, you may need to refine the selection criteria—for instance, by choosing a specific applicant instead of the first one or choosing which document to be deleted. The SDK provides flexibility to adjust these parameters to meet your needs.
 
 ## Listing Subagents
 
@@ -711,7 +711,7 @@ try {
 #### This example shows how to list all subagents, using a limit:
 ```csharp
 try {                
-    var subAgent = await payarc.Applications.ListSubAgents(new OptionsData {
+    var subAgent = await payarc.Applications.ListSubAgents(new BaseListOptions {
         Limit = 25,
         Page = 1
     });
@@ -729,7 +729,7 @@ For agents or ISVs, the process is finalized when the contract between Payarc an
 #### This example shows how to submit a candidate merchant application using the application ID:
 ```csharp
 try {
-    string id = "app_1J*****3";
+    string id = "appl_1J*****3";
 
     var applicant = await payarc.Applications.Submit(id);
     Console.WriteLine($"Applicant submitted for signature: {JsonConvert.SerializeObject(applicant)}");
@@ -1370,4 +1370,6 @@ try {
 }
 ```
 
-## License [MIT](./LICENSE)
+## License
+
+This project is licensed under the [MIT License](./LICENSE).
