@@ -17,7 +17,7 @@ The Payarc SDK allows developers to integrate Payarc's payment processing capabi
 You can install the Payarc SDK package using the .NET CLI with the following command:
 
 ```sh
-dotnet add package payarc-sdk 
+dotnet add package Payarc.PayarcSDK
 ```
 
 ## Usage
