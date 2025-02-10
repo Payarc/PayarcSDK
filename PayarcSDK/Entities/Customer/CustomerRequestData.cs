@@ -38,7 +38,7 @@ namespace PayarcSDK.Entities
 		public int? Zip { get; set; }
 
 		[JsonProperty("phone")]
-		public long Phone { get; set; }
+		public long? Phone { get; set; }
 
 		[JsonProperty("token_id")]
 		public string TokenId { get; set; }
