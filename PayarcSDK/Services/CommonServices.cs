@@ -68,7 +68,7 @@ namespace PayarcSDK.Services {
 					achChargeResponse.RawData = rawObj;
 					achChargeResponse.ObjectId ??= $"ach_{obj["id"]}";
 					achChargeResponse.CreateRefund = async (chargeData) => await chargeService.CreateRefund(achChargeResponse, chargeData);
-					if (achChargeResponse.BankAccount?.Data != null) achChargeResponse.BankAccount.Data.ObjectId = $"bnk_{obj["id"]}";
+					if (achChargeResponse.BankAccount?.Data != null) achChargeResponse.BankAccount.Data.ObjectId = achChargeResponse.BankAccount.Data.Id;
 					response = achChargeResponse;
 				} else if (type == "Customer") {
 					var customerService = new CustomerService(_httpClient);
