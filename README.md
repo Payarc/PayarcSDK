@@ -356,7 +356,7 @@ try {
 #### This example demonstrates how to list customers with a specified limit:
 ```csharp
 try {
-    var customers = await payarc.Customers.List(new OptionsData {
+    var customers = await payarc.Customers.List(new BaseListOptions {
         Limit = 3
     });
     Console.WriteLine($"Customers retrieved: {JsonConvert.SerializeObject(customers)}");
@@ -517,7 +517,7 @@ The `Lead` attribute represents the business, while the `Owners` attribute is an
 #### In some cases, a logged-in user may need to create an application on behalf of another agent. In such instances, the `ObjectId` of the agent must be included in the request sent to the `payarc.Applications.Create` function. To retrieve a list of agents, use the `ListSubAgents` function, as demonstrated in the examples below:
 ```csharp
 try {
-    var subAgent = await payarc.Applications.ListSubAgents(new OptionsData {
+    var subAgent = await payarc.Applications.ListSubAgents(new BaseListOptions {
         Limit = 10,
         Page = 1
     });
@@ -673,36 +673,36 @@ try {
 }
 ```
 
-<!-- ### Example: Deleting A Document From a Candidate Merchant By Fetching the Newest Merchant Candidate and Deleting The Last Added Document
+### Example: Deleting A Document From a Candidate Merchant By Fetching the Newest Merchant Candidate and Deleting The Last Added Document
 
 #### This example shows how to delete a document by listing all of the candidate merchants, retrieving the newest one added to the system, and then deleting the first document associated with that merchant candidate:
-
 ```csharp
 try {
-    var response = await payarc.Applications.List(new OptionsData {
-        Limit = 25,
-        Page = 1
-    });
+    var response = await payarc.Applications.List();
 
-    string applicantId = response?.Data?.FirstOrDefault()?.ObjectId ?? null;
-
-    if (applicantId != null) {
-        var details = await payarc.Applications.Retrieve(applicantId);
-        string documentId = details?.ObjectId ?? null; // fix this line here
-
-        if (documentId != null) {
-            var deletedDoc = await payarc.Applications.DeleteDocument(applicantId, documentId);
-            Console.WriteLine($"Document deleted: {JsonConvert.SerializeObject(deletedDoc)}");
-        } else {
-            Console.WriteLine("No document to delete.");
-        }
-    } else {
+    var applicant = response?.Data?.FirstOrDefault() as ApplicationResponseData;
+    if (applicant == null) {
         Console.WriteLine("No candidate merchants found.");
+        return;
     }
+
+    var details = await applicant.Retrieve() as ApplicationResponseData;
+    var document = details?.Documents?.FirstOrDefault();
+    if (document == null) {
+        Console.WriteLine("No document to delete.");
+        return;
+    }
+
+    var deletedDoc = await document.Delete() as DocumentResponseData;
+    Console.WriteLine($"Document deleted: {JsonConvert.SerializeObject(deletedDoc)}");
+
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
 }
-``` -->
+```
+
+> [!INFO]
+> This example demonstrates how to retrieve an application, access its associated documents, and delete the first available document. However, depending on your use case, you may need to refine the selection criteria—for instance, by choosing a specific applicant instead of the first one or choosing which document to be deleted. The SDK provides flexibility to adjust these parameters to meet your needs.
 
 ## Listing Subagents
 
@@ -711,7 +711,7 @@ try {
 #### This example shows how to list all subagents, using a limit:
 ```csharp
 try {                
-    var subAgent = await payarc.Applications.ListSubAgents(new OptionsData {
+    var subAgent = await payarc.Applications.ListSubAgents(new BaseListOptions {
         Limit = 25,
         Page = 1
     });
