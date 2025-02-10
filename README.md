@@ -570,7 +570,7 @@ To continue with onboarding process you might need to provide additional informa
 #### This examples shows how to retrieve a candidate merchant using their ID:
 ```csharp
 try {
-    string id = "app_1J*****3";
+    string id = "appl_1J*****3";
     var merchant = await payarc.Applications.Retrieve(id);
     Console.WriteLine($"Merchant candidate retrieved: {JsonConvert.SerializeObject(merchant)}");
 } catch (Exception e) {
@@ -599,7 +599,7 @@ try {
 #### This example shows how to update specific properties of a candidate merchant
 ```csharp
 try {
-    string id = "app_1J*****3";
+    string id = "appl_1J*****3";
     
     var payload = new ApplicationInfoData {
         MerchantBankAccountNo = "999999999",
@@ -621,7 +621,7 @@ try {
 #### This example shows how to delete a candidate merchant using their specific ID:
 ```csharp
 try {
-    string id = "app_1J*****3";
+    string id = "appl_1J*****3";
 
     var deletedCandidate = await payarc.Applications.Delete(id);
     Console.WriteLine($"Candidate merchant deleted: {JsonConvert.SerializeObject(deletedCandidate)}");
@@ -638,7 +638,7 @@ try {
 
 ```csharp
 try {
-    string id = "app_1J*****3";
+    string id = "appl_1J*****3";
 
     var document = new List<MerchantDocument> {
         new MerchantDocument {
@@ -663,7 +663,7 @@ try {
 #### This example shows how to delete a document from a candidate merchant application using that candidate merchant's ID and the ID of the document you want to delete:
 ```csharp
 try {
-    string applicantId = "app_1J*****3";
+    string applicantId = "appl_1J*****3";
     string documentId = "doc_1J*****3";
 
     var deletedDoc = await payarc.Applications.DeleteDocument(applicantId, documentId);
@@ -729,7 +729,7 @@ For agents or ISVs, the process is finalized when the contract between Payarc an
 #### This example shows how to submit a candidate merchant application using the application ID:
 ```csharp
 try {
-    string id = "app_1J*****3";
+    string id = "appl_1J*****3";
 
     var applicant = await payarc.Applications.Submit(id);
     Console.WriteLine($"Applicant submitted for signature: {JsonConvert.SerializeObject(applicant)}");
