@@ -2,8 +2,7 @@ using Newtonsoft.Json;
 
 namespace PayarcSDK.Entities.Billing.Subscriptions;
 
-public class SubscriptionResponseData : BaseResponse
-{
+public class SubscriptionResponseData : BaseResponse {
     [JsonProperty("object")]
     public string? ObjectType { get; set; }
 
@@ -74,16 +73,18 @@ public class SubscriptionResponseData : BaseResponse
     public string? PaymentType { get; set; }
     [JsonProperty("plan")]
     public PlanWrapper? PlanWrapper { get; set; }
-    
+
     [JsonIgnore]
     public Func<UpdateSubscriptionOptions?, Task<BaseResponse?>> Update { get; set; }
-    
+
     [JsonIgnore]
     public Func<Task<BaseResponse?>> Cancel { get; set; }
+
+    [JsonIgnore]
+    public SubscriptionPlan? Plan => PlanWrapper?.Plan;
 }
 
-public class PlanWrapper
-{
+public class PlanWrapper {
     [JsonProperty("data")]
     public SubscriptionPlan? Plan { get; set; }
 }
