@@ -53,8 +53,13 @@ namespace PayarcSDK {
             // Add the Authorization header with Bearer token
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _config.BearerToken);
 
-            // Return the Payarc instance (facade for all services)
-            return new Payarc(httpClient, _config);
+			var userAgent = $"sdk-csharp/{_config.ApiVersion}";
+			if (!httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent)) {
+				throw new InvalidOperationException("Invalid User-Agent header value.");
+			}
+
+			// Return the Payarc instance (facade for all services)
+			return new Payarc(httpClient, _config);
         }
     }
 }
