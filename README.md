@@ -257,6 +257,32 @@ try {
 }
 ```
 
+## Listing Charges by Agent
+
+### Example: List Charges with No Constraints by Agent (Payfac)
+
+This example demonstrates how to list all charges by agent without any constraints:
+```csharp
+try {
+    var charges = await payarc.Charges.ListByAgentPayfac();
+    Console.WriteLine($"Charges list (Payfac): {JsonSerializer.Serialize(charges)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
+### Example: List Charges with Constraints by Agent (Traditional)
+
+This example demonstrates how to list all charges by agent with date constraints:
+```csharp
+try {
+    var charges = await payarc.Charges.ListsByAgentTraditional();
+    Console.WriteLine($"Charges list (Traditional): {JsonSerializer.Serialize(charges)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
 ## Refunding a Charge
 
 ### Example: Refund a Charge

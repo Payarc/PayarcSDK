@@ -227,6 +227,70 @@ public class ApiRequester {
 		}
 
 	}
+	public async Task ListByAgentPayfac() {
+		try {
+			var options = new BaseListOptions() {
+				Limit = 25,
+				Page = 1,
+			};
+			var responseData = await _payarc.Charges.ListByAgentPayfac(options);
+			Console.WriteLine(JsonConvert.SerializeObject(responseData, new JsonSerializerSettings {
+				NullValueHandling = NullValueHandling.Ignore,
+				Formatting = Formatting.Indented
+			}));
+
+			//Console.WriteLine("Charges Data");
+			//for (int i = 0; i < responseData?.Data?.Count; i++) {
+			//	var t = responseData.Data[i];
+			//	Console.WriteLine(responseData.Data[i]);
+			//}
+			//Console.WriteLine("Pagination Data");
+			//Console.WriteLine(responseData?.Pagination["total"]);
+			//Console.WriteLine(responseData?.Pagination["count"]);
+			//Console.WriteLine(responseData?.Pagination["per_page"]);
+			//Console.WriteLine(responseData?.Pagination["current_page"]);
+			//Console.WriteLine(responseData?.Pagination["total_pages"]);
+			// Console.WriteLine("Raw Data");
+			// Console.WriteLine(responseData?.RawData);
+		} catch (Exception e) {
+			Console.WriteLine(e);
+			throw;
+		}
+
+	}
+	public async Task ListByAgentTraditional(BaseListOptions? options = null) {
+		try {
+			if (options == null) {
+				options = new BaseListOptions() {
+					Limit = 25,
+					Page = 1
+				};
+			}
+			var responseData = await _payarc.Charges.ListsByAgentTraditional(options);
+			Console.WriteLine(JsonConvert.SerializeObject(responseData, new JsonSerializerSettings {
+				NullValueHandling = NullValueHandling.Ignore,
+				Formatting = Formatting.Indented
+			}));
+
+			//Console.WriteLine("Charges Data");
+			//for (int i = 0; i < responseData?.Data?.Count; i++) {
+			//	var t = responseData.Data[i];
+			//	Console.WriteLine(responseData.Data[i]);
+			//}
+			//Console.WriteLine("Pagination Data");
+			//Console.WriteLine(responseData?.Pagination["total"]);
+			//Console.WriteLine(responseData?.Pagination["count"]);
+			//Console.WriteLine(responseData?.Pagination["per_page"]);
+			//Console.WriteLine(responseData?.Pagination["current_page"]);
+			//Console.WriteLine(responseData?.Pagination["total_pages"]);
+			// Console.WriteLine("Raw Data");
+			// Console.WriteLine(responseData?.RawData);
+		} catch (Exception e) {
+			Console.WriteLine(e);
+			throw;
+		}
+
+	}
 	public async Task CreatePlan() {
 		try {
 			var options = new PlanCreateOptions() {
