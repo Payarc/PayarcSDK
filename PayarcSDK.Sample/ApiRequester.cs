@@ -497,4 +497,57 @@ public class ApiRequester {
 			throw;
 		}
 	}
+	public async Task ListReportsByAgent(BaseListOptions? options = null) {
+		try {
+			var responseData = await _payarc.Batches.ListReportsByAgent(options);
+			Console.WriteLine(JsonConvert.SerializeObject(responseData, new JsonSerializerSettings {
+				NullValueHandling = NullValueHandling.Ignore,
+				Formatting = Formatting.Indented
+			}));
+
+			//Console.WriteLine("Charges Data");
+			//for (int i = 0; i < responseData?.Data?.Count; i++) {
+			//	var t = responseData.Data[i];
+			//	Console.WriteLine(responseData.Data[i]);
+			//}
+			//Console.WriteLine("Pagination Data");
+			//Console.WriteLine(responseData?.Pagination["total"]);
+			//Console.WriteLine(responseData?.Pagination["count"]);
+			//Console.WriteLine(responseData?.Pagination["per_page"]);
+			//Console.WriteLine(responseData?.Pagination["current_page"]);
+			//Console.WriteLine(responseData?.Pagination["total_pages"]);
+			// Console.WriteLine("Raw Data");
+			// Console.WriteLine(responseData?.RawData);
+		} catch (Exception e) {
+			Console.WriteLine(e);
+			throw;
+		}
+	}
+	public async Task ListReportDetailsByAgent(BaseListOptions? options = null) {
+		try {
+			var responseData = await _payarc.Batches.ListReportDetailsByAgent(options);
+			Console.WriteLine(JsonConvert.SerializeObject(responseData, new JsonSerializerSettings {
+				NullValueHandling = NullValueHandling.Ignore,
+				Formatting = Formatting.Indented
+			}));
+
+			//Console.WriteLine("Charges Data");
+			//for (int i = 0; i < responseData?.Data?.Count; i++) {
+			//	var t = responseData.Data[i];
+			//	Console.WriteLine(responseData.Data[i]);
+			//}
+			//Console.WriteLine("Pagination Data");
+			//Console.WriteLine(responseData?.Pagination["total"]);
+			//Console.WriteLine(responseData?.Pagination["count"]);
+			//Console.WriteLine(responseData?.Pagination["per_page"]);
+			//Console.WriteLine(responseData?.Pagination["current_page"]);
+			//Console.WriteLine(responseData?.Pagination["total_pages"]);
+			// Console.WriteLine("Raw Data");
+			// Console.WriteLine(responseData?.RawData);
+		} catch (Exception e) {
+			Console.WriteLine(e);
+			throw;
+		}
+
+	}
 }

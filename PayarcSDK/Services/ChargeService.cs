@@ -211,7 +211,7 @@ namespace PayarcSDK.Services
 
                 pagination?.Remove("links");
 
-                return new ChargeListResponse
+                return new BatchListResponse
                 {
                     Data = charges,
                     Pagination = pagination,
@@ -280,7 +280,7 @@ namespace PayarcSDK.Services
 
 				pagination?.Remove("links");
 
-				return new ChargeListResponse {
+				return new BatchListResponse {
 					Data = charges,
 					Pagination = pagination,
 					RawData = rawData
@@ -342,7 +342,7 @@ namespace PayarcSDK.Services
 
 				pagination?.Remove("links");
 
-				return new ChargeListResponse {
+				return new BatchListResponse {
 					Data = charges,
 					Pagination = pagination,
 					RawData = rawData
