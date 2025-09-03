@@ -257,6 +257,32 @@ try {
 }
 ```
 
+## Listing Charges by Agent
+
+### Example: List Charges with No Constraints by Agent (Payfac)
+
+This example demonstrates how to list all charges by agent without any constraints:
+```csharp
+try {
+    var charges = await payarc.Charges.ListByAgentPayfac();
+    Console.WriteLine($"Charges list (Payfac): {JsonSerializer.Serialize(charges)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
+### Example: List Charges with Constraints by Agent (Traditional)
+
+This example demonstrates how to list all charges by agent with date constraints:
+```csharp
+try {
+    var charges = await payarc.Charges.ListsByAgentTraditional();
+    Console.WriteLine($"Charges list (Traditional): {JsonSerializer.Serialize(charges)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
 ## Refunding a Charge
 
 ### Example: Refund a Charge
@@ -1191,6 +1217,48 @@ try {
 ```
 
 <br/>
+
+## Listing Batches
+
+### Example: List Batch Reports by Agent with Constraints
+
+This example demonstrates how to 
+retrieve batch settlement reports for merchants based on a specified date range. The 
+response contains detailed transaction and settlement information for each merchant
+account within the given date range.
+
+```csharp
+try {                
+    var batchReports = await payarc.Batches.ListReportsByAgent(new BaseListOptions {
+        From_Date = "2025-07-19",
+        To_Date = "2025-07-22"
+    });
+    Console.WriteLine($"Batch Reports by Agent: {JsonConvert.SerializeObject(batchReports)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}   
+```
+
+### Example: List Batch Report Details by Agent
+
+This example demonstrates how to retrieve
+detailed transaction information for a specific merchant’s batch report based on the
+Merchant_Account_Number, Batch_Reference_Number, and the specified date. 
+It provides a list of individual transactions for that batch, along with batch totals.
+[Get parameters for desired batch report here](#example-list-batch-reports-by-agent-with-constraints)
+
+```csharp
+try {                
+    var batchReportDetails = await payarc.Batches.ListReportDetailsByAgent(new BaseListOptions {
+        Merchant_Account_Number = "000000000000000",
+        Reference_Number = "000000000000",
+        Date = "YYYY-MM-DD"
+    });
+    Console.WriteLine($"Batch Report Details: {JsonConvert.SerializeObject(batchReportDetails)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}   
+```
 
 # Payarc Connect
 The following functionality will pertain only to user who are utilizing the Payarc Connect integration:
