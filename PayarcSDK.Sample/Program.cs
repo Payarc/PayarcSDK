@@ -63,7 +63,7 @@ namespace PayarcSDK.Sample {
 			try {
 				payarcAgent = new SdkBuilder()
 					.Configure(config => {
-						//config.Environment = "sandbox";         // Use sandbox environment
+						config.Environment = "sandbox";         // Use sandbox environment
 						config.ApiVersion = "v1";               // Use version 2 of the API
 						config.BearerToken = agentAccessToken;  // Set the Bearer Token
 					})
@@ -167,9 +167,8 @@ namespace PayarcSDK.Sample {
 			//var testService = "customerService";
 			//var testService = "applicationService";
 			//var testService = "disputeService";
-			//var testService = "splitCampaignService";
+			var testService = "splitCampaignService";
 			//var testService = "chargeService";
-			var testService = "batchService";
 			//var testService = "payarcConnect";
 			var apiRequester = new ApiRequester(payarc);
 			var apiAgentRequester = new ApiRequester(payarcAgent);
@@ -405,7 +404,7 @@ namespace PayarcSDK.Sample {
 								// Update a Application
 								ApplicationInfoData newApplicationData = new ApplicationInfoData {
 									Lead = new Lead {
-										MerchantName = "Updated"										
+										MerchantName = "Updated"
 									}
 								};
 								var updatedApplication = await payarcAgent.Applications.Update(applicationId, newApplicationData);
@@ -600,22 +599,9 @@ namespace PayarcSDK.Sample {
 						// await apiRequester.CreateACHChargeByBankAccount();
 						// await apiRequester.CreateACHChargeByBankAccountDetails();
 						// await apiRequester.ListCharges();
-						// await apiRequester.RefundChargeById();
+						await apiRequester.RefundChargeById();
 						// await apiRequester.RefundChargeByObject();
 						// await apiRequester.RefundACHChargeByObject();
-						//await apiAgentRequester.ListByAgentPayfac();
-
-						//var currentDateForCharges = DateTime.UtcNow;
-						//var tomorrowDateForCharges = currentDateForCharges.AddDays(1).ToString("yyyy-MM-dd");
-						////var lastMonthDateForCharges = currentDateForCharges.AddMonths(-1).ToString("yyyy-MM-dd");
-						//var lastMonthDateForCharges = currentDateForCharges.AddDays(-1).ToString("yyyy-MM-dd");
-
-						//BaseListOptions queryParamsAgentTraditionalCharges = new BaseListOptions {
-						//	From_Date = lastMonthDateForCharges,
-						//	To_Date = tomorrowDateForCharges,
-						//};
-						//await apiAgentRequester.ListByAgentTraditional(queryParamsAgentTraditionalCharges);
-						//await apiAgentRequester.ListByAgentTraditional();
 						break;
 					case "billingService":
 						// await apiRequester.CreatePlan();
@@ -630,24 +616,6 @@ namespace PayarcSDK.Sample {
 						// await apiRequester.UpdateSubscription();
 						// await apiRequester.UpdateSubscriptionByObject();
 						// await apiRequester.CancelSubscription();
-						break;
-					case "batchService":
-						//var currentDateForCharges = DateTime.UtcNow;
-						//var tomorrowDateForCharges = currentDateForCharges.AddDays(1).ToString("yyyy-MM-dd");
-						////var lastMonthDateForCharges = currentDateForCharges.AddMonths(-1).ToString("yyyy-MM-dd");
-						//var lastMonthDateForCharges = currentDateForCharges.AddDays(-1).ToString("yyyy-MM-dd");
-						//BaseListOptions queryParamsListReportsByAgent = new BaseListOptions {
-						//	From_Date = "2024-09-01", // lastMonthDateForCharges,
-						//	To_Date = "2024-10-31", // tomorrowDateForCharges,
-						//};
-						//await apiAgentRequester.ListReportsByAgent(queryParamsListReportsByAgent);
-
-						BaseListOptions queryParamsReportDetailsByAgent = new BaseListOptions {
-							Merchant_Account_Number = "700100000084879",
-							Reference_Number = "633103040001",
-							Date = "2024-09-04"
-						};
-						await apiAgentRequester.ListReportDetailsByAgent(queryParamsReportDetailsByAgent);
 						break;
 					case "payarcConnect":
 						string deviceSerialNo = deviceSerialNumber; // Serial number of the device you are testing with
