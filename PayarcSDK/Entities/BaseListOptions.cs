@@ -9,4 +9,7 @@ public class BaseListOptions
 
 	public string? Report_DateGTE { get; init; }
 	public string? Report_DateLTE { get; init; }
+
+	public string? From_Date { get; init; }
+	public string? To_Date { get; init; }
 }

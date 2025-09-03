@@ -404,7 +404,7 @@ namespace PayarcSDK.Sample {
 								// Update a Application
 								ApplicationInfoData newApplicationData = new ApplicationInfoData {
 									Lead = new Lead {
-										MerchantName = "Updated"										
+										MerchantName = "Updated"
 									}
 								};
 								var updatedApplication = await payarcAgent.Applications.Update(applicationId, newApplicationData);
@@ -599,7 +599,7 @@ namespace PayarcSDK.Sample {
 						// await apiRequester.CreateACHChargeByBankAccount();
 						// await apiRequester.CreateACHChargeByBankAccountDetails();
 						// await apiRequester.ListCharges();
-						 await apiRequester.RefundChargeById();
+						await apiRequester.RefundChargeById();
 						// await apiRequester.RefundChargeByObject();
 						// await apiRequester.RefundACHChargeByObject();
 						break;
