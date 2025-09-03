@@ -9,7 +9,8 @@ namespace PayarcSDK {
         public CustomerService Customers { get; }
         public ChargeService Charges { get; }
         public BillingService Billing { get; }
-        public PayarcConnectService PayarcConnect { get; }
+        public BatchService Batches { get; }
+		public PayarcConnectService PayarcConnect { get; }
 
         /// <summary>
         /// Initializes the Payarc client with the given base URL and API key.
@@ -23,6 +24,7 @@ namespace PayarcSDK {
             Customers = new CustomerService(httpClient);
             Charges = new ChargeService(httpClient);
             Billing = new BillingService(httpClient);
+            Batches = new BatchService(httpClient);
             PayarcConnect = new PayarcConnectService(httpClient, config);
         }
 

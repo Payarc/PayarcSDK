@@ -13,25 +13,23 @@ using PayarcSDK.Entities.SplitCampaign;
 using System.Text.Json.Nodes;
 using System.Text.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using PayarcSDK.Entities.Batch;
 
 namespace PayarcSDK.Services {
 	public class CommonServices {
-		
+
 		private readonly HttpClient _httpClient;
-		
-		public CommonServices(HttpClient httpClient)
-		{
+
+		public CommonServices(HttpClient httpClient) {
 			_httpClient = httpClient;
 		}
-		public string BuildQueryString(Dictionary<string, object?> parameters)
-		{
+		public string BuildQueryString(Dictionary<string, object?> parameters) {
 			var queryString = string.Join("&",
 				parameters.Select(p =>
 					$"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value?.ToString() ?? string.Empty)}"));
 			return queryString;
 		}
-		public BaseResponse? TransformJsonRawObject(Dictionary<string, object> obj, string? rawObj, string type = "object")
-		{
+		public BaseResponse? TransformJsonRawObject(Dictionary<string, object> obj, string? rawObj, string type = "object") {
 			BaseResponse? response = null;
 			if (rawObj != null) {
 				if (type == "Plan") {
@@ -169,24 +167,24 @@ namespace PayarcSDK.Services {
 					response = applicationResponse;
 				} else if (type == "MerchantCode") {
 					var documentChangeResponse = JsonConvert.DeserializeObject<DocumentChangeResponse>(rawObj) ?? new DocumentChangeResponse();
-                    documentChangeResponse.RawData = rawObj;
-                    documentChangeResponse.ObjectId ??= $"appl_{obj["MerchantCode"]}";
-                    documentChangeResponse.Object = "ApplyApp";
-                    documentChangeResponse.MerchantDocuments?.ForEach(doc => {
+					documentChangeResponse.RawData = rawObj;
+					documentChangeResponse.ObjectId ??= $"appl_{obj["MerchantCode"]}";
+					documentChangeResponse.Object = "ApplyApp";
+					documentChangeResponse.MerchantDocuments?.ForEach(doc => {
 						doc.Object = "ApplyDocuments";
-                        doc.ObjectId = $"doc_{doc.DocumentCode}";
-                    });
-                    obj.Remove("MerchantCode");
+						doc.ObjectId = $"doc_{doc.DocumentCode}";
+					});
+					obj.Remove("MerchantCode");
 					response = documentChangeResponse;
 				} else if (type == "DocumentCode") {
-                    var documentChangeResponse = JsonConvert.DeserializeObject<DocumentChangeResponse>(rawObj) ?? new DocumentChangeResponse();
-                    documentChangeResponse.RawData = rawObj;
-                    documentChangeResponse.Object = "ApplyApp";
-                    documentChangeResponse.MerchantDocuments?.ForEach(doc => {
-                        doc.Object = "ApplyDocuments";
-                        doc.ObjectId = $"doc_{doc.DocumentCode}";
-                    });
-                    obj.Remove("MerchantDocuments");
+					var documentChangeResponse = JsonConvert.DeserializeObject<DocumentChangeResponse>(rawObj) ?? new DocumentChangeResponse();
+					documentChangeResponse.RawData = rawObj;
+					documentChangeResponse.Object = "ApplyApp";
+					documentChangeResponse.MerchantDocuments?.ForEach(doc => {
+						doc.Object = "ApplyDocuments";
+						doc.ObjectId = $"doc_{doc.DocumentCode}";
+					});
+					obj.Remove("MerchantDocuments");
 					response = documentChangeResponse;
 				} else if (type == "ApplyDocuments") {
 					var applicationService = new ApplicationService(_httpClient);
@@ -196,11 +194,11 @@ namespace PayarcSDK.Services {
 					//documentResponse.Delete = async (applicantId) => await applicationService.DeleteDocument(applicantId, documentResponse);
 					response = documentResponse;
 				} else if (type == "User") {
-                    var documentResponse = JsonConvert.DeserializeObject<SubAgentResponseData>(rawObj) ?? new SubAgentResponseData();
-                    documentResponse.RawData = rawObj;
-                    documentResponse.ObjectId ??= $"usr_{obj["id"]}";
-                    response = documentResponse;
-                } else if (type == "Cases") {
+					var documentResponse = JsonConvert.DeserializeObject<SubAgentResponseData>(rawObj) ?? new SubAgentResponseData();
+					documentResponse.RawData = rawObj;
+					documentResponse.ObjectId ??= $"usr_{obj["id"]}";
+					response = documentResponse;
+				} else if (type == "Cases") {
 					var disputeCaseResponse = JsonConvert.DeserializeObject<DisputeCasesResponseData>(rawObj) ?? new DisputeCasesResponseData();
 					disputeCaseResponse.RawData = rawObj;
 					disputeCaseResponse.Object = "Dispute";
@@ -234,6 +232,18 @@ namespace PayarcSDK.Services {
 					myAccountResponse.RawData = rawObj;
 					myAccountResponse.Object = "MyAccount";
 					myAccountResponse.ObjectId ??= $"macc_{obj["id"]}";
+					response = myAccountResponse;
+				} else if (type == "Batch") {
+					var myAccountResponse = JsonConvert.DeserializeObject<BatchReportResponseData>(rawObj) ?? new BatchReportResponseData();
+					myAccountResponse.RawData = rawObj;
+					myAccountResponse.Object = "Batch";
+					myAccountResponse.ObjectId ??= $"brn_{obj["Batch_Reference_Number"]}";
+					response = myAccountResponse;
+				} else if (type == "BatchDetail") {
+					var myAccountResponse = JsonConvert.DeserializeObject<BatchData>(rawObj) ?? new BatchData();
+					myAccountResponse.RawData = rawObj;
+					myAccountResponse.Object = "Batch";
+					myAccountResponse.ObjectId ??= $"brn_{obj["batch_ref_num"]}";
 					response = myAccountResponse;
 				}
 			}
