@@ -12,4 +12,7 @@ public class BaseListOptions
 
 	public string? From_Date { get; init; }
 	public string? To_Date { get; init; }
+	public string? Merchant_Account_Number { get; init; }
+	public string? Reference_Number { get; init; }
+	public string? Date { get; init; }
 }
