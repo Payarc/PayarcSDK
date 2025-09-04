@@ -4,12 +4,13 @@ using PayarcSDK.Services;
 namespace PayarcSDK {
     public class Payarc {
         public ApplicationService Applications { get; }
-        public DisputeService Disputes { get; }
+		public DisputeService Disputes { get; }
         public SplitCampaignService SplitCampaigns { get; }
         public CustomerService Customers { get; }
         public ChargeService Charges { get; }
         public BillingService Billing { get; }
         public BatchService Batches { get; }
+		public DepositService Deposit { get; }
 		public PayarcConnectService PayarcConnect { get; }
 
         /// <summary>
@@ -19,7 +20,8 @@ namespace PayarcSDK {
         public Payarc(HttpClient httpClient, SdkConfiguration config) {
             // Instantiate the services
             Applications = new ApplicationService(httpClient);
-            Disputes = new DisputeService(httpClient);
+			Deposit = new DepositService(httpClient);
+			Disputes = new DisputeService(httpClient);
             SplitCampaigns = new SplitCampaignService(httpClient);
             Customers = new CustomerService(httpClient);
             Charges = new ChargeService(httpClient);
