@@ -1229,7 +1229,7 @@ account within the given date range.
 
 ```csharp
 try {                
-    var batchReports = await payarc.Batches.ListReportsByAgent(new BaseListOptions {
+    var batchReports = await payarc.Batches.List(new BaseListOptions {
         From_Date = "2025-07-19",
         To_Date = "2025-07-22"
     });
@@ -1249,7 +1249,7 @@ It provides a list of individual transactions for that batch, along with batch t
 
 ```csharp
 try {                
-    var batchReportDetails = await payarc.Batches.ListReportDetailsByAgent(new BaseListOptions {
+    var batchReportDetails = await payarc.Batches.Retrieve(new BaseListOptions {
         Merchant_Account_Number = "000000000000000",
         Reference_Number = "000000000000",
         Date = "YYYY-MM-DD"
