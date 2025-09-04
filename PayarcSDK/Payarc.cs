@@ -10,7 +10,7 @@ namespace PayarcSDK {
         public ChargeService Charges { get; }
         public BillingService Billing { get; }
         public BatchService Batches { get; }
-		public DepositService Deposit { get; }
+		public DepositService Deposits { get; }
 		public PayarcConnectService PayarcConnect { get; }
 
         /// <summary>
@@ -20,7 +20,7 @@ namespace PayarcSDK {
         public Payarc(HttpClient httpClient, SdkConfiguration config) {
             // Instantiate the services
             Applications = new ApplicationService(httpClient);
-			Deposit = new DepositService(httpClient);
+			Deposits = new DepositService(httpClient);
 			Disputes = new DisputeService(httpClient);
             SplitCampaigns = new SplitCampaignService(httpClient);
             Customers = new CustomerService(httpClient);
