@@ -20,7 +20,7 @@ namespace PayarcSDK.Services
 			_httpClient = httpClient;
 		}
 
-		public async Task<ListBaseResponse?> ListReportsByAgent(BaseListOptions? options = null) {
+		public async Task<ListBaseResponse?> List(BaseListOptions? options = null) {
 			try {
 				var parameters = new Dictionary<string, object?>
 					{
@@ -37,7 +37,7 @@ namespace PayarcSDK.Services
 			}
 		}
 
-		public async Task<ListBaseResponse?> ListReportDetailsByAgent(BaseListOptions? options = null) {
+		public async Task<ListBaseResponse?> Retrieve(BaseListOptions? options = null) {
 			try {
 				var parameters = new Dictionary<string, object?>
 					{
