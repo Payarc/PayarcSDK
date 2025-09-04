@@ -1218,6 +1218,8 @@ try {
 
 <br/>
 
+## Service `payarc.Batches`
+
 ## Listing Batches
 
 ### Example: List Batch Reports by Agent with Constraints
@@ -1229,7 +1231,7 @@ account within the given date range.
 
 ```csharp
 try {                
-    var batchReports = await payarc.Batches.ListReportsByAgent(new BaseListOptions {
+    var batchReports = await payarc.Batches.List(new BaseListOptions {
         From_Date = "2025-07-19",
         To_Date = "2025-07-22"
     });
@@ -1249,12 +1251,37 @@ It provides a list of individual transactions for that batch, along with batch t
 
 ```csharp
 try {                
-    var batchReportDetails = await payarc.Batches.ListReportDetailsByAgent(new BaseListOptions {
+    var batchReportDetails = await payarc.Batches.Retrieve(new BaseListOptions {
         Merchant_Account_Number = "000000000000000",
         Reference_Number = "000000000000",
         Date = "YYYY-MM-DD"
     });
     Console.WriteLine($"Batch Report Details: {JsonConvert.SerializeObject(batchReportDetails)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}   
+```
+
+<br/>
+
+## Service `payarc.Deposits`
+
+## Listing Deposits
+
+### Example: List Batch Reports by Agent with Constraints
+
+This example demonstrates how to 
+retrieve deposit settlement reports for merchants based on a specified date range. The 
+response contains detailed deposit and settlement information for each merchant
+account within the given date range.
+
+```csharp
+try {                
+    var depositReports = await payarc.Deposits.List(new BaseListOptions {
+        From_Date = "2025-07-19",
+        To_Date = "2025-07-22"
+    });
+    Console.WriteLine($"Deposit Reports by Agent: {JsonConvert.SerializeObject(depositReports)}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
 }   

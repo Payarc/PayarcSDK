@@ -14,6 +14,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using PayarcSDK.Entities.Batch;
+using PayarcSDK.Entities.Deposit;
 
 namespace PayarcSDK.Services {
 	public class CommonServices {
@@ -245,6 +246,12 @@ namespace PayarcSDK.Services {
 					myAccountResponse.Object = "Batch";
 					myAccountResponse.ObjectId ??= $"brn_{obj["batch_ref_num"]}";
 					response = myAccountResponse;
+				} else if (type == "Account") {
+					var depositResponse = JsonConvert.DeserializeObject<DepositAccount>(rawObj) ?? new DepositAccount();
+					depositResponse.RawData = rawObj;
+					depositResponse.Object = "Merchant";
+					depositResponse.ObjectId ??= $"acc_{obj["id"]}";
+					response = depositResponse;
 				}
 			}
 			return response;
