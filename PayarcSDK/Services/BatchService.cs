@@ -37,17 +37,19 @@ namespace PayarcSDK.Services
 			}
 		}
 
-		public async Task<ListBaseResponse?> Retrieve(BaseListOptions? options = null) {
+		public async Task<ListBaseResponse?> Retrieve(BatchDetailRequestData? batchDetailData = null) {
 			try {
+				var refNum = batchDetailData?.Reference_Number;
+				refNum = refNum.StartsWith("brn_") ? refNum.Substring(4) : refNum;
 				var parameters = new Dictionary<string, object?>
 					{
-						{ "reference_number", options?.Reference_Number },
-						{ "date", options?.Date }
+						{ "reference_number", refNum },
+						{ "date", batchDetailData?.Date }
 					}.Where(kvp => kvp.Value != null)
 					.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 				var query = BuildQueryString(parameters);
-				return await ListBatchReportDetailsByAgent("agent/batch/reports/details/" + options?.Merchant_Account_Number, query);
+				return await ListBatchReportDetailsByAgent("agent/batch/reports/details/" + batchDetailData?.Merchant_Account_Number, query);
 			} catch (Exception ex) {
 				Console.WriteLine(ex);
 				throw;
