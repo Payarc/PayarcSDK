@@ -177,6 +177,13 @@ namespace PayarcSDK.Services {
 					});
 					obj.Remove("MerchantCode");
 					response = documentChangeResponse;
+				} else if (type == "AppStatus") {
+					var applicationStatusResponse = JsonConvert.DeserializeObject<ApplicationStatusResponse>(rawObj) ?? new ApplicationStatusResponse();
+					applicationStatusResponse.RawData = rawObj;
+					applicationStatusResponse.ObjectId ??= $"appl_{obj["MerchantCode"]}";
+					applicationStatusResponse.Object = "AppStatus";
+					obj.Remove("MerchantCode");
+					response = applicationStatusResponse;
 				} else if (type == "DocumentCode") {
 					var documentChangeResponse = JsonConvert.DeserializeObject<DocumentChangeResponse>(rawObj) ?? new DocumentChangeResponse();
 					documentChangeResponse.RawData = rawObj;
