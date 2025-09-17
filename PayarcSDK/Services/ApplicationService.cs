@@ -28,6 +28,12 @@ namespace PayarcSDK.Services {
 			return await RetrieveApplicantAsync(applicantId);
 		}
 
+		public async Task<BaseResponse> Lead_Status(AnyOf<string?, ApplicationResponseData> applicant) {
+			string? applicantId = string.Empty;
+			applicantId = applicant.IsSecond ? applicant.Second.ObjectId : applicant.First;
+			return await Status(applicantId);
+		}
+
 		public async Task<BaseResponse> Update(AnyOf<string?, ApplicationResponseData> applicant, ApplicationInfoData newData) {
 			string? applicantId = string.Empty;
 			applicantId = applicant.IsSecond ? applicant.Second.ObjectId : applicant.First;
@@ -117,6 +123,21 @@ namespace PayarcSDK.Services {
 			}
 		}
 
+		private async Task<BaseResponse> Status(string applicantId) {
+			try {
+				applicantId = applicantId.StartsWith("appl_") ? applicantId.Substring(5) : applicantId;
+
+				var json = JsonSerializer.Serialize(new {
+					MerchantCode = applicantId
+				});
+				var statusResponse = await GetApplyAppStatusAsync($"agent-hub/apply/lead-status", json);
+				return statusResponse;
+			} catch (Exception ex) {
+				Console.WriteLine(ex);
+				throw;
+			}
+		}
+
 		private async Task<BaseResponse> UpdateApplicantAsync(string applicantId, ApplicationInfoData newData) {
 			applicantId = applicantId.StartsWith("appl_") ? applicantId.Substring(5) : applicantId;
 			//newData.Lead.BankAccountType = "01";
@@ -152,30 +173,29 @@ namespace PayarcSDK.Services {
 		}
 
 		private async Task<ListBaseResponse> ListSubAgentsAsync(BaseListOptions? options = null) {
-            try {
-                var parameters = new Dictionary<string, object>
-                {
-                    { "limit", options?.Limit ?? 25 },
-                    { "page", options?.Page ?? 1 }
-                };
-                if (!string.IsNullOrEmpty(options?.Search)) {
-                    var searchArray = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(options.Search);
-                    if (searchArray != null) {
-                        foreach (var searchItem in searchArray) {
-                            foreach (var kvp in searchItem) {
-                                parameters.Add(kvp.Key, kvp.Value);
-                            }
-                        }
-                    }
-                }
-                var query = BuildQueryString(parameters);
-                return await GetListSubAgentsAsync("agent-hub/sub-agents", query);
-            }
-            catch (Exception ex) {
-                Console.WriteLine(ex);
-                throw;
-            }
-        }
+			try {
+				var parameters = new Dictionary<string, object>
+				{
+					{ "limit", options?.Limit ?? 25 },
+					{ "page", options?.Page ?? 1 }
+				};
+				if (!string.IsNullOrEmpty(options?.Search)) {
+					var searchArray = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(options.Search);
+					if (searchArray != null) {
+						foreach (var searchItem in searchArray) {
+							foreach (var kvp in searchItem) {
+								parameters.Add(kvp.Key, kvp.Value);
+							}
+						}
+					}
+				}
+				var query = BuildQueryString(parameters);
+				return await GetListSubAgentsAsync("agent-hub/sub-agents", query);
+			} catch (Exception ex) {
+				Console.WriteLine(ex);
+				throw;
+			}
+		}
 
 		private async Task<BaseResponse> DeleteApplicantDocumentAsync(string? applicantId, string documentId) {
 			documentId = documentId.StartsWith("doc_") ? documentId.Substring(4) : documentId;
@@ -420,16 +440,48 @@ namespace PayarcSDK.Services {
 				throw;
 			}
 		}
+		private async Task<BaseResponse> GetApplyAppStatusAsync(string appUrl, string? queryParams = null, string type = "AppStatus") {
+			try {
+				var content = new StringContent(queryParams, Encoding.UTF8, "application/json");
+				var response = await _httpClient.PostAsync(appUrl, content);
+				response.EnsureSuccessStatusCode();
+				var responseContent = await response.Content.ReadAsStringAsync();
+				if (!response.IsSuccessStatusCode) {
+					var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+					Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
+					throw new InvalidOperationException($"HTTP error {response.StatusCode}: {responseContent}");
+				}
+
+				if (string.IsNullOrWhiteSpace(responseContent)) {
+					throw new InvalidOperationException("Response body is empty.");
+				}
+
+				var responseData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
+				if (responseData == null || !responseData.TryGetValue("MerchantCode", out var dataValue) ||
+					!(dataValue is JsonElement dataElement)) {
+					throw new InvalidOperationException("Response data is invalid or missing.");
+				}
+
+				var rawData = responseContent;
+				return TransformJsonRawObject(responseData, rawData, type);
+			} catch (HttpRequestException ex) {
+				Console.WriteLine($"HTTP error processing charge: {ex.Message}");
+				throw;
+			} catch (JsonException ex) {
+				Console.WriteLine($"JSON error processing charge: {ex.Message}");
+				throw new InvalidOperationException("Failed to process JSON response.", ex);
+			} catch (Exception ex) {
+				Console.WriteLine($"General error handling charge: {ex.Message}");
+				throw;
+			}
+		}
 
 		private async Task<BaseResponse> CreateApplicationAsync(string url, ApplicationInfoData applicationData, string type = "MerchantCode") {
 			try {
 				var content = new StringContent(applicationData.ToJson(), Encoding.UTF8, "application/json");
-				Console.WriteLine($"ApplicationInfoData : {applicationData.ToJson()}");
 				var response = await _httpClient.PostAsync(url, content);
 				response.EnsureSuccessStatusCode();
 				var responseContent = await response.Content.ReadAsStringAsync();
-				//return JObject.Parse(responseContent);
-				Console.WriteLine($"Response status code: {response.StatusCode}");
 				if (!response.IsSuccessStatusCode) {
 					var errorData = JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent);
 					Console.WriteLine($"Error details: {JsonSerializer.Serialize(errorData)}");
