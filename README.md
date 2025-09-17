@@ -764,6 +764,22 @@ try {
 }
 ```
 
+
+## Lead Status
+
+### Example: Get the Status of an Application
+Returns the status of an application
+```csharp
+try {
+    string id = "appl_1J*****3";
+
+    var application_status = await payarc.Applications.Lead_Status(id);
+    Console.WriteLine($"Application status: {JsonConvert.SerializeObject(application_status)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
 <br/>
 
 ## Service `payarc.SplitCampaigns`
