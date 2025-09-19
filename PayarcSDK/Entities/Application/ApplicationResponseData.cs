@@ -99,7 +99,7 @@ namespace PayarcSDK.Entities
 		public string? LeadStatus { get; set; }
 
 		[JsonProperty("hardware_shippings")]
-		public string? HardwareShippings { get; set; }
+		public List<object>? HardwareShippings { get; set; }
 
 		[JsonProperty("status_id")]
 		public int StatusId { get; set; }
