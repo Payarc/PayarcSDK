@@ -1300,8 +1300,43 @@ try {
     Console.WriteLine($"Deposit Reports by Agent: {JsonConvert.SerializeObject(depositReports)}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
-}   
+}
 ```
+
+## Instructional Funding
+
+## Listing Instructional Fundings
+
+### Example: List Instruction Fundings
+
+This example demonstrates how to list all instructional fundings:
+
+```csharp
+try {                
+    var instructionalFundings = await payarc.InstructionalFunding.List();
+    Console.WriteLine($"List of Instructional Fundings: {JsonConvert.SerializeObject(instructionalFundings)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Create Instructional Funding
+
+### Example: Create Instructional Funding
+
+This example demonstrates how to transfer money to my payees via instructional funding:
+
+```csharp
+try {            
+    var InstructionalFunding = await payarc.InstructionalFunding.Create(new InstructionalFundingRequestData {
+        mid: "000000000000000",
+        amount: 500
+    });
+    Console.WriteLine($"Instructional Funding Created: {JsonConvert.SerializeObject(InstructionalFunding)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+``` 
 
 # Payarc Connect
 The following functionality will pertain only to user who are utilizing the Payarc Connect integration:

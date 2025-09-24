@@ -7,9 +7,17 @@ public class AchChargeResponseData : BaseResponse
 {
     [JsonProperty("object")]
     public override string? Object { get; set; }
-    
+
     [JsonProperty("object_id")]
-    public override string? ObjectId { get; set; }
+    public override string? ObjectId
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Object) || string.IsNullOrEmpty(Id))
+                return null;
+            return $"ach_{Id}";
+        }
+    }
 
     [JsonIgnore]
     public Func< Dictionary<string, object>?, Task<BaseResponse?>> CreateRefund { get; set; }

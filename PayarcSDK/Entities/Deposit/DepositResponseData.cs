@@ -74,10 +74,21 @@ namespace PayarcSDK.Entities.Deposit {
 		[JsonProperty("id")]
 		public string Id { get; set; }
 
-		[JsonProperty("object")]
-		public string Object { get; set; }
+        [JsonProperty("object")]
+        public override string? Object { get; set; }
 
-		[JsonProperty("legal_name")]
+        [JsonProperty("object_id")]
+        public override string? ObjectId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Object) || string.IsNullOrEmpty(Id))
+                    return null;
+                return $"acc_{Id}";
+            }
+        }
+
+        [JsonProperty("legal_name")]
 		public string LegalName { get; set; }
 
 		[JsonProperty("dba_name")]

@@ -9,14 +9,28 @@ using System.Threading.Tasks;
 
 namespace PayarcSDK.Entities.Batch {
 	internal class BatchReportDetailResponseData : BaseResponse {
-		[JsonPropertyName("data")]
+		[JsonProperty("data")]
 		public Dictionary<string, JsonElement> Data { get; set; }
 	}
 
 	// Represents a single transaction record within a batch.
-	public class BatchData : BaseResponse {
-		// Use JsonPropertyName to map snake_case JSON keys to PascalCase C# properties.
-		[JsonProperty("Merchant_Account_Number")]
+	public class BatchData : BaseResponse
+    {
+        [JsonProperty("object")]
+        public override string? Object { get; set; }
+
+        [JsonProperty("object_id")]
+        public override string? ObjectId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Object) || string.IsNullOrEmpty(Id))
+                    return null;
+                return $"brn_{Id}";
+            }
+        }
+
+        [JsonProperty("Merchant_Account_Number")]
 		public string MerchantAccountNumber { get; set; }
 
 		[JsonProperty("account_type")]
@@ -55,22 +69,22 @@ namespace PayarcSDK.Entities.Batch {
 
 	// Represents the total amounts for a single batch.
 	public class BatchTotal {
-		[JsonPropertyName("Amounts")]
+		[JsonProperty("Amounts")]
 		public int Amounts { get; set; }
 	}
 
 	// Represents the total amounts for the entire response.
 	public class GrandTotal {
-		[JsonPropertyName("total_amount")]
+		[JsonProperty("total_amount")]
 		public int TotalAmount { get; set; }
 	}
 
 	// Represents the data structure for a single batch, identified by a reference number.
 	public class BatchDetails {
-		[JsonPropertyName("batch_data")]
+		[JsonProperty("batch_data")]
 		public List<BatchData> BatchData { get; set; }
 
-		[JsonPropertyName("batch_total")]
+		[JsonProperty("batch_total")]
 		public BatchTotal BatchTotal { get; set; }
 	}
 }
