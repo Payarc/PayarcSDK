@@ -11,7 +11,18 @@ namespace PayarcSDK.Entities
 		[JsonProperty("object")]
 		public string Object { get; set; }
 
-		[JsonIgnore]
+        [JsonProperty("object_id")]
+        public override string? ObjectId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Object) || string.IsNullOrEmpty(Id))
+                    return null;
+                return $"doc_{Id}";
+            }
+        }
+
+        [JsonIgnore]
 		public Func<Task<BaseResponse?>> Delete { get; set; }
 
 		[JsonProperty("id")]

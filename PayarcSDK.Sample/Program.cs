@@ -41,7 +41,7 @@ namespace PayarcSDK.Sample {
 			try {
 				payarc = new SdkBuilder()
 					.Configure(config => {
-						config.Environment = "sandbox";     // Use sandbox environment
+						config.Environment = "prod";     // Use sandbox environment
 						config.ApiVersion = "v1";           // Use version 2 of the API
 						config.BearerToken = accessToken;   // Set the Bearer Token
 					})
@@ -167,10 +167,11 @@ namespace PayarcSDK.Sample {
 			//var testService = "customerService";
 			//var testService = "applicationService";
 			//var testService = "disputeService";
-			var testService = "splitCampaignService";
+			//var testService = "splitCampaignService";
+			var testService = "instructionalFunding";
 			//var testService = "chargeService";
-			//var testService = "payarcConnect";
-			var apiRequester = new ApiRequester(payarc);
+            //var testService = "payarcConnect";
+            var apiRequester = new ApiRequester(payarc);
 			var apiAgentRequester = new ApiRequester(payarcAgent);
 			if (payarc != null && payarcAgent != null) {
 				switch (testService) {
@@ -598,8 +599,8 @@ namespace PayarcSDK.Sample {
 						// await apiRequester.CreateChargeByToken();
 						// await apiRequester.CreateACHChargeByBankAccount();
 						// await apiRequester.CreateACHChargeByBankAccountDetails();
-						// await apiRequester.ListCharges();
-						await apiRequester.RefundChargeById();
+						await apiRequester.ListCharges();
+						// await apiRequester.RefundChargeById();
 						// await apiRequester.RefundChargeByObject();
 						// await apiRequester.RefundACHChargeByObject();
 						break;
@@ -634,7 +635,11 @@ namespace PayarcSDK.Sample {
 						//TerminalResponse terminalResponse = await payarcConnect.PayarcConnect.Terminals();
 
 						break;
-					default:
+                    case "instructionalFunding":
+                        //await apiRequester.ListInstructionalFundings();
+						await apiRequester.CreateInstructionalFunding();
+						break;
+                    default:
 						Console.WriteLine("Nothing to test.");
 						break;
 				}

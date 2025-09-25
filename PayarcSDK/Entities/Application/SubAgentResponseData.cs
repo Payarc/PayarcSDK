@@ -11,6 +11,17 @@ namespace PayarcSDK.Entities
         [JsonProperty("object")]
         public string Object { get; set; }
 
+        [JsonProperty("object_id")]
+        public override string? ObjectId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Object) || string.IsNullOrEmpty(Id))
+                    return null;
+                return $"usr_{Id}";
+            }
+        }
+
         [JsonProperty("id")]
         public string Id { get; set; }
 
