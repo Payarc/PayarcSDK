@@ -17,7 +17,10 @@ namespace PayarcSDK.Entities
 
         [JsonIgnore]
         public Func< Dictionary<string, object>?, Task<BaseResponse?>> CreateRefund { get; set; }
-        
+
+        [JsonIgnore]
+        public Func<Dictionary<string, object>?, Task<BaseResponse?>> TipAdjust { get; set; }
+
         [JsonProperty("id")]
         public new string? Id { get; set; }
 

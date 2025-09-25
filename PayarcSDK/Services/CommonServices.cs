@@ -60,7 +60,8 @@ namespace PayarcSDK.Services {
 					chargeResponse.RawData = rawObj;
 					chargeResponse.ObjectId ??= $"ch_{obj["id"]}";
 					chargeResponse.CreateRefund = async (chargeData) => await chargeService.CreateRefund(chargeResponse, chargeData);
-					response = chargeResponse;
+					chargeResponse.TipAdjust = async (tipData) => await chargeService.TipAdjust(chargeResponse, tipData);
+                    response = chargeResponse;
 				} else if (type == "ACHCharge") {
 					ChargeService chargeService = new ChargeService(_httpClient);
 					var achChargeResponse = JsonConvert.DeserializeObject<AchChargeResponseData>(rawObj) ?? new AchChargeResponseData();
