@@ -3,7 +3,7 @@ using PayarcSDK.Entities.Billing;
 
 namespace PayarcSDK.Entities;
 
-public class ChargeRequestPayload : BaseRequestPayload
+public class  ChargeRequestPayload : BaseRequestPayload
 {
     [JsonProperty("account_number")]
     public string? AccountNumber { get; set; }
@@ -19,14 +19,19 @@ public class ChargeRequestPayload : BaseRequestPayload
     
     [JsonProperty("account_type")]
     public string? AccountType { get; set; }
+
     [JsonProperty("amount")]
     public long? Amount { get; set; }
+
     [JsonProperty("currency")]
     public string? Currency { get; set; }
+
     [JsonProperty("card_id")]
     public string? CardId { get; set; }
+
     [JsonProperty("exp_month")]
     public string? ExpMonth { get; set; }
+
     [JsonProperty("exp_year")]
     public string? ExpYear { get; set; }
     
@@ -59,8 +64,13 @@ public class ChargeRequestPayload : BaseRequestPayload
     
     [JsonProperty("bank_account_id")]
     public string? BankAccountId { get; set; }
+
     [JsonProperty("type")]
     public string? Type { get; set; }
+
     [JsonProperty("card_number")]
     public string? CardNumber { get; set; }
+
+    [JsonProperty("splits")]
+    public List<SplitNestedOptions>? Splits { get; set; }
 }

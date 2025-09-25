@@ -168,10 +168,9 @@ namespace PayarcSDK.Sample {
 			//var testService = "applicationService";
 			//var testService = "disputeService";
 			//var testService = "splitCampaignService";
-			var testService = "instructionalFunding";
-			//var testService = "chargeService";
-            //var testService = "payarcConnect";
-            var apiRequester = new ApiRequester(payarc);
+			var testService = "chargeService";
+			//var testService = "payarcConnect";
+			var apiRequester = new ApiRequester(payarc);
 			var apiAgentRequester = new ApiRequester(payarcAgent);
 			if (payarc != null && payarcAgent != null) {
 				switch (testService) {
@@ -592,15 +591,15 @@ namespace PayarcSDK.Sample {
 						break;
 					case "chargeService":
 						// await apiRequester.CreateChargeExample();
-						// await apiRequester.CreateChargeExample();
+						 await apiRequester.CreateSplitChargeExample();
 						// await apiRequester.GetChargeById();
 						// await apiRequester.CreateChargeByCardIdExample();
 						// await apiRequester.CreateChargeByCustomerIdExample();
 						// await apiRequester.CreateChargeByToken();
 						// await apiRequester.CreateACHChargeByBankAccount();
 						// await apiRequester.CreateACHChargeByBankAccountDetails();
-						await apiRequester.ListCharges();
-						// await apiRequester.RefundChargeById();
+						// await apiRequester.ListCharges();
+						//await apiRequester.RefundChargeById();
 						// await apiRequester.RefundChargeByObject();
 						// await apiRequester.RefundACHChargeByObject();
 						break;
