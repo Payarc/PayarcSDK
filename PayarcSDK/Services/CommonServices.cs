@@ -15,6 +15,7 @@ using System.Text.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using PayarcSDK.Entities.Batch;
 using PayarcSDK.Entities.Deposit;
+using PayarcSDK.Entities.InstructionalFunding;
 
 namespace PayarcSDK.Services {
 	public class CommonServices {
@@ -259,8 +260,13 @@ namespace PayarcSDK.Services {
 					depositResponse.Object = "Merchant";
 					depositResponse.ObjectId ??= $"acc_{obj["id"]}";
 					response = depositResponse;
-				}
-			}
+                } else if (type == "ChargeSplit") {
+                    var depositResponse = JsonConvert.DeserializeObject<InstructionalFundingResponseData>(rawObj) ?? new InstructionalFundingResponseData();
+                    depositResponse.RawData = rawObj;
+                    depositResponse.ObjectId ??= $"cspl_{obj["id"]}";
+                    response = depositResponse;
+                }
+            }
 			return response;
 		}
 	}
