@@ -3,7 +3,7 @@ using PayarcSDK.Entities.Billing;
 
 namespace PayarcSDK.Entities;
 
-public class  ChargeRequestPayload : BaseRequestPayload
+public class ChargeRequestPayload : BaseRequestPayload
 {
     [JsonProperty("account_number")]
     public string? AccountNumber { get; set; }

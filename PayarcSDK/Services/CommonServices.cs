@@ -16,6 +16,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using PayarcSDK.Entities.Batch;
 using PayarcSDK.Entities.Deposit;
 using PayarcSDK.Entities.InstructionalFunding;
+using PayarcSDK.Entities.Payee;
 
 namespace PayarcSDK.Services {
 	public class CommonServices {
@@ -152,8 +153,18 @@ namespace PayarcSDK.Services {
 					tokenResponse.RawData = rawObj;
 					tokenResponse.ObjectId ??= $"tok_{obj["id"]}";
 					response = tokenResponse;
-				} else if (type == "ApplyApp") {
-					var applicationService = new ApplicationService(_httpClient);
+				} else if (type == "Payee") {
+                    var payeeResponse = JsonConvert.DeserializeObject<PayeeResponseData>(rawObj) ?? new PayeeResponseData();
+                    payeeResponse.Object = "Payee";
+                    payeeResponse.ObjectId ??= $"appy_{obj["id"]}";
+                    response = payeeResponse;
+                } else if (type == "PayeeList") {
+                    var payeeResponse = JsonConvert.DeserializeObject<PayeeListData>(rawObj) ?? new PayeeListData();
+                    payeeResponse.Object = "Payee";
+                    payeeResponse.ObjectId ??= $"appy_{obj["MerchantCode"]}";
+                    response = payeeResponse;
+                } else if (type == "ApplyApp") {
+                    var applicationService = new ApplicationService(_httpClient);
 					var applicationResponse = JsonConvert.DeserializeObject<ApplicationResponseData>(rawObj) ?? new ApplicationResponseData();
 					applicationResponse.RawData = rawObj;
 					applicationResponse.ObjectId ??= $"appl_{obj["id"]}";
