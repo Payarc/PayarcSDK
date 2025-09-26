@@ -131,6 +131,48 @@ try {
 }
 ```
 
+## Creating Split Funding
+
+### Example: Create a Split Funding on Charge
+
+When processing a charge with split funding, you need to include additional attributes in the request payload:
+
+splits → an array of split objects. 
+    Each split must include the MID number of the payee. 
+    Each split must define either:
+        percent → the percentage of the total amount, or
+        amount → a fixed amount value
+        ⚠️ You cannot use both percent and amount in the same split
+```csharp
+try {
+    var charge = await payarc.Charges.Create(new ChargeCreateOptions {
+        Amount = 2860,
+        Currency = "usd",
+        Source = new SourceNestedOptions {
+            CardNumber = "4012******5439",
+            ExpMonth = "03",
+            ExpYear = "2025",
+        },
+		Splits = new List<SplitNestedOptions>
+		{
+			new SplitNestedOptions
+			{
+				Mid = "0709900000098856",
+                Percent = 30,
+			},
+			new SplitNestedOptions
+			{
+				Mid = "0709900000098856",
+                Amount = 15,
+            }
+        }
+    });
+    Console.WriteLine($"Charge created: {JsonSerializer.Serialize(charge)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
 ### Example: Create a Charge by Token
 To create a payment (charge) from a customer, the following minimum information is required:
 - `Amount` - Converted to cents (e.g. $1.00 &rarr; 100).
@@ -299,6 +341,43 @@ try {
 
     var charge = await payarc.Charges.CreateRefund(id, options);
     Console.WriteLine($"Charge refunded: {JsonConvert.SerializeObject(charge)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Adding Tip Adjustment
+
+### Example: Add a Tip to a Charge
+
+This example demonstrates how to add a tip to an existing charge:
+
+```csharp
+try {
+    string id = "ch_g**********08eA";
+    var options = new Dictionary<string, object> {                                
+        { "tip", 50 }
+    };
+
+    var charge = await payarc.Charges.TipAdjust(id, options);
+    Console.WriteLine($"Tip adjusted charge: {JsonConvert.SerializeObject(charge)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+Alternatively, you can add a tip to the charge directly using the `tipAdjust` method on the Payarc instance:
+
+```csharp
+try {
+    string id = "ch_g**********08eA";
+    var options = new Dictionary<string, object> {                                
+        { "tip", 50 }
+    };
+    
+	var charge = await _payarc.Charges.Retrieve(id) as ChargeResponseData;
+	var tipAdjust = await charge.TipAdjust(options) as ChargeResponseData;
+    Console.WriteLine($"Tip adjusted charge: {JsonConvert.SerializeObject(tipAdjust)}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
 }

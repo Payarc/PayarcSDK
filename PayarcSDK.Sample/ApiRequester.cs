@@ -190,11 +190,50 @@ public class ApiRequester
 		{
 			Console.WriteLine(ex.Message);
 		}
-	}
-	public async Task RefundChargeById()
-	{
-		try
-		{
+    }
+
+    public async Task CreateSplitChargeExample()
+    {
+        try
+        {
+            var options = new ChargeCreateOptions
+            {
+                Amount = 150,
+                Currency = "usd",
+                Source = new SourceNestedOptions
+                {
+                    CardNumber = "4085404032505228",
+                    ExpMonth = "02",
+                    ExpYear = "2027",
+                },
+				Splits = new List<SplitNestedOptions>
+				{
+					new SplitNestedOptions
+					{
+						Mid = "0709900000098856",
+                        Percent = 30,
+					},
+					new SplitNestedOptions
+					{
+						Mid = "0709900000098856",
+                        Amount = 15,
+                    }
+                }
+            };
+            var charge = await _payarc.Charges.Create(options);
+            Console.WriteLine("Charge Data");
+            Console.WriteLine(charge);
+            Console.WriteLine("Raw Data");
+            //var json = JsonSerializer.Deserialize<JsonDocument>(charge?.RawData);
+            //Console.WriteLine(json.RootElement.GetProperty("id"));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+    public async Task RefundChargeById() {
+		try {
 			string charge = "ach_g9dDE7GD90AG08eA";
 			var refund = await _payarc.Charges.CreateRefund(charge, null);
 			Console.WriteLine("Refund Data");
