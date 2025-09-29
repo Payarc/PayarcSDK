@@ -24,6 +24,10 @@ namespace PayarcSDK.Services {
             return await GetAllPayeeAsync(options);
         }
 
+        public async Task<bool> Delete(string customerId) {
+            return await DeletePayee(customerId);
+        }
+
         private async Task<BaseResponse> CreatePayeeAsync(PayeeRequestData payeeData)
         {
             return await CreatePayee("agent-hub/apply/payees", payeeData);
@@ -162,6 +166,17 @@ namespace PayarcSDK.Services {
                 Console.WriteLine($"General error handling charge: {ex.Message}");
                 throw;
             }
+        }
+
+        private async Task<bool> DeletePayee(string payeeId) {
+            payeeId = payeeId.StartsWith("appy_") ? payeeId.Substring(5) : payeeId;
+            await DeletePayeeAsync($"agent-hub/apply/payees/{payeeId}");
+            return true;
+        }
+
+        private async Task DeletePayeeAsync(string url) {
+            var response = await _httpClient.DeleteAsync(url);
+            response.EnsureSuccessStatusCode();
         }
     }
 }
