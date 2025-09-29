@@ -859,6 +859,93 @@ try {
 }
 ```
 
+
+## Manage Payee
+
+### Create new Payee
+
+In the process of connecting your payee with Payarc a selection is made based on Payarc's criteria. Process begins with filling information for the payee and creating an entry in the database. Here is an example how this process could start
+```csharp
+try {
+	var payeeData = new PayeeRequestData
+	{
+		type = "sole_prop",
+		personal_info = new PersonalInfo
+		{
+			first_name = "PayeeName",
+			last_name = "PayeeLast",
+			ssn = "#########",
+			dob = "YYYY-MM-DD",
+        },
+		business_info = new BusinessInfo
+		{
+			legal_name = "Payee Business Name",
+			ein = "##-#######",
+			irs_filing_type = "\"A\""
+                // "A" - Foreign Entity Verification Pending
+                // "B" - "Foreign Entity Identified before 1/1/11"
+                // "C" - "Non Profit Verified"
+                // "D" - "Non Profit Verification Pending"
+                // "F" - "Foreign Entity Verified"
+                // "G" - "Government Entity"
+                // "J" - "Financial Institution"
+                // "N" - "Not Excluded"
+        },
+		contact_info = new ContactInfo
+		{
+			email = "payee@example.com",
+			phone_number = "1234567890"
+        },
+		address_info = new AddressInfo
+		{
+			street = "123 Test St",
+			city = "Test City",
+			zip_code = "12345",
+			county_code = "NY"
+		},
+		banking_info = new BankingInfo
+		{
+			dda = "123456789",
+			routing = "987654321"
+        },
+		foundation_date = "YYYY-MM-DD",
+		date_incorporated = "YYYY-MM-DD"
+	};
+    var payee = await _payarc.Payees.Create(payeeData);
+    Console.WriteLine($"Payee created: {payee}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+```
+
+### Retrieve Information for Payees
+
+List all payee for current agent
+```csharp
+try {				
+    var payees = await payarc.Payees.List();
+    Console.WriteLine($"Payees retrieved: {JsonConvert.SerializeObject(payees)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+### Example: Delete a Payee
+
+This example demonstrates how to delete an existing payee when only ID is known:
+
+```csharp
+try {
+    string id = "appy_1J*****3";
+
+    var deletedPayee = await payarc.Payees.Delete(id);
+    Console.WriteLine($"Payee deleted successfully: {deletedPayee}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
 <br/>
 
 ## Service `payarc.SplitCampaigns`
