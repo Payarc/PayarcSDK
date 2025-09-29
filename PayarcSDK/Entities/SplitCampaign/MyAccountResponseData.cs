@@ -7,8 +7,23 @@ using System.Threading.Tasks;
 
 namespace PayarcSDK.Entities.SplitCampaign
 {
-    public class MyAccountResponseData : BaseResponse {
-		[JsonProperty("id")]
+    public class MyAccountResponseData : BaseResponse
+    {
+        [JsonProperty("object")]
+        public override string? Object { get; set; }
+
+        [JsonProperty("object_id")]
+        public override string? ObjectId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Object) || string.IsNullOrEmpty(Id))
+                    return null;
+                return $"macc_{Id}";
+            }
+        }
+
+        [JsonProperty("id")]
 		public string Id { get; set; }
 
 		[JsonProperty("email")]

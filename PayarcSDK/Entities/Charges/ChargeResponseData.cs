@@ -1,8 +1,6 @@
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using AnyOfTypes;
 using PayarcSDK.Entities;
+using PayarcSDK.Entities.InstructionalFunding;
 
 namespace PayarcSDK.Entities
 {
@@ -13,11 +11,22 @@ namespace PayarcSDK.Entities
         public override string? Object { get; set; }
 
         [JsonProperty("object_id")]
-        public override string? ObjectId { get; set; }
+        public override string? ObjectId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Object) || string.IsNullOrEmpty(Id))
+                    return null;
+                return $"ch_{Id}";
+            }
+        }
 
         [JsonIgnore]
         public Func< Dictionary<string, object>?, Task<BaseResponse?>> CreateRefund { get; set; }
-        
+
+        [JsonIgnore]
+        public Func<Dictionary<string, object>?, Task<BaseResponse?>> TipAdjust { get; set; }
+
         [JsonProperty("id")]
         public new string? Id { get; set; }
 
@@ -272,6 +281,8 @@ namespace PayarcSDK.Entities
         public RefundsWrapper? RefundsWrapper { get; set; }
         [JsonProperty("card")]
         public CardWrapper? CardWrapper { get; set; }
+        [JsonProperty("splits")]
+        public SplitsWrapper? SplitsWrapper { get; set; }
 
         // Optional: to handle null values like `do_not_send_email_to_customer` dynamically
         [JsonProperty("do_not_send_email_to_customer")]
@@ -293,6 +304,11 @@ public class RefundsWrapper
 {
     [JsonProperty("data")]
     public List<Refund>? Refunds { get; set; }
+}
+
+public class SplitsWrapper {
+    [JsonProperty("data")]
+    public List<InstructionalFundingResponseData>? ChargeSplits { get; set; }
 }
 // public class RefundWrapper
 // {

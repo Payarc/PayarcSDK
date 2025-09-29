@@ -131,6 +131,48 @@ try {
 }
 ```
 
+## Creating Split Funding
+
+### Example: Create a Split Funding on Charge
+
+When processing a charge with split funding, you need to include additional attributes in the request payload:
+
+splits → an array of split objects. 
+    Each split must include the MID number of the payee. 
+    Each split must define either:
+        percent → the percentage of the total amount, or
+        amount → a fixed amount value
+        ⚠️ You cannot use both percent and amount in the same split
+```csharp
+try {
+    var charge = await payarc.Charges.Create(new ChargeCreateOptions {
+        Amount = 2860,
+        Currency = "usd",
+        Source = new SourceNestedOptions {
+            CardNumber = "4012******5439",
+            ExpMonth = "03",
+            ExpYear = "2025",
+        },
+		Splits = new List<SplitNestedOptions>
+		{
+			new SplitNestedOptions
+			{
+				Mid = "0709900000098856",
+                Percent = 30,
+			},
+			new SplitNestedOptions
+			{
+				Mid = "0709900000098856",
+                Amount = 15,
+            }
+        }
+    });
+    Console.WriteLine($"Charge created: {JsonSerializer.Serialize(charge)}");
+} catch (Exception ex) {
+    Console.WriteLine($"Error detected: {ex.Message}");
+}
+```
+
 ### Example: Create a Charge by Token
 To create a payment (charge) from a customer, the following minimum information is required:
 - `Amount` - Converted to cents (e.g. $1.00 &rarr; 100).
@@ -299,6 +341,43 @@ try {
 
     var charge = await payarc.Charges.CreateRefund(id, options);
     Console.WriteLine($"Charge refunded: {JsonConvert.SerializeObject(charge)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Adding Tip Adjustment
+
+### Example: Add a Tip to a Charge
+
+This example demonstrates how to add a tip to an existing charge:
+
+```csharp
+try {
+    string id = "ch_g**********08eA";
+    var options = new Dictionary<string, object> {                                
+        { "tip", 50 }
+    };
+
+    var charge = await payarc.Charges.TipAdjust(id, options);
+    Console.WriteLine($"Tip adjusted charge: {JsonConvert.SerializeObject(charge)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+Alternatively, you can add a tip to the charge directly using the `tipAdjust` method on the Payarc instance:
+
+```csharp
+try {
+    string id = "ch_g**********08eA";
+    var options = new Dictionary<string, object> {                                
+        { "tip", 50 }
+    };
+    
+	var charge = await _payarc.Charges.Retrieve(id) as ChargeResponseData;
+	var tipAdjust = await charge.TipAdjust(options) as ChargeResponseData;
+    Console.WriteLine($"Tip adjusted charge: {JsonConvert.SerializeObject(tipAdjust)}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
 }
@@ -775,6 +854,93 @@ try {
 
     var application_status = await payarc.Applications.Lead_Status(id);
     Console.WriteLine($"Application status: {JsonConvert.SerializeObject(application_status)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+
+## Manage Payee
+
+### Create new Payee
+
+In the process of connecting your payee with Payarc a selection is made based on Payarc's criteria. Process begins with filling information for the payee and creating an entry in the database. Here is an example how this process could start
+```csharp
+try {
+	var payeeData = new PayeeRequestData
+	{
+		type = "sole_prop",
+		personal_info = new PersonalInfo
+		{
+			first_name = "PayeeName",
+			last_name = "PayeeLast",
+			ssn = "#########",
+			dob = "YYYY-MM-DD",
+        },
+		business_info = new BusinessInfo
+		{
+			legal_name = "Payee Business Name",
+			ein = "##-#######",
+			irs_filing_type = "\"A\""
+                // "A" - Foreign Entity Verification Pending
+                // "B" - "Foreign Entity Identified before 1/1/11"
+                // "C" - "Non Profit Verified"
+                // "D" - "Non Profit Verification Pending"
+                // "F" - "Foreign Entity Verified"
+                // "G" - "Government Entity"
+                // "J" - "Financial Institution"
+                // "N" - "Not Excluded"
+        },
+		contact_info = new ContactInfo
+		{
+			email = "payee@example.com",
+			phone_number = "1234567890"
+        },
+		address_info = new AddressInfo
+		{
+			street = "123 Test St",
+			city = "Test City",
+			zip_code = "12345",
+			county_code = "NY"
+		},
+		banking_info = new BankingInfo
+		{
+			dda = "123456789",
+			routing = "987654321"
+        },
+		foundation_date = "YYYY-MM-DD",
+		date_incorporated = "YYYY-MM-DD"
+	};
+    var payee = await _payarc.Payees.Create(payeeData);
+    Console.WriteLine($"Payee created: {payee}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+```
+
+### Retrieve Information for Payees
+
+List all payee for current agent
+```csharp
+try {				
+    var payees = await payarc.Payees.List();
+    Console.WriteLine($"Payees retrieved: {JsonConvert.SerializeObject(payees)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+### Example: Delete a Payee
+
+This example demonstrates how to delete an existing payee when only ID is known:
+
+```csharp
+try {
+    string id = "appy_1J*****3";
+
+    var deletedPayee = await payarc.Payees.Delete(id);
+    Console.WriteLine($"Payee deleted successfully: {deletedPayee}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
 }
@@ -1300,8 +1466,43 @@ try {
     Console.WriteLine($"Deposit Reports by Agent: {JsonConvert.SerializeObject(depositReports)}");
 } catch (Exception e) {
     Console.WriteLine($"Error detected: {e.Message}");
-}   
+}
 ```
+
+## Instructional Funding
+
+## Listing Instructional Fundings
+
+### Example: List Instruction Fundings
+
+This example demonstrates how to list all instructional fundings:
+
+```csharp
+try {                
+    var instructionalFundings = await payarc.InstructionalFunding.List();
+    Console.WriteLine($"List of Instructional Fundings: {JsonConvert.SerializeObject(instructionalFundings)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+```
+
+## Create Instructional Funding
+
+### Example: Create Instructional Funding
+
+This example demonstrates how to transfer money to my payees via instructional funding:
+
+```csharp
+try {            
+    var InstructionalFunding = await payarc.InstructionalFunding.Create(new InstructionalFundingRequestData {
+        mid: "000000000000000",
+        amount: 500
+    });
+    Console.WriteLine($"Instructional Funding Created: {JsonConvert.SerializeObject(InstructionalFunding)}");
+} catch (Exception e) {
+    Console.WriteLine($"Error detected: {e.Message}");
+}
+``` 
 
 # Payarc Connect
 The following functionality will pertain only to user who are utilizing the Payarc Connect integration:

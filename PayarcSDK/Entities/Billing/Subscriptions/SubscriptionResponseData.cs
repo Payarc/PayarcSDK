@@ -6,6 +6,17 @@ public class SubscriptionResponseData : BaseResponse {
     [JsonProperty("object")]
     public string? ObjectType { get; set; }
 
+    [JsonProperty("object_id")]
+    public override string? ObjectId
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(ObjectType) || string.IsNullOrEmpty(Id))
+                return null;
+            return $"sub_{Id}";
+        }
+    }
+
     [JsonProperty("id")]
     public string? Id { get; set; }
 

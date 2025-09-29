@@ -1,9 +1,10 @@
-﻿using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using AnyOfTypes;
+﻿using AnyOfTypes;
 using Newtonsoft.Json;
 using PayarcSDK.Entities;
+using System.IO;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using JsonException = System.Text.Json.JsonException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -643,6 +644,40 @@ namespace PayarcSDK.Services
             {
                 Console.WriteLine($"Error processing refund for {msg} charge: {ex.Message}");
                 throw new InvalidOperationException($"Failed to process refund for {msg} charge", ex);
+            }
+        }
+
+        public async Task<BaseResponse?> TipAdjust(AnyOf<string?, BaseResponse> charge, Dictionary<string, object>? tipData = null)
+        {
+            string url = "charges";
+            string? chargeId = string.Empty;
+            chargeId = charge.IsSecond ? charge.Second.ObjectId : (charge.IsFirst ? charge.First : null);
+            try
+            {
+                var type = "Charge";
+                if (chargeId != null)
+                {
+                    type = GetChargeType(chargeId);
+                    if (chargeId.StartsWith("ch_"))
+                    {
+                        chargeId = chargeId.Substring(3);
+                        url = $"{url}/{chargeId}/tip_adjustment";
+                    }
+                    else if (chargeId.StartsWith("ach_"))
+                    {
+                        throw new Exception("Tip adjustment is not applicable for ACH charges.");
+                    }
+                }
+                var response = await HandleChargeAsync(HttpMethod.Post, url, new ChargeRequestPayload
+                {
+                    Parameters = tipData
+                }, type);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing tip adjustment for charge: {ex.Message}");
+                throw new InvalidOperationException($"Failed to process tip adjustment for charge", ex);
             }
         }
     }
