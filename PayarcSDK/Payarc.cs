@@ -11,7 +11,8 @@ namespace PayarcSDK {
         public ChargeService Charges { get; }
         public BillingService Billing { get; }
         public BatchService Batches { get; }
-		public DepositService Deposits { get; }
+        public DepositService Deposits { get; }
+        public UserSettingService UserSettings { get; }
         public InstructionalFundingService InstructionalFunding { get; }
         public PayarcConnectService PayarcConnect { get; }
 
@@ -24,12 +25,13 @@ namespace PayarcSDK {
             Applications = new ApplicationService(httpClient);
             Payees = new PayeeService(httpClient);
             Deposits = new DepositService(httpClient);
-			Disputes = new DisputeService(httpClient);
+            Disputes = new DisputeService(httpClient);
             SplitCampaigns = new SplitCampaignService(httpClient);
             Customers = new CustomerService(httpClient);
             Charges = new ChargeService(httpClient);
             Billing = new BillingService(httpClient);
             Batches = new BatchService(httpClient);
+            UserSettings = new UserSettingService(httpClient);
             InstructionalFunding = new InstructionalFundingService(httpClient);
             PayarcConnect = new PayarcConnectService(httpClient, config);
         }

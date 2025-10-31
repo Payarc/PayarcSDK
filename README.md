@@ -1682,6 +1682,106 @@ try {
 }
 ```
 
+## Managing User Settings
+
+User Settings allow you to configure webhook URLs for various events in your Payarc integration. Each user can configure their own webhook endpoints to receive real-time notifications.
+
+### Available Webhook Settings
+
+The SDK provides constants for webhook configuration:
+
+```csharp
+using PayarcSDK.Constants;
+
+// Webhook Settings
+UserSettingConstants.ONBOARDING_WEBHOOK;             // "merchant.onboarded.webhook"
+UserSettingConstants.LEAD_UPDATE_WEBHOOK;            // "lead.updated.webhook"
+UserSettingConstants.LEAD_UPDATE_CATEGORY_WEBHOOK;   // "lead.category.updated.webhook"
+UserSettingConstants.LEAD_UNDERWRITING_UPDATED;      // "lead.underwriting.updated.webhook"
+```
+
+### Configure Webhook URL
+
+Set up a webhook URL to receive notifications. If a webhook for the specified key already exists, it will be updated:
+
+```csharp
+try {
+    var result = await payarc.UserSettings.CreateOrUpdate(new UserSettingRequestData {
+        Key = UserSettingConstants.ONBOARDING_WEBHOOK,
+        Value = "https://your-domain.com/webhooks/onboarding"
+    });
+    Console.WriteLine("Webhook configured: " + JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
+} catch (Exception ex) {
+    Console.WriteLine("Error detected: " + ex.Message);
+}
+```
+
+### List All Webhook Settings
+
+Retrieve all configured webhook settings for the authenticated user:
+
+```csharp
+try {
+    var response = await payarc.UserSettings.List();
+    if (response is UserSettingListResponse list) {
+        foreach (var setting in list.Data ?? []) {
+            Console.WriteLine(JsonSerializer.Serialize(setting, new JsonSerializerOptions { WriteIndented = true }));
+        }
+    }
+} catch (Exception ex) {
+    Console.WriteLine("Error detected: " + ex.Message);
+}
+```
+
+### List Webhook Settings with Pagination
+
+```csharp
+try {
+    var response = await payarc.UserSettings.List(new BaseListOptions {
+        Limit = 10,
+        Page = 1
+    });
+    if (response is UserSettingListResponse list) {
+        foreach (var setting in list.Data ?? []) {
+            if (setting is UserSettingResponseData userSetting) {
+                Console.WriteLine($"{userSetting.Key}: {userSetting.Value}");
+            }
+        }
+    }
+} catch (Exception ex) {
+    Console.WriteLine("Error detected: " + ex.Message);
+}
+```
+
+### Delete Webhook Setting
+
+Remove a webhook configuration by its key:
+
+```csharp
+try {
+    var result = await payarc.UserSettings.Delete(UserSettingConstants.ONBOARDING_WEBHOOK);
+    Console.WriteLine("Webhook setting removed: " + result);
+} catch (Exception ex) {
+    Console.WriteLine("Error detected: " + ex.Message);
+}
+```
+
+### Update Existing Webhook
+
+To update an existing webhook URL, simply use the same key with a new value:
+
+```csharp
+try {
+    var result = await payarc.UserSettings.CreateOrUpdate(new UserSettingRequestData {
+        Key = UserSettingConstants.LEAD_UPDATE_WEBHOOK,
+        Value = "https://your-domain.com/webhooks/updated-lead-endpoint"
+    });
+    Console.WriteLine("Webhook updated: " + JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
+} catch (Exception ex) {
+    Console.WriteLine("Error detected: " + ex.Message);
+}
+```
+
 ## License
 
 This project is licensed under the [MIT License](./LICENSE).
