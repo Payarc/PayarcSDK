@@ -31,4 +31,7 @@ public class ChargeCreateOptions
     // [JsonProperty("source")]
     // [JsonConverter(typeof(AnyOfConverter<string, SourceNestedOptions>))]
     public AnyOf<string, SourceNestedOptions>? Source { get; set; }
+
+    [JsonProperty("splits")]
+    public List<SplitNestedOptions>? Splits { get; set; }
 }

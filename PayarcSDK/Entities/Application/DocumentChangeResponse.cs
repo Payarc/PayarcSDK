@@ -11,8 +11,16 @@ namespace PayarcSDK.Entities
 		[JsonProperty("object")]
 		public override string? Object { get; set; }
 
-		[JsonProperty("object_id")]
-		public override string? ObjectId { get; set; }
+        [JsonProperty("object_id")]
+        public override string? ObjectId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Object) || string.IsNullOrEmpty(Id))
+                    return null;
+                return $"appl_{Id}";
+            }
+        }
 
 		[JsonIgnore]
 		[JsonProperty("MerchantCode")]
@@ -27,7 +35,15 @@ namespace PayarcSDK.Entities
         public override string Object { get; set; }
 
         [JsonProperty("object_id")]
-        public override string? ObjectId { get; set; }
+        public override string? ObjectId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Object) || string.IsNullOrEmpty(Id))
+                    return null;
+                return $"doc_{Id}";
+            }
+        }
 
         [JsonProperty("DocumentCode")]
         public string DocumentCode { get; set; }

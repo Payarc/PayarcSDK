@@ -6,7 +6,18 @@ public class Card : BaseResponse {
 	[JsonProperty("object")]
 	public override string? Object { get; set; }
 
-	[JsonProperty("id")]
+    [JsonProperty("object_id")]
+    public override string? ObjectId
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Object) || string.IsNullOrEmpty(Id))
+                return null;
+            return $"card_{Id}";
+        }
+    }
+
+    [JsonProperty("id")]
 	public string? Id { get; set; }
 
 	[JsonProperty("address1")]

@@ -6,10 +6,18 @@ namespace PayarcSDK.Entities
 		[JsonProperty("object")]
 		public override string Object { get; set; }
 
-		[JsonProperty("object_id")]
-		public override string? ObjectId { get; set; }
+        [JsonProperty("object_id")]
+        public override string? ObjectId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Object) || string.IsNullOrEmpty(Id))
+                    return null;
+                return $"cus_{Id}";
+            }
+        }
 
-		[JsonIgnore]
+        [JsonIgnore]
 		public Func<CustomerRequestData?, Task<BaseResponse?>> Update { get; set; }
 
 		[JsonProperty("customer_id")]
